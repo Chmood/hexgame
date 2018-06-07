@@ -1,0 +1,53 @@
+html {
+}
+
+body {
+	overflow: hidden;
+}
+
+.game-wrapper {
+	height: 100vh;
+	position: relative;
+}
+
+#renderCanvas {
+	width: 100vw;
+	height: 100vh;
+	touch-action: none;
+}
+
+#canvas-wrapper {
+	position: absolute;
+	top: -5vw; // Magic value
+	right: 0;
+	width: 30vw;
+	height: 30vw;
+}
+
+#canvas {
+}
+
+#ui {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100vw;
+	padding: 0.5rem;
+	background-color: rgba(0,0,0,0.75);
+	color: white;
+	font-size: 0.6rem;
+  text-align: center;
+	
+	button {
+		padding: 0.5rem 1rem;
+		text-transform: uppercase;
+		color: black;
+		font-weight: bold;
+		font-size: 0.6rem;
+	}
+}
+
+p {
+	margin-top: 0;
+}
+
