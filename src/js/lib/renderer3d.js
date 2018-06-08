@@ -247,13 +247,7 @@ const Renderer3d = (game, canvas) => {
     // Path line
     renderer.highlightLine(game.ui.line, BABYLON.Color3.Red())
     // Cursor line
-    renderer.highlightLine(
-      renderer.getCursorLine(
-        game.ui.cursor,
-        game.players[0].hex
-      ), 
-      BABYLON.Color3.Red()
-    )
+    renderer.highlightLine(game.ui.cursorPath, BABYLON.Color3.Blue())
     // Cursor tile
     renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue())
 
@@ -290,19 +284,6 @@ const Renderer3d = (game, canvas) => {
     if (line) {
       for (let i = 0; i < line.length; i++) {
         renderer.hightlightTile(line[i], color)
-      }
-    }
-  }
-
-  // CURSOR LINE
-  renderer.getCursorLine = (cursor, target) => {
-    // Cursor path
-    let cursorLine = undefined
-
-    if (game.map.getFromHex(cursor) && game.map.getFromHex(cursor).isInGraph) {
-      cursorLine = game.map.findPath(target, cursor)
-      if (cursorLine) {
-        return cursorLine
       }
     }
   }

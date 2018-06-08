@@ -200,12 +200,6 @@ const Renderer2d = (game, ctx, config) => {
     const ui = game.ui
     const cursor = game.ui.cursor
 
-    // Cursor path
-    let cursorPath = undefined
-    if (map.getFromHex(cursor) && map.getFromHex(cursor).isInGraph) {
-      cursorPath = map.findPath(game.players[0].hex, cursor)
-    }
-
     // CLEAR CANVAS
     // renderer.ctx.clearRect(0, 0, canvas.width, canvas.height) // TODO: canvas is undefined here!
 
@@ -251,9 +245,9 @@ const Renderer2d = (game, ctx, config) => {
         }
 
         // Draw cursor path
-        if (cursorPath) {
-          for (let i = 0; i < cursorPath.length; i++) {
-            if (HEXLIB.hexEqual(hex, cursorPath[i])) {
+        if (game.ui.cursorPath) {
+          for (let i = 0; i < game.ui.cursorPath.length; i++) {
+            if (HEXLIB.hexEqual(hex, game.ui.cursorPath[i])) {
               renderer.drawHexTop(cornersHalf, h, '#0080ff')
             }
           }

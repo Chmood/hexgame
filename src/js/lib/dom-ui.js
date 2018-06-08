@@ -13,9 +13,25 @@ const DomUI = (game, dom, main) => {
   // UPDATE CURSOR
   domui.updateCursor = (cursorHex) => {
     if (!HEXLIB.hexEqual(cursorHex, game.ui.cursor)) {
-      game.ui.cursor = cursorHex // Backup the new cursor
+      // Cursor has moved
+      game.ui.cursor = cursorHex // Update the new cursor
+      // Update the cursor line
+      game.ui.cursorPath = domui.getCursorLine(cursorHex, game.players[0].hex)
+
       game.renderer3d.updateHighlights() // Draw the new 3d cursor
       game.renderer2d.render() // Update 2d canvas too
+    }
+  }
+
+  // CURSOR LINE
+  domui.getCursorLine = (cursor, target) => {
+    let cursorLine = undefined
+
+    if (game.map.getFromHex(cursor) && game.map.getFromHex(cursor).isInGraph) {
+      cursorLine = game.map.findPath(target, cursor)
+      if (cursorLine) {
+        return cursorLine
+      }
     }
   }
 
@@ -26,7 +42,8 @@ const DomUI = (game, dom, main) => {
   })
 
   // Mouse move on 3D canvas
-  window.addEventListener('mousemove', (e) => { 
+  // window element was here before
+  dom.canvas3d.addEventListener('mousemove', (e) => { 
   	// We try to pick an object
   	var pick = game.renderer3d.scene.pick(game.renderer3d.scene.pointerX, game.renderer3d.scene.pointerY)
   	if (pick.hit) {
