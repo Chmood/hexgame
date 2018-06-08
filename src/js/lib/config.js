@@ -91,7 +91,9 @@ const CONFIG = {
     randomTileSizeFactor: 0.15,
     randomTileSizeOffset: 0, // 1 => only smaller / 0.5 => smaller & bigger / 0 => only bigger
     randomTileRotationFactor: 1, // 0 : flat / 1 : sloppy / 2 : chaos
-    betterOcean: true
+    betterOcean: true,
+    shinyIce: true,
+    transparentIce: false
   },
 
   players: [

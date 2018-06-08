@@ -76,19 +76,16 @@ const Renderer3d = (game, canvas) => {
     for (let [name, value] of Object.entries(CONFIG.map.terrain)) {
       CONFIG.map.terrain[name].material = new BABYLON.StandardMaterial(name, renderer.scene)
       CONFIG.map.terrain[name].material.diffuseColor = new BABYLON.Color3.FromHexString(value.color)
+      CONFIG.map.terrain[name].material.specularColor = new BABYLON.Color3.Black()
+    }
 
-      // Let sea and ice shine!
-      if (
-        // name !== 'deepsea' &&
-        // name !== 'sea' &&
-        // name !== 'shore' &&
-        name !== 'ice'
-      ) {
-        CONFIG.map.terrain[name].material.specularColor = new BABYLON.Color3.Black()
-      } else {
-        CONFIG.map.terrain[name].material.alpha = 0.9
-      }
-      // CONFIG.map.terrain[name].material.specularColor = new BABYLON.Color3.Black()
+    // Let ice shine (aka specular reflections)!
+    if (CONFIG.render3d.shinyIce) {
+      CONFIG.map.terrain['ice'].material.specularColor = new BABYLON.Color3.White()
+    }
+    // Let ice see through (aka alpha opacity)!
+    if (CONFIG.render3d.transparentIce) {
+      CONFIG.map.terrain['ice'].material.alpha = 0.9
     }
   }
 
