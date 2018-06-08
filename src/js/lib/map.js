@@ -225,7 +225,6 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     }
   }
 
-  ///////////////////////////////////////
   // CREATE MAP
   map.createMap = () => {
     // Procedural map generation
@@ -292,13 +291,39 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     // 		map.roundMapHeight(dataMap)
   }
 
-  // IS VALID HEIGHT
-  // Make the cell part of the graph or not, depending on biome
-  map.isValidCellHeight = (biome) => {
-    // Seas or mountains aren't valid
-    // return (height > (mapSeaLevel + 1) && height < 8) // TODO: magic value
-    return (biome !== 'deepsea' && biome !== 'sea'/* && biome !== 'shore'*/)
+  // IS VALID CELL
+  // Tells if the cell is part of the graph or not, depending on its biome
+  map.isValidCell = (biome) => {
+    // The biomes we can't move on
+    return (biome !== 'deepsea' && biome !== 'sea' && biome !== 'shore')
   }
+
+  // GET MOVE COST
+  map.getMoveCost = (fromHeight, toHeight, toBiome) => {
+    let cost = 10000,
+        heightCost = toHeight - fromHeight
+
+    // Heightcost is positive when we move upward
+    // In case we're moving down, limit the negative cost (aka gain) by scaling down
+    if (heightCost < 0) {
+      heightCost /= 4
+    }
+    cost = 1 + heightCost
+
+    if (toBiome === 'shore') {
+      cost *= 2
+    }
+    if (toBiome === 'mountain' ||
+      toBiome === 'highmountain') {
+      cost *= 3
+    }
+    if (toBiome === 'scorched' ||
+      toBiome === 'snow' ||
+      toBiome === 'ice') {
+      cost *= 4
+    }
+    return cost
+}
 
   // MAP GRAPH
   // Build the pathfinding graph, into the map
@@ -313,10 +338,11 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
           neighbors = [],
           costs = [],
           // height = map[x][y].height, // Not in use for now
-          biome = map[x][y].biome
+          biome = map[x][y].biome,
+          height = map[x][y].height
 
         // Add the cell to graph if the height is valid
-        map[x][y].isInGraph = map.isValidCellHeight(biome)
+        map[x][y].isInGraph = map.isValidCell(biome)
 
         if (map[x][y].isInGraph) {
 
@@ -334,24 +360,9 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
               // Is the neighbor a valid move?
               const neighborHeight = map[no.col][no.row].height,
                 neighborBiome = map[no.col][no.row].biome
-              if (map.isValidCellHeight(neighborBiome)) {
 
-                // EDGE COST
-                // cost = destination height (path will try its best to stay low)
-                let cost = 10000
-                cost = neighborHeight - config.mapSeaMinLevel
-                if (neighborBiome === 'shore') {
-                  cost *= 3
-                }
-                if (neighborBiome === 'mountain' ||
-                  neighborBiome === 'highmountain') {
-                  cost *= 3
-                }
-                if (neighborBiome === 'scorched' ||
-                  neighborBiome === 'snow' ||
-                  neighborBiome === 'ice') {
-                  cost *= 4
-                }
+              if (map.isValidCell(neighborBiome)) {
+                const cost = map.getMoveCost(height, neighborHeight, neighborBiome)
                 // cost = Math.floor(cost)
                 costs.push(cost)	// add the edge cost to the graph
 
@@ -378,7 +389,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // in a 2d array: [hex][value]
 
   // GET INDEX HEXES
-  // Return an array of hexex from an array with theses hexes as indexes
+  // Return an array of hexes from an array with theses hexes as indexes
   map.getIndexHexes = (cameFrom) => {
     const hexes = []
     for (let h = 0; h < cameFrom.length; h++) {
@@ -482,16 +493,14 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     }
   }
 
-  //////////////////////////////////////////
-
+  //////////////////////////////////////////////////////////////////////////////
   // MAP GENERATE
-  // Spawn a new map
+  // Re-generate map datas
   map.generate = () => {
     map.populate()
     map.createMap()
     map.generateGraph()
   }
 
-  // Return the map
   return map
 }

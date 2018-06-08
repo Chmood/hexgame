@@ -239,7 +239,6 @@ const Renderer3d = (game, canvas) => {
   // LINE
   renderer.highlightLine = () => {
     // Drawline
-    console.warn(game.ui.line)
     for (let i = 0; i < game.ui.line.length; i++) {
       const lineStepHex = game.ui.line[i],
             lineStepOffset = HEXLIB.hex2Offset(lineStepHex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
