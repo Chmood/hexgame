@@ -22,7 +22,7 @@ waterMaterial(BABYLON)
 
 const Renderer3d = (game, canvas) => {
   const renderer = {},
-    map = game.map
+        map = game.map
 
   // LAYOUT
   renderer.createLayout = () => {
@@ -239,17 +239,14 @@ const Renderer3d = (game, canvas) => {
   // LINE
   renderer.highlightLine = () => {
     // Drawline
+    console.warn(game.ui.line)
     for (let i = 0; i < game.ui.line.length; i++) {
-      const x = game.ui.line[i].x,
-        y = game.ui.line[i].y,
-        offsetPath = HEXLIB.hexOffset(x, y)
+      const lineStepHex = game.ui.line[i],
+            lineStepOffset = HEXLIB.hex2Offset(lineStepHex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
       renderer.highlightLayer.addMesh(
-        map[offsetPath.col][offsetPath.row].tile,
+        map[lineStepOffset.col][lineStepOffset.row].tile,
         BABYLON.Color3.Red()
       )
-      // if (HEXLIB.hexEqual(hex, ui.line[i]))  {
-      // 	renderer.highlightLayer.addMesh(map[x][y].tile, BABYLON.Color3.Red())
-      // }
     }
   }
 

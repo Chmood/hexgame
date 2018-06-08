@@ -63,7 +63,7 @@ const Main = () => {
 
     main.ctx = dom.canvas2d.getContext('2d')
 
-    main.game = Game(CONFIG, main.ctx, dom.canvas3d)
+    main.game = Game(main.ctx, dom.canvas3d, CONFIG)
     main.game.map.randomizeSeed()
     main.game.generate()
 
@@ -99,7 +99,6 @@ const Main = () => {
   window.onload = () => {
     main.start()
   }	// End window.onload
-
 
   return main
 }

@@ -8,7 +8,7 @@ import Renderer3d from './renderer3d.js'
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
 
-const Game = (CONFIG, ctx, canvas3d) => {
+const Game = (ctx, canvas3d, CONFIG) => {
   const game = {}
 
   // Set destination tile
@@ -24,7 +24,7 @@ const Game = (CONFIG, ctx, canvas3d) => {
   game.map = Map(CONFIG.map)
 
   // GAME RENDERERS
-  game.renderer = Renderer(game,ctx)
+  game.renderer = Renderer(game, ctx)
   game.renderer3d = Renderer3d(game, canvas3d)
 
   // UI OVERLAY
@@ -60,7 +60,7 @@ const Game = (CONFIG, ctx, canvas3d) => {
       game.renderer3d.createTiles()
 
       game.ui.line = line
-      // game.renderer3d.highlightLine()
+      game.renderer3d.highlightLine()
     }
   }
 

@@ -5,7 +5,7 @@ import CONFIG from './config.js'
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER
 
-const Renderer = (game, ctx) => {
+const Renderer = (game, ctx, config) => {
   const renderer = {}
 
   renderer.game = game	// Backup game

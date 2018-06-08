@@ -5,7 +5,7 @@ import noise from '../vendor/noise.js'
 ////////////////////////////////////////////////////////////////////////////////
 // MAP
 
-export default Map = (config) => {
+export default Map = (config) => { // WTF is this syntax only working here?! (bottom export elsewhere)
 
   // ARRAY 2D
   const array2d = (x, y) => Array(...Array(x)).map(() => Array(y))
@@ -13,6 +13,9 @@ export default Map = (config) => {
   // WEIRD: map is an 2d array WITH methods - TODO better (or not?)
   const map = array2d(config.mapSize.width, config.mapSize.height)
   
+  // Backup configuration
+  map.config = config
+
   // RANDOMIZE SEED
   // Random seed the noise generator
   map.randomizeSeed = () => {
