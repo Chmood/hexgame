@@ -34,12 +34,12 @@ const Main = () => {
   }
 
   main.sizeCanvas = (canvas, game) => {
-    canvas.width = game.renderer.mapRenderSize.width
-    canvas.height = game.renderer.mapRenderSize.height
+    canvas.width = game.renderer2d.mapRenderSize.width
+    canvas.height = game.renderer2d.mapRenderSize.height
 
     // Get canvas offset (from top-left viewport corner)
     // (the canvas is supposed to be positionned in CSS)
-    game.renderer.canvasOffset = {
+    game.renderer2d.canvasOffset = {
       x: canvas.offsetLeft,
       y: canvas.offsetTop
     }
@@ -72,7 +72,7 @@ const Main = () => {
 
     // ANIMATION LOOP
     main.render2d = () => {
-      main.game.renderer.drawMap(
+      main.game.renderer2d.drawMap(
         main.ctx,
         CONFIG.map.mapTopped,
         CONFIG.map.mapParity,

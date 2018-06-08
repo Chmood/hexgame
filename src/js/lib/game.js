@@ -1,9 +1,9 @@
-import HEXLIB from '../vendor/hexlib.js'
+import HEXLIB from '../vendor/hexlib'
 
-import Map from './map.js'
-import Players from './players.js'
-import Renderer from './renderer.js'
-import Renderer3d from './renderer3d.js'
+import Map from './map'
+import Players from './players'
+import Renderer2d from './renderer2d'
+import Renderer3d from './renderer3d'
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
@@ -24,7 +24,7 @@ const Game = (ctx, canvas3d, CONFIG) => {
   game.map = Map(CONFIG.map)
 
   // GAME RENDERERS
-  game.renderer = Renderer(game, ctx)
+  game.renderer2d = Renderer2d(game, ctx)
   game.renderer3d = Renderer3d(game, canvas3d)
 
   // UI OVERLAY

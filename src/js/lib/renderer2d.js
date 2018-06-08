@@ -3,9 +3,9 @@ import * as shadeBlend from '../vendor/shadeblend.js'
 import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
-// RENDERER
+// RENDERER 2D
 
-const Renderer = (game, ctx, config) => {
+const Renderer2d = (game, ctx, config) => {
   const renderer = {},
         map = game.map
 
@@ -341,4 +341,4 @@ const Renderer = (game, ctx, config) => {
   return renderer
 }
 
-export default Renderer
+export default Renderer2d
