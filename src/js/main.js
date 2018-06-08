@@ -19,18 +19,18 @@ const Main = () => {
     // TODO: better & more accurate
     // Topped
     const fitWidth = Math.floor(canvasWrapperWidth * (3 / 4) / (CONFIG.map.mapSize.width + 3))
-    const fitHeight = Math.floor((canvasWrapperHeight / CONFIG.render.cellSizeRatio) / ((CONFIG.map.mapSize.height + 2) * Math.sqrt(3)))
+    const fitHeight = Math.floor((canvasWrapperHeight / CONFIG.render2d.cellSizeRatio) / ((CONFIG.map.mapSize.height + 2) * Math.sqrt(3)))
     const fitSize = Math.min(fitWidth, fitHeight)
 
-    CONFIG.render.cellSizeBase = fitSize
+    CONFIG.render2d.cellSizeBase = fitSize
 
     // Computed vars
 
-    CONFIG.render.cellSize = {}
-    CONFIG.render.cellSize.width = CONFIG.render.cellSizeBase
-    CONFIG.render.cellSize.height = Math.floor(CONFIG.render.cellSizeBase * CONFIG.render.cellSizeRatio)
+    CONFIG.render2d.cellSize = {}
+    CONFIG.render2d.cellSize.width = CONFIG.render2d.cellSizeBase
+    CONFIG.render2d.cellSize.height = Math.floor(CONFIG.render2d.cellSizeBase * CONFIG.render2d.cellSizeRatio)
 
-    CONFIG.render.mapDeepness = CONFIG.render.cellSizeBase / 4 // TODO: magic value!
+    CONFIG.render2d.mapDeepness = CONFIG.render2d.cellSizeBase / 4 // TODO: magic value!
   }
 
   main.sizeCanvas = (canvas, game) => {
@@ -70,30 +70,16 @@ const Main = () => {
     // Set canvas size
     main.sizeCanvas(dom.canvas2d, main.game)
 
-    // ANIMATION LOOP
-    main.render2d = () => {
-      main.game.renderer2d.drawMap(
-        main.ctx,
-        CONFIG.map.mapTopped,
-        CONFIG.map.mapParity,
-        CONFIG.render.mapDeepness,
-        CONFIG.render.mapRangeScale)
-    }
-
     // Dom UI
     main.domui = DomUI(main.game, dom, main)
 
+    ////////////////////////////////
     // LAUCH LOOP
 
-    // 2D
-    // Initial rendering
-    main.render2d()
-
-    // 3D
-    // Register a render loop to repeatedly render the scene
-    main.game.renderer3d.engine.runRenderLoop(() => {
-      main.game.renderer3d.scene.render()
-    })
+    // 2D: Initial rendering
+    main.game.renderer2d.render()
+    // 3D: Start engine!
+    main.game.renderer3d.startRenderLoop()
   }
 
   window.onload = () => {

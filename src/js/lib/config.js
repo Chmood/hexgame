@@ -75,7 +75,7 @@ const CONFIG = {
       ice: { color: '#ccffff' } // 11
     }
   },
-  render: {
+  render2d: {
     cellSizeBase: undefined,	// base size of a cell in px // COMPUTED (on DOM ready)
     cellSizeRatio: 6 / 6,	// perspective cell height diminution ratio
     cellSize: undefined, // size of the cell // COMPUTED (on DOM ready)

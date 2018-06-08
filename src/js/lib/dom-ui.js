@@ -13,9 +13,9 @@ const DomUI = (game, dom, main) => {
   // UPDATE CURSOR
   domui.updateCursor = (cursorHex) => {
     if (!HEXLIB.hexEqual(cursorHex, game.ui.cursor)) {
-      game.ui.cursor = cursorHex // Backup the nex cursor
+      game.ui.cursor = cursorHex // Backup the new cursor
       game.renderer3d.updateHighlights() // Draw the new 3d cursor
-      main.render2d() // Update 2d canvas too
+      game.renderer2d.render() // Update 2d canvas too
     }
   }
 
@@ -42,31 +42,38 @@ const DomUI = (game, dom, main) => {
   	}
   }) 
 
+  // CLICK ON CANVASES
+
   dom.canvas2d.addEventListener('click', (e) => {
-    game.onUIClick(game.renderer.plotCursor(e))
-    main.render2d()
+    game.onUIClick(game.renderer2d.plotCursor(e))
+    game.renderer2d.render()
   })
+
+  dom.canvas3d.addEventListener('click', (e) => {
+    // game.onUIClick(game.renderer2d.plotCursor(e))
+    // game.renderer3d.render()
+  })
+
+  // UI BUTTONS
 
   dom.btnUpdate.addEventListener('click', () => {
     game.generate()
-    main.render2d()
+    game.renderer2d.render()
   })
 
   dom.btnNew.addEventListener('click', () => {
     game.map.randomizeSeed()
     game.generate()
-    main.render2d()
+    game.renderer2d.render()
   })
 
   window.onresize = () => {
     main.sizeGame(CONFIG, dom.canvas2dWrapper)
-    game.renderer.init()
+    game.renderer2d.init()
     main.sizeCanvas(dom.canvas2d, game)
+    game.renderer2d.render()
     game.renderer3d.engine.resize()
-
-    main.render2d()
   }
-
 }  
 
 export default DomUI

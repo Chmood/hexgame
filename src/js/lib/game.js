@@ -60,7 +60,7 @@ const Game = (ctx, canvas3d, CONFIG) => {
       game.renderer3d.createTiles()
 
       game.ui.line = line
-      game.renderer3d.highlightLine()
+      game.renderer3d.updateHighlights()
     }
   }
 

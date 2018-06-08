@@ -449,6 +449,14 @@ const Renderer3d = (game, canvas) => {
     renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
   }
 
+  // START RENDER LOOP
+  renderer.startRenderLoop = () => {
+    // Register a render loop to repeatedly render the scene
+    renderer.engine.runRenderLoop(() => {
+      renderer.scene.render()
+    })
+  }
+
   renderer.initRenderer()
 
   return renderer

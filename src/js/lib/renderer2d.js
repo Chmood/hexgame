@@ -66,7 +66,7 @@ const Renderer2d = (game, ctx, config) => {
         HEXLIB.point(
           e.offsetX - renderer.canvasOffset.x,
           // Computes y for non-flat 2d map
-          // e.y - renderer.canvasOffset.y + CONFIG.render.mapDeepness + CONFIG.render.mapRangeScale * CONFIG.map.mapSeaMinLevel	// TODO - better mapping
+          // e.y - renderer.canvasOffset.y + CONFIG.render2d.mapDeepness + CONFIG.render2d.mapRangeScale * CONFIG.map.mapSeaMinLevel	// TODO - better mapping
           e.offsetY - renderer.canvasOffset.y
         )
       )
@@ -176,7 +176,7 @@ const Renderer2d = (game, ctx, config) => {
   renderer.drawHexMesh = (corners, h, h2, color) => {
 
     // Draw sides
-    if (CONFIG.render.mapHasPerspective) {
+    if (CONFIG.render2d.mapHasPerspective) {
       renderer.drawHexSides(corners, h, h2, color)
     }
     // Draw top
@@ -191,9 +191,9 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  // DRAW MAP
+  // RENDER (aka draw map)
 
-  renderer.drawMap = (ctx, mapTopped, mapParity, mapDeepness, mapRangeScale) => {
+  renderer.render = () => {
 
     // COMPUTE UI OVERLAY
 
@@ -207,14 +207,14 @@ const Renderer2d = (game, ctx, config) => {
     }
 
     // CLEAR CANVAS
-    // ctx.clearRect(0, 0, canvas.width, canvas.height) // TODO: canvas is undefined here!
+    // renderer.ctx.clearRect(0, 0, canvas.width, canvas.height) // TODO: canvas is undefined here!
 
     // MAP LOOP
     for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
       for (let xi = 0; xi < CONFIG.map.mapSize.width; xi++) {
 
         // Display front cells first
-        let x = renderer.zIndexSort(xi, CONFIG.map.mapSize.width, mapParity)
+        let x = renderer.zIndexSort(xi, CONFIG.map.mapSize.width, CONFIG.map.mapParity)
 
         // Cell variables
         const val = map.data[x][y].height,
@@ -231,15 +231,15 @@ const Renderer2d = (game, ctx, config) => {
           cornersTwoThird = HEXLIB.hexCorners(renderer.layout, hex, 0.6667),
 
           color = renderer.getTerrainColor(map.data[x][y].biome), // Cell color
-          h = CONFIG.render.mapHasPerspective ?
-            - Math.floor(valFlooded) * mapRangeScale : 0 // Cell height
+          h = CONFIG.render2d.mapHasPerspective ?
+            - Math.floor(valFlooded) * CONFIG.render2d.mapRangeScale : 0 // Cell height
 
 
         ////////////////////////////////////
         // DRAW
 
         // Draw terrain mesh
-        renderer.drawHexMesh(corners, h, mapDeepness, color)
+        renderer.drawHexMesh(corners, h, CONFIG.render2d.mapDeepness, color)
 
         // ON-MAP UI
 
@@ -276,20 +276,20 @@ const Renderer2d = (game, ctx, config) => {
         }
 
         // CELL TEXT
-        if (CONFIG.render.displayTileText) {
-          ctx.font = '10px Arial'
-          ctx.lineWidth = 0
-          ctx.fillStyle = 'rgba(255,255,255,0.5)'
+        if (CONFIG.render2d.displayTileText) {
+          renderer.ctx.font = '10px Arial'
+          renderer.ctx.lineWidth = 0
+          renderer.ctx.fillStyle = 'rgba(255,255,255,0.5)'
 
           // Write in black on light terrain colors
           // TODO with biomes colors
           if (valFloor === 11 || valFloor === 10 || valFloor === 9 || valFloor === 3) {
-            ctx.fillStyle = 'rgba(0,0,0,0.75)'
+            renderer.ctx.fillStyle = 'rgba(0,0,0,0.75)'
           }
 
-          // ctx.fillText(valFloor, point.x - 3, point.y + 3 + h)// display height
+          // renderer.ctx.fillText(valFloor, point.x - 3, point.y + 3 + h)// display height
           // if (map.data[x][y].cost < 1000000) {
-          // 	ctx.fillText(map.data[x][y].cost, point.x - 3, point.y + 3 + h)
+          //   renderer.ctx.fillText(map.data[x][y].cost, point.x - 3, point.y + 3 + h)
           // }
         }
       }
@@ -301,21 +301,21 @@ const Renderer2d = (game, ctx, config) => {
 
     // Map origin
     renderer.mapOrigin = renderer.mapComputeOrigin(
-      CONFIG.render.cellSize,
+      CONFIG.render2d.cellSize,
       CONFIG.map.mapTopped,
       CONFIG.map.mapParity,
       CONFIG.map.mapValueRange.height,
-      CONFIG.render.mapRangeScale
+      CONFIG.render2d.mapRangeScale
     )
 
     // Map render size
     renderer.mapRenderSize = renderer.mapComputeSize(
       CONFIG.map.mapSize,
-      CONFIG.render.cellSize,
+      CONFIG.render2d.cellSize,
       CONFIG.map.mapTopped,
-      CONFIG.render.mapDeepness,
+      CONFIG.render2d.mapDeepness,
       CONFIG.map.mapValueRange.height,
-      CONFIG.render.mapRangeScale
+      CONFIG.render2d.mapRangeScale
     )
 
     // Layout
@@ -323,8 +323,8 @@ const Renderer2d = (game, ctx, config) => {
       CONFIG.map.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
       {
         // cell size in px
-        x: CONFIG.render.cellSize.width,
-        y: CONFIG.render.cellSize.height
+        x: CONFIG.render2d.cellSize.width,
+        y: CONFIG.render2d.cellSize.height
       },
       renderer.mapOrigin // origin
     )
