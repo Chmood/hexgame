@@ -1,5 +1,8 @@
 import './scss/main.scss'
 
-const hexgame = require('./js/main.js')
+import Main from './js/main.js'
 
-console.log('app.js is in da place!')
+const main = Main()
+main.start()
+
+console.log('Game started')

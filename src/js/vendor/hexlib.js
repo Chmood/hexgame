@@ -12,7 +12,6 @@
 
 
 const HEXLIB = {}
-module.exports = HEXLIB
 
 ////////////////////////////////////////////////////////////////////////////////
 // CUBIC COORD HEX
@@ -249,4 +248,4 @@ HEXLIB.hexCorners = (layout, h, k = 1) => {
 // let hn = HEXLIB.hexNeighbors(h1); console.log(hn)
 // let hnd = HEXLIB.hexNeighborsDiagonal(h1); console.log(hnd)
 
-
+export default HEXLIB
