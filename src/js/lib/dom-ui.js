@@ -4,7 +4,7 @@ import CONFIG from './config'
 ////////////////////////////////////////////////////////////////////////////////
 // DOM UI
 
-const DomUI = (game, dom, sizeGame, sizeCanvas, render) => {
+const DomUI = (game, dom, main) => {
 
   const domui = {}
 
@@ -14,7 +14,7 @@ const DomUI = (game, dom, sizeGame, sizeCanvas, render) => {
     const cursor = game.renderer.plotCursor(e)
     if (!HEXLIB.hexEqual(cursor, game.ui.cursor)) {
       game.ui.cursor = cursor
-      render()
+      main.render2d()
     }
   })
 
@@ -33,27 +33,27 @@ const DomUI = (game, dom, sizeGame, sizeCanvas, render) => {
 
   dom.canvas2d.addEventListener('click', (e) => {
     game.onUIClick(game.renderer.plotCursor(e))
-    render()
+    main.render2d()
   })
 
-  dom.btnGenerate.addEventListener('click', () => {
+  dom.btnUpdate.addEventListener('click', () => {
     game.generate()
-    render()
+    main.render2d()
   })
 
-  dom.btnRandomSeed.addEventListener('click', () => {
+  dom.btnNew.addEventListener('click', () => {
     game.map.randomizeSeed()
     game.generate()
-    render()
+    main.render2d()
   })
 
   window.onresize = () => {
-    sizeGame(CONFIG, dom.canvas2dWrapper)
+    main.sizeGame(CONFIG, dom.canvas2dWrapper)
     game.renderer.init()
-    sizeCanvas(dom.canvas2d, game)
+    main.sizeCanvas(dom.canvas2d, game)
     game.renderer3d.engine.resize()
 
-    render()
+    main.render2d()
   }
 
 }  

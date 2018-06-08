@@ -98,7 +98,7 @@ const config = {
     contentBase: path.resolve(__dirname, './dist/'),
     compress: true,
     port: 3000,
-    stats: 'normal', // "'errors-only", "minimal", "none", "normal" & "verbose"
+    stats: 'errors-only', // "'errors-only", "minimal", "none", "normal" & "verbose"
     open: true
   },
 

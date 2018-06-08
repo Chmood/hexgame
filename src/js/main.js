@@ -51,12 +51,12 @@ const Main = () => {
     // GET DOM THINGS
     const dom = {}
 
-    dom.canvas2d = document.getElementById('canvas')
-    dom.canvas2dWrapper = document.getElementById('canvas-wrapper')
-    dom.canvas3d = document.getElementById('renderCanvas')
+    dom.canvas2d = document.getElementById('canvas2d')
+    dom.canvas2dWrapper = document.getElementById('canvas2d-wrapper')
+    dom.canvas3d = document.getElementById('canvas3d')
 
-    dom.btnGenerate = document.getElementById('generate')
-    dom.btnRandomSeed = document.getElementById('random-seed')
+    dom.btnUpdate = document.getElementById('btn-update')
+    dom.btnNew = document.getElementById('btn-new')
 
     // Auto-size canvas
     main.sizeGame(CONFIG, dom.canvas2dWrapper)
@@ -71,7 +71,7 @@ const Main = () => {
     main.sizeCanvas(dom.canvas2d, main.game)
 
     // ANIMATION LOOP
-    main.render = () => {
+    main.render2d = () => {
       main.game.renderer.drawMap(
         main.ctx,
         CONFIG.map.mapTopped,
@@ -81,13 +81,13 @@ const Main = () => {
     }
 
     // Dom UI
-    main.domui = DomUI(main.game, dom, main.sizeGame, main.sizeCanvas, main.render)
+    main.domui = DomUI(main.game, dom, main)
 
     // LAUCH LOOP
 
     // 2D
     // Initial rendering
-    main.render()
+    main.render2d()
 
     // 3D
     // Register a render loop to repeatedly render the scene

@@ -5,7 +5,7 @@ import CONFIG from './config.js'
 // image import (for Webpack loading & bundling as dependencies)
 import waterbump from "../../img/waterbump.png"
 // 'useless' ones are because of BabylonJS skybox structure
-// (no direct link to the 6 images in the code below)
+// (no direct link to these images in the code below)
 import img1 from "../../img/TropicalSunnyDay_nx.jpg"
 import img2 from "../../img/TropicalSunnyDay_ny.jpg"
 import img3 from "../../img/TropicalSunnyDay_nz.jpg"
@@ -97,9 +97,9 @@ const Renderer3d = (game, canvas) => {
   // // HEXAPRISM
   // // aka extruded hexagon
   // renderer.createHexaprismMesh = (corners) => {
-
   // }
 
+  // ELEVATION GAP
   renderer.redistributeElevationWithGap = (height) => {
     // Increase height gap between lower land & higher sea
     if (
@@ -118,6 +118,7 @@ const Renderer3d = (game, canvas) => {
     return height
   }
 
+  // TILE
   renderer.createTile = (x, y, cell) => {
     const offset = HEXLIB.hexOffset(x, y),
       hex = HEXLIB.offset2Hex(
@@ -208,6 +209,7 @@ const Renderer3d = (game, canvas) => {
     return tile
   }
 
+  // TILES
   renderer.createTiles = () => {
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
@@ -221,6 +223,7 @@ const Renderer3d = (game, canvas) => {
     }
   }
 
+  // DELETE TILES
   renderer.deleteTiles = () => {
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
@@ -232,6 +235,7 @@ const Renderer3d = (game, canvas) => {
     }
   }
 
+  // LINE
   renderer.highlightLine = () => {
     // Drawline
     for (let i = 0; i < game.ui.line.length; i++) {
@@ -364,25 +368,26 @@ const Renderer3d = (game, canvas) => {
     zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size)
   }
 
-  // INSTANCIATIONS
-  
-  renderer.layout = renderer.createLayout()
-  renderer.engine = new BABYLON.Engine(canvas, true) // Generate the BABYLON 3D 
-  renderer.scene = new BABYLON.Scene(renderer.engine)
-  renderer.camera = renderer.createCamera()
-  renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
-  // renderer.hemiLight.intensity = 1
-  // Add the highlight layer
-  renderer.highlightLayer = new BABYLON.HighlightLayer('hl1', renderer.scene)
-  renderer.highlightLayer.outerGlow = false
-  // renderer.highlightLayer.addMesh(map[x][y].tile, BABYLON.Color3.Red())
+  // INIT RENDERER
+  renderer.initRenderer = () => {
+    renderer.layout = renderer.createLayout()
+    renderer.engine = new BABYLON.Engine(canvas, true) // Generate the BABYLON 3D 
+    renderer.scene = new BABYLON.Scene(renderer.engine)
+    renderer.camera = renderer.createCamera()
+    renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
+    // renderer.hemiLight.intensity = 1
+    // Add the highlight layer
+    renderer.highlightLayer = new BABYLON.HighlightLayer('hl1', renderer.scene)
+    renderer.highlightLayer.outerGlow = false
+    // renderer.highlightLayer.addMesh(map[x][y].tile, BABYLON.Color3.Red())
 
-  renderer.createMaterials() // TODO: rewrite w/ local materials
-  renderer.skybox = renderer.createSkybox()
-  renderer.ocean = renderer.createOcean()
-  renderer.showWorldAxis(25)
+    renderer.createMaterials() // TODO: rewrite w/ local materials
+    renderer.skybox = renderer.createSkybox()
+    renderer.ocean = renderer.createOcean()
+    renderer.showWorldAxis(25)
+  }
 
-  // ON-MAP UI
+  renderer.initRenderer()
 
   return renderer
 }

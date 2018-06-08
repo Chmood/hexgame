@@ -12,13 +12,13 @@ body {
 	position: relative;
 }
 
-#renderCanvas {
+#canvas3d {
 	width: 100vw;
 	height: 100vh;
 	touch-action: none;
 }
 
-#canvas-wrapper {
+#canvas2d-wrapper {
 	position: absolute;
 	top: -5vw; // Magic value
 	right: 0;
@@ -26,7 +26,7 @@ body {
 	height: 30vw;
 }
 
-#canvas {
+#canvas2d {
 }
 
 #ui {
@@ -47,9 +47,10 @@ body {
 		font-weight: bold;
 		font-size: 0.6rem;
 	}
+
+	p {
+		margin-top: 0;
+	}
 }
 
-p {
-	margin-top: 0;
-}
 
