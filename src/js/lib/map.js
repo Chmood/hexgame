@@ -225,6 +225,39 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     }
   }
 
+  // CREATE NOISE
+  map.createNoise = (type, x, y) => {
+    const nz = [] // noize
+    let value = 0;
+
+    for (let h = 0; h < config.mapNoise[type].harmonics.length; h++) {
+      const frequencyDivider =
+        config.mapNoise[type].frequency /
+        Math.pow(2, h)
+
+    nz[h] = map.normalizeNoise(
+      noise.simplex2(
+        x / frequencyDivider,
+        y / frequencyDivider
+      )
+    )
+
+    // Redistribution (raise the elevation to a power)
+    nz[h] = Math.pow(
+      nz[h],
+      config.mapPostprocess[type].redistributionPower
+    )
+
+    // Revert values
+    if (config.mapPostprocess[type].revert) {
+      nz[h] = 1 - nz[h]
+    }
+
+    value += nz[h] * config.mapNoise[type].harmonics[h]
+  }
+  return value
+}
+
   // CREATE MAP
   map.createMap = () => {
     // Procedural map generation
@@ -240,38 +273,12 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
         let value = 0 // From 0 to 1
 
-        // Stupid random value
         if (config.mapNoise[type].stupidRandom) {
+          // Stupid random value
           value = Math.random()
-
-          // Noise based value
         } else {
-          const nz = [] // noize
-          for (let h = 0; h < config.mapNoise[type].harmonics.length; h++) {
-            const frequencyDivider =
-              config.mapNoise[type].frequency /
-              Math.pow(2, h)
-
-            nz[h] = map.normalizeNoise(
-              noise.simplex2(
-                x / frequencyDivider,
-                y / frequencyDivider
-              )
-            )
-
-            // Redistribution (raise the elevation to a power)
-            nz[h] = Math.pow(
-              nz[h],
-              config.mapPostprocess[type].redistributionPower
-            )
-
-            // Revert values
-            if (config.mapPostprocess[type].revert) {
-              nz[h] = 1 - nz[h]
-            }
-
-            value += nz[h] * config.mapNoise[type].harmonics[h]
-          }
+          // Noise based value
+          value = map.createNoise(type, x, y)
         }
         map.data[x][y][type] = value * range
       }
