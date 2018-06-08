@@ -72,21 +72,25 @@ const Renderer3d = (game, canvas) => {
 
   // MATERIALS
   renderer.createMaterials = () => {
+    const materials = {}
+
     // Terrain materials
     for (let [name, value] of Object.entries(CONFIG.map.terrain)) {
-      CONFIG.map.terrain[name].material = new BABYLON.StandardMaterial(name, renderer.scene)
-      CONFIG.map.terrain[name].material.diffuseColor = new BABYLON.Color3.FromHexString(value.color)
-      CONFIG.map.terrain[name].material.specularColor = new BABYLON.Color3.Black()
+      materials[name] = new BABYLON.StandardMaterial(name, renderer.scene)
+      materials[name].diffuseColor = new BABYLON.Color3.FromHexString(value.color)
+      materials[name].specularColor = new BABYLON.Color3.Black()
     }
 
     // Let ice shine (aka specular reflections)!
     if (CONFIG.render3d.shinyIce) {
-      CONFIG.map.terrain['ice'].material.specularColor = new BABYLON.Color3.White()
+      materials['ice'].specularColor = new BABYLON.Color3.White()
     }
     // Let ice see through (aka alpha opacity)!
     if (CONFIG.render3d.transparentIce) {
-      CONFIG.map.terrain['ice'].material.alpha = 0.9
+      materials['ice'].alpha = 0.9
     }
+
+    return materials
   }
 
   // TILES
@@ -201,7 +205,7 @@ const Renderer3d = (game, canvas) => {
     )
 
     // Give the tile mesh a material
-    tile.material = CONFIG.map.terrain[cell.biome].material
+    tile.material = renderer.materials[cell.biome]
 
     return tile
   }
@@ -284,7 +288,7 @@ const Renderer3d = (game, canvas) => {
     )
     // const floorMaterial = new BABYLON.StandardMaterial('oceanFloor', renderer.scene)
     // floorMaterial.diffuseColor = new BABYLON.Color3(0,0,0.6)
-    renderer.oceanFloor.material = CONFIG.map.terrain['deepsea'].material
+    renderer.oceanFloor.material = renderer.materials['deepsea']
 
     // Water
     let water
@@ -378,10 +382,10 @@ const Renderer3d = (game, canvas) => {
     renderer.highlightLayer.outerGlow = false
     // renderer.highlightLayer.addMesh(map[x][y].tile, BABYLON.Color3.Red())
 
-    renderer.createMaterials() // TODO: rewrite w/ local materials
+    renderer.materials = renderer.createMaterials()
     renderer.skybox = renderer.createSkybox()
     renderer.ocean = renderer.createOcean()
-    renderer.showWorldAxis(25)
+    renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
   }
 
   renderer.initRenderer()
