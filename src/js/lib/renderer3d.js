@@ -132,7 +132,7 @@ const Renderer3d = (game, canvas) => {
       // TODO: larger bottom makes glitch
       cornersBottom = HEXLIB.hexCorners(renderer.layout, hex, CONFIG.render3d.cellSize * 1.25),
       // cornersBottom = corners,
-      tile = new BABYLON.Mesh('custom', renderer.scene)
+      tile = new BABYLON.Mesh(`tile-${x}-${y}`, renderer.scene)
 
     let height = renderer.redistributeElevationWithGap(cell.height)
     height *= CONFIG.render3d.cellStepHeight
@@ -161,7 +161,7 @@ const Renderer3d = (game, canvas) => {
       cornersBottom[4].y + getRandomDisp(), 0, cornersBottom[4].x + getRandomDisp(),
       cornersBottom[5].y + getRandomDisp(), 0, cornersBottom[5].x + getRandomDisp()
     ]
-    var indices = [
+    const indices = [
       // Top
       0, 2, 1,
       0, 3, 2,
@@ -236,17 +236,52 @@ const Renderer3d = (game, canvas) => {
     }
   }
 
+  // HIGHTLIGHT TILE
+  renderer.hightlightTile = (hex, color = BABYLON.Color3.White(), lowlight = false) => {
+    const offset = HEXLIB.hex2Offset(
+            hex, 
+            CONFIG.map.mapTopped, 
+            CONFIG.map.mapParity
+          )
+
+    // TODO: >=0 only seem needed on load (when cursor is out of the map)
+    if (offset.col && offset.row && 
+        offset.col >= 0 && offset.row >= 0 &&
+        offset.col < CONFIG.map.mapSize.width && offset.row < CONFIG.map.mapSize.height
+      ) {
+      if (!lowlight) {
+        // Add to layer
+        renderer.highlightLayer.addMesh(
+          map[offset.col][offset.row].tile,
+          color
+        )
+      } else {
+        // Remove from layer
+        renderer.highlightLayer.removeMesh(
+          map[offset.col][offset.row].tile
+        )
+      }
+    }
+  }
+
   // LINE
   renderer.highlightLine = () => {
     // Drawline
     for (let i = 0; i < game.ui.line.length; i++) {
-      const lineStepHex = game.ui.line[i],
-            lineStepOffset = HEXLIB.hex2Offset(lineStepHex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
-      renderer.highlightLayer.addMesh(
-        map[lineStepOffset.col][lineStepOffset.row].tile,
-        BABYLON.Color3.Red()
-      )
+      renderer.hightlightTile(game.ui.line[i], BABYLON.Color3.Red())
     }
+  }
+
+  // CURSOR
+  renderer.highlightCursor = () => {
+    // Draw cursor tile
+    renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue())
+  }
+
+  renderer.lowlightCursor = () => {
+    // Draw cursor tile
+    const cursor = game.ui.cursor
+    renderer.hightlightTile(cursor, BABYLON.Color3.Blue(), true)
   }
 
   // SKYBOX
@@ -260,6 +295,7 @@ const Renderer3d = (game, canvas) => {
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0)
     skyboxMaterial.disableLighting = true
     skybox.material = skyboxMaterial
+    skybox.isPickable = false
 
     return skybox
   }
@@ -285,6 +321,7 @@ const Renderer3d = (game, canvas) => {
     // const floorMaterial = new BABYLON.StandardMaterial('oceanFloor', renderer.scene)
     // floorMaterial.diffuseColor = new BABYLON.Color3(0,0,0.6)
     renderer.oceanFloor.material = renderer.materials['deepsea']
+    renderer.oceanFloor.isPickable = false
 
     // Water
     let water
@@ -312,6 +349,7 @@ const Renderer3d = (game, canvas) => {
     }
 
     ocean.material = water
+    ocean.isPickable = false
 
     return ocean
   }

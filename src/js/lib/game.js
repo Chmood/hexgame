@@ -11,7 +11,7 @@ import Renderer3d from './renderer3d'
 const Game = (ctx, canvas3d, CONFIG) => {
   const game = {}
 
-  // Set destination tile
+  // Canvas2D - Set destination tile
   game.onUIClick = (hex) => {
     const line = game.map.findPath(game.players[0].hex, hex)
     if (line) {

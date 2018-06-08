@@ -63,11 +63,18 @@ const Renderer2d = (game, ctx, config) => {
   // PLOT CURSOR
 
   renderer.plotCursor = (e) => {
-    const cursor = HEXLIB.hexRound(HEXLIB.pixel2Hex(renderer.layout, HEXLIB.point(
-      e.x - renderer.canvasOffset.x,
-      e.y - renderer.canvasOffset.y + CONFIG.render.mapDeepness + CONFIG.render.mapRangeScale * CONFIG.map.mapSeaMinLevel	// TODO - better mapping
-    )))
-
+    const cursor = HEXLIB.hexRound(
+      HEXLIB.pixel2Hex(
+        renderer.layout, 
+        HEXLIB.point(
+          // TODO: used to work in fullscreen, need an(other) offset!!!
+          e.offsetX - renderer.canvasOffset.x,
+          // Computes y for non-flat 2d map
+          // e.y - renderer.canvasOffset.y + CONFIG.render.mapDeepness + CONFIG.render.mapRangeScale * CONFIG.map.mapSeaMinLevel	// TODO - better mapping
+          e.offsetY - renderer.canvasOffset.y
+        )
+      )
+    )
     return cursor
   }
 
