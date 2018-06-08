@@ -206,6 +206,9 @@ const Renderer3d = (game, canvas) => {
 
     // Give the tile mesh a material
     tile.material = renderer.materials[cell.biome]
+    // Make and receive shadows
+    renderer.shadowGenerator.getShadowMap().renderList.push(tile)
+    tile.receiveShadows = true;
 
     return tile
   }
@@ -416,21 +419,42 @@ const Renderer3d = (game, canvas) => {
 
   // INIT RENDERER
   renderer.initRenderer = () => {
+    // Base
     renderer.layout = renderer.createLayout()
     renderer.engine = new BABYLON.Engine(canvas, true) // Generate the BABYLON 3D 
     renderer.scene = new BABYLON.Scene(renderer.engine)
     renderer.camera = renderer.createCamera()
+
+    // Lights
     renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
-    // renderer.hemiLight.intensity = 1
+    renderer.hemiLight.intensity = 0.5
+    renderer.hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
+	  renderer.hemiLight.specular = new BABYLON.Color3(1, 1, 1)
+	  renderer.hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
+    
+    renderer.directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
+    renderer.directionalLight.intensity = 1
+    renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
+	  
+
+    // Shadow & highlight
+    renderer.shadowGenerator = new BABYLON.ShadowGenerator(1024, renderer.directionalLight)
+    // renderer.shadowGenerator.useBlurExponentialShadowMap = true;
+    renderer.shadowGenerator.usePoissonSampling = true
     renderer.highlightLayer = renderer.createHighlightLayer('hl1', renderer.scene)
     renderer.highlightMeshes = []
+
+    // Materials
     renderer.materials = renderer.createMaterials()
+
+    // Meshes
     renderer.skybox = renderer.createSkybox()
     renderer.ocean = renderer.createOcean()
     renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
   }
 
   // START RENDER LOOP
+  // Will be fired later
   renderer.startRenderLoop = () => {
     // Register a render loop to repeatedly render the scene
     renderer.engine.runRenderLoop(() => {
