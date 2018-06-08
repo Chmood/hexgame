@@ -22,7 +22,7 @@ waterMaterial(BABYLON)
 
 const Renderer3d = (game, canvas) => {
   const renderer = {},
-        map = game.map
+        map = game.map.data
 
   // LAYOUT
   renderer.createLayout = () => {

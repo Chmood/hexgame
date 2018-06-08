@@ -6,12 +6,12 @@ import noise from '../vendor/noise.js'
 // MAP
 
 export default Map = (config) => { // WTF is this syntax only working here?! (bottom export elsewhere)
+  const map = {}
 
   // ARRAY 2D
   const array2d = (x, y) => Array(...Array(x)).map(() => Array(y))
 
-  // WEIRD: map is an 2d array WITH methods - TODO better (or not?)
-  const map = array2d(config.mapSize.width, config.mapSize.height)
+  map.data = array2d(config.mapSize.width, config.mapSize.height)
   
   // Backup configuration
   map.config = config
@@ -32,9 +32,9 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // Returns a map cell from a given (cubic) hex
   map.getFromHex = (hex) => {
     const hexOffset = HEXLIB.hex2Offset(hex, config.mapTopped, config.mapParity)
-    if (map[hexOffset.col]) {
-      if (map[hexOffset.col][hexOffset.row]) {
-        return map[hexOffset.col][hexOffset.row]
+    if (map.data[hexOffset.col]) {
+      if (map.data[hexOffset.col][hexOffset.row]) {
+        return map.data[hexOffset.col][hexOffset.row]
       } else {
         return undefined
       }
@@ -48,7 +48,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   map.populate = () => {
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
-        map[x][y] = {}
+        map.data[x][y] = {}
       }
     }
   }
@@ -63,7 +63,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
-        const value = map[x][y][type]
+        const value = map.data[x][y][type]
         if (value < minValue) {
           minValue = value
         } else if (value > maxValue) {
@@ -90,9 +90,9 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
-        const ratio = (map[x][y][type] - range.min) / (range.max - range.min)
+        const ratio = (map.data[x][y][type] - range.min) / (range.max - range.min)
         const newHeight = ratio * (targetRange - 0.00001)
-        map[x][y][type] = newHeight
+        map.data[x][y][type] = newHeight
       }
     }
   }
@@ -137,7 +137,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         if (ratio < 0.5) {
           ratio += (Math.random() / 5)
         }
-        map[x][y][type] *= ratio
+        map.data[x][y][type] *= ratio
       }
     }
   }
@@ -220,7 +220,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   map.createMapBiomes = () => {
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
-        map[x][y].biome = map.getBiome(map[x][y].height, map[x][y].moisture)
+        map.data[x][y].biome = map.getBiome(map.data[x][y].height, map.data[x][y].moisture)
       }
     }
   }
@@ -273,7 +273,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
             value += nz[h] * config.mapNoise[type].harmonics[h]
           }
         }
-        map[x][y][type] = value * range
+        map.data[x][y][type] = value * range
       }
     }
 
@@ -337,14 +337,14 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
           neighborsAll = HEXLIB.hexNeighbors(hex),
           neighbors = [],
           costs = [],
-          // height = map[x][y].height, // Not in use for now
-          biome = map[x][y].biome,
-          height = map[x][y].height
+          // height = map.data[x][y].height, // Not in use for now
+          biome = map.data[x][y].biome,
+          height = map.data[x][y].height
 
         // Add the cell to graph if the height is valid
-        map[x][y].isInGraph = map.isValidCell(biome)
+        map.data[x][y].isInGraph = map.isValidCell(biome)
 
-        if (map[x][y].isInGraph) {
+        if (map.data[x][y].isInGraph) {
 
           // Each (eventual) neighbor of the cell
           for (let i = 0; i < 6; i++) {
@@ -358,8 +358,8 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
               no.row < config.mapSize.height) {
 
               // Is the neighbor a valid move?
-              const neighborHeight = map[no.col][no.row].height,
-                neighborBiome = map[no.col][no.row].biome
+              const neighborHeight = map.data[no.col][no.row].height,
+                neighborBiome = map.data[no.col][no.row].biome
 
               if (map.isValidCell(neighborBiome)) {
                 const cost = map.getMoveCost(height, neighborHeight, neighborBiome)
@@ -374,10 +374,10 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         }
 
         // Backup things into cell
-        map[x][y].hex = hex
-        map[x][y].hexOffset = hexOffset
-        map[x][y].neighbors = neighbors
-        map[x][y].costs = costs
+        map.data[x][y].hex = hex
+        map.data[x][y].hexOffset = hexOffset
+        map.data[x][y].neighbors = neighbors
+        map.data[x][y].costs = costs
       }
     }
   }
@@ -421,7 +421,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
     for (let y = 0; y < config.mapSize.height; y++) {
       for (let x = 0; x < config.mapSize.width; x++) {
-        map[x][y].cost = 100000000
+        map.data[x][y].cost = 100000000
       }
     }
 
@@ -471,7 +471,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
           // Cost backup
           const nextOffset = HEXLIB.hex2Offset(next)
-          map[nextOffset.col][nextOffset.row].cost = Math.floor(newCost)
+          map.data[nextOffset.col][nextOffset.row].cost = Math.floor(newCost)
         }
       }
     }

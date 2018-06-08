@@ -6,7 +6,8 @@ import CONFIG from './config.js'
 // RENDERER
 
 const Renderer = (game, ctx, config) => {
-  const renderer = {}
+  const renderer = {},
+        map = game.map
 
   renderer.game = game	// Backup game
   renderer.ctx = ctx	// Backup ctx
@@ -206,8 +207,8 @@ const Renderer = (game, ctx, config) => {
 
     // Cursor path
     let cursorPath = undefined
-    if (game.map.getFromHex(cursor) && game.map.getFromHex(cursor).isInGraph) {
-      cursorPath = game.map.findPath(game.players[0].hex, cursor)
+    if (map.getFromHex(cursor) && map.getFromHex(cursor).isInGraph) {
+      cursorPath = map.findPath(game.players[0].hex, cursor)
     }
 
     // CLEAR CANVAS
@@ -221,7 +222,7 @@ const Renderer = (game, ctx, config) => {
         let x = renderer.zIndexSort(xi, CONFIG.map.mapSize.width, mapParity)
 
         // Cell variables
-        const val = game.map[x][y].height,
+        const val = map.data[x][y].height,
           valFlooded = Math.max(val, CONFIG.map.mapSeaMinLevel),
           valFloor = Math.floor(val),
 
@@ -234,7 +235,7 @@ const Renderer = (game, ctx, config) => {
           cornersHalf = HEXLIB.hexCorners(renderer.layout, hex, 0.5),
           cornersTwoThird = HEXLIB.hexCorners(renderer.layout, hex, 0.6667),
 
-          color = renderer.getTerrainColor(game.map[x][y].biome), // Cell color
+          color = renderer.getTerrainColor(map.data[x][y].biome), // Cell color
           h = CONFIG.render.mapHasPerspective ?
             - Math.floor(valFlooded) * mapRangeScale : 0 // Cell height
 
@@ -292,8 +293,8 @@ const Renderer = (game, ctx, config) => {
           }
 
           // ctx.fillText(valFloor, point.x - 3, point.y + 3 + h)// display height
-          // if (game.map[x][y].cost < 1000000) {
-          // 	ctx.fillText(game.map[x][y].cost, point.x - 3, point.y + 3 + h)
+          // if (map.data[x][y].cost < 1000000) {
+          // 	ctx.fillText(map.data[x][y].cost, point.x - 3, point.y + 3 + h)
           // }
         }
       }
