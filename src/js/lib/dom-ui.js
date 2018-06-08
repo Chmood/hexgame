@@ -8,17 +8,14 @@ const DomUI = (game, dom, main) => {
 
   const domui = {}
 
-
   // USER INPUT EVENTS
 
   // UPDATE CURSOR
   domui.updateCursor = (cursorHex) => {
     if (!HEXLIB.hexEqual(cursorHex, game.ui.cursor)) {
-      game.renderer3d.lowlightCursor() // Remove the old cursor
-      game.renderer3d.highlightLine() // Re-draw line in case cursor lowlight has erased it
       game.ui.cursor = cursorHex // Backup the nex cursor
-      main.render2d() // Update 2d map
-      game.renderer3d.highlightCursor() // Draw the new cursor
+      game.renderer3d.updateHighlights() // Draw the new 3d cursor
+      main.render2d() // Update 2d canvas too
     }
   }
 

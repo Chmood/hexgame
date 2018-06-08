@@ -13,7 +13,6 @@ const Renderer2d = (game, ctx, config) => {
   renderer.ctx = ctx	// Backup ctx
 
   // COMPUTE MAP SCREEN ORIGIN
-
   renderer.mapComputeOrigin = (cellSize, mapTopped, mapParity, mapRange, mapRangeScale) => {
     const hexAspect = Math.sqrt(3) / 2	// width/height ratio of an hexagon
     const pespectiveRangeHeight = mapRange * mapRangeScale
@@ -39,7 +38,6 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // COMPUTE MAP SCREEN SIZE
-
   renderer.mapComputeSize = (mapSize, cellSize, mapTopped, mapDeepness, mapRange, mapRangeScale) => {
 
     const hexAspect = Math.sqrt(3) / 2	// width/height ratio of an hexagon
@@ -61,13 +59,11 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // PLOT CURSOR
-
   renderer.plotCursor = (e) => {
     const cursor = HEXLIB.hexRound(
       HEXLIB.pixel2Hex(
         renderer.layout, 
         HEXLIB.point(
-          // TODO: used to work in fullscreen, need an(other) offset!!!
           e.offsetX - renderer.canvasOffset.x,
           // Computes y for non-flat 2d map
           // e.y - renderer.canvasOffset.y + CONFIG.render.mapDeepness + CONFIG.render.mapRangeScale * CONFIG.map.mapSeaMinLevel	// TODO - better mapping
@@ -79,13 +75,11 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // GET TERRAIN COLOR
-
   renderer.getTerrainColor = (biome) => {
     return CONFIG.map.terrain[biome].color
   }
 
   // Z-SORTING (*kind of*)
-
   renderer.zIndexSort = (index, total, mapParity) => {
     let x
     if (total % 2 === 1) {
@@ -108,7 +102,6 @@ const Renderer2d = (game, ctx, config) => {
   // DRAWING FUNCTIONS
 
   // DRAW POLYGON
-
   renderer.drawPolygon = (corners, h = 0, color = '#ffffff') => {
 
     // Stroke style
@@ -133,7 +126,6 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // DRAW HEXAGON
-
   renderer.drawHex = (corners, h, color) => {
     renderer.drawPolygon(
       [corners[0], corners[1], corners[2], corners[3], corners[4], corners[5]],
@@ -143,7 +135,6 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // DRAW HEX SIDES
-
   renderer.drawHexSides = (corners, h, h2, color) => {
 
     // Front-right side
@@ -176,14 +167,12 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // DRAW HEX TOP
-
   renderer.drawHexTop = (corners, h, color) => {
     renderer.ctx.fillStyle = color
     renderer.drawHex(corners, h, color)
   }
 
   // DRAW HEX MESH
-
   renderer.drawHexMesh = (corners, h, h2, color) => {
 
     // Draw sides
@@ -195,7 +184,6 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // DRAW HEX BASE
-
   renderer.drawHexBase = (corners, cornersCore, h, h2, color) => {
 
     renderer.drawHexMesh(corners, h, h2, '#444444')
@@ -309,7 +297,6 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // INIT OTHER THINGS
-
   renderer.init = () => {
 
     // Map origin

@@ -236,52 +236,75 @@ const Renderer3d = (game, canvas) => {
     }
   }
 
+  // UPDATE HIGHLIGHTS
+  renderer.updateHighlights = () => {
+    // Clear all highlights
+    for (let mesh of renderer.highlightMeshes) {
+      renderer.highlightLayer.removeMesh(mesh.mesh)
+    }
+    renderer.highlightMeshes = []
+    
+    // Path line
+    renderer.highlightLine(game.ui.line, BABYLON.Color3.Red())
+    // Cursor line
+    renderer.highlightLine(
+      renderer.getCursorLine(
+        game.ui.cursor,
+        game.players[0].hex
+      ), 
+      BABYLON.Color3.Red()
+    )
+    // Cursor tile
+    renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue())
+
+    // Add selected meshes to highlight layer
+    for (let mesh of renderer.highlightMeshes) {
+      renderer.highlightLayer.addMesh(mesh.mesh, mesh.color)
+    }
+  }
+
   // HIGHTLIGHT TILE
-  renderer.hightlightTile = (hex, color = BABYLON.Color3.White(), lowlight = false) => {
+  renderer.hightlightTile = (hex, color = BABYLON.Color3.White()) => {
     const offset = HEXLIB.hex2Offset(
             hex, 
             CONFIG.map.mapTopped, 
             CONFIG.map.mapParity
           )
 
-    // TODO: >=0 only seem needed on load (when cursor is out of the map)
+    // Sanitize inputs
     if (offset.col && offset.row && 
         offset.col >= 0 && offset.row >= 0 &&
         offset.col < CONFIG.map.mapSize.width && offset.row < CONFIG.map.mapSize.height
       ) {
-      if (!lowlight) {
-        // Add to layer
-        renderer.highlightLayer.addMesh(
-          map[offset.col][offset.row].tile,
-          color
-        )
-      } else {
-        // Remove from layer
-        renderer.highlightLayer.removeMesh(
-          map[offset.col][offset.row].tile
-        )
+      // Add to layer
+      renderer.highlightMeshes.push({
+        mesh: map[offset.col][offset.row].tile,
+        color: color
+      })
+    }
+  }
+
+  // HIGHLIGHT LINE
+  renderer.highlightLine = (line, color) => {
+    // Draw line tiles
+    if (line) {
+      for (let i = 0; i < line.length; i++) {
+        renderer.hightlightTile(line[i], color)
       }
     }
   }
 
-  // LINE
-  renderer.highlightLine = () => {
-    // Drawline
-    for (let i = 0; i < game.ui.line.length; i++) {
-      renderer.hightlightTile(game.ui.line[i], BABYLON.Color3.Red())
+  // CURSOR LINE
+  renderer.getCursorLine = (cursor, target) => {
+    // Cursor path
+    let cursorLine = undefined
+
+    if (game.map.getFromHex(cursor) && game.map.getFromHex(cursor).isInGraph) {
+      cursorLine = game.map.findPath(target, cursor)
+      if (cursorLine) {
+        return cursorLine
+      }
     }
-  }
-
-  // CURSOR
-  renderer.highlightCursor = () => {
-    // Draw cursor tile
-    renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue())
-  }
-
-  renderer.lowlightCursor = () => {
-    // Draw cursor tile
-    const cursor = game.ui.cursor
-    renderer.hightlightTile(cursor, BABYLON.Color3.Blue(), true)
   }
 
   // SKYBOX
@@ -403,6 +426,13 @@ const Renderer3d = (game, canvas) => {
     zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size)
   }
 
+  renderer.createHighlightLayer = (id, scene) => {
+    // Add the highlight layer
+    const highlightLayer = new BABYLON.HighlightLayer(id, scene)
+    highlightLayer.outerGlow = false
+    return highlightLayer
+  }
+
   // INIT RENDERER
   renderer.initRenderer = () => {
     renderer.layout = renderer.createLayout()
@@ -411,11 +441,8 @@ const Renderer3d = (game, canvas) => {
     renderer.camera = renderer.createCamera()
     renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
     // renderer.hemiLight.intensity = 1
-    // Add the highlight layer
-    renderer.highlightLayer = new BABYLON.HighlightLayer('hl1', renderer.scene)
-    renderer.highlightLayer.outerGlow = false
-    // renderer.highlightLayer.addMesh(map[x][y].tile, BABYLON.Color3.Red())
-
+    renderer.highlightLayer = renderer.createHighlightLayer('hl1', renderer.scene)
+    renderer.highlightMeshes = []
     renderer.materials = renderer.createMaterials()
     renderer.skybox = renderer.createSkybox()
     renderer.ocean = renderer.createOcean()
