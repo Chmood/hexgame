@@ -52,11 +52,11 @@ const CONFIG = {
     terrain: {
       deepsea: { color: '#000044' }, // 0
       sea: { color: '#0000aa' }, // 1
-      shore: { color: '#0000ff' }, // 2
+      shore: { color: '#0011ff' }, // 2
 
       whitebeach: { color: '#ffff88' }, // 3
       beach: { color: '#eeee44' }, // 3
-      swamp: { color: '#888800' }, // 3
+      swamp: { color: '#666600' }, // 3
 
       desert: { color: '#e8c789' }, // 4
       grass: { color: '#88cc00' }, // 4 & 5
@@ -93,7 +93,8 @@ const CONFIG = {
     randomTileRotationFactor: 1, // 0 : flat / 1 : sloppy / 2 : chaos
     betterOcean: true,
     shinyIce: true,
-    transparentIce: false
+    transparentIce: false,
+    postprocess: 'SSAO' // 'SSAO', 'multi' or 'none'
   },
 
   players: [

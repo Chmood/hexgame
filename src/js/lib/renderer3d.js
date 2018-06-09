@@ -319,7 +319,6 @@ const Renderer3d = (game, canvas) => {
 
     // Ocean floor
     renderer.oceanFloor = BABYLON.Mesh.CreateGround('oceanFloor', 1024, 1024, 16, renderer.scene, false)
-    // Position tile mesh
     renderer.oceanFloor.position = new BABYLON.Vector3(
       0,
       - 20,
@@ -339,9 +338,9 @@ const Renderer3d = (game, canvas) => {
       water.bumpTexture = new BABYLON.Texture(waterbump, renderer.scene)
       water.windForce = 3
       water.waveHeight = 0
-      water.bumpHeight = 0.2
+      water.bumpHeight = 0.25
       water.windDirection = new BABYLON.Vector2(1, 1)
-      water.waterColor = new BABYLON.Color3(0, 165 / 255, 221 / 255)
+      water.waterColor = new BABYLON.Color3(0.125, 0.6, 0.9)
       water.colorBlendFactor = 0.25
       // Make skybox reflect into ocean
       water.addToRenderList(renderer.skybox)
@@ -427,18 +426,17 @@ const Renderer3d = (game, canvas) => {
 
     // Lights
     renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
-    renderer.hemiLight.intensity = 0.5
+    renderer.hemiLight.intensity = 0.33
     renderer.hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
 	  renderer.hemiLight.specular = new BABYLON.Color3(1, 1, 1)
 	  renderer.hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
     
     renderer.directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
-    renderer.directionalLight.intensity = 1
+    renderer.directionalLight.intensity = 0.8
     renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
 	  
-
     // Shadow & highlight
-    renderer.shadowGenerator = new BABYLON.ShadowGenerator(1024, renderer.directionalLight)
+    renderer.shadowGenerator = new BABYLON.ShadowGenerator(4096, renderer.directionalLight)
     // renderer.shadowGenerator.useBlurExponentialShadowMap = true;
     renderer.shadowGenerator.usePoissonSampling = true
     renderer.highlightLayer = renderer.createHighlightLayer('hl1', renderer.scene)
@@ -451,6 +449,89 @@ const Renderer3d = (game, canvas) => {
     renderer.skybox = renderer.createSkybox()
     renderer.ocean = renderer.createOcean()
     renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
+
+    if (CONFIG.render3d.postprocess !== 'none') {
+      if (CONFIG.render3d.postprocess === 'SSAO') {
+        // Post-process
+        // renderer.lensEffect = new BABYLON.LensRenderingPipeline(
+        //   'lensEffects', 
+        //   {
+        //     edge_blur: 0.25,
+        //     chromatic_aberration: 1.0,
+        //     distortion: 1.0,
+        //     grain_amount: 1.0,
+        //     dof_focus_distance: 30,
+        //     dof_aperture: 1
+        //   }, 
+        //   renderer.scene, 
+        //   1.0, 
+        //   renderer.camera
+        // )
+    
+        renderer.ssao = new BABYLON.SSAORenderingPipeline(
+          'ssaopipeline', 
+          renderer.scene, 
+          {
+            ssaoRatio: 1,
+            combineRatio: 1.0
+          },
+          [renderer.camera]
+        )
+
+      } else if (CONFIG.render3d.postprocess === 'multi') {
+        // DEFAULT RENDER PIPELINE
+        renderer.pipeline = new BABYLON.DefaultRenderingPipeline(
+          "default", // The name of the pipeline
+          true, // Do you want HDR textures ?
+          renderer.scene, // The scene instance
+          [renderer.camera] // The list of cameras to be attached to
+        )
+        // Base
+        renderer.pipeline.samples = 4
+        renderer.pipeline.fxaaEnabled = true
+        // // D.O.F.
+        // renderer.pipeline.depthOfFieldEnabled = true
+        // renderer.pipeline.depthOfFieldBlurLevel = BABYLON.DepthOfFieldEffectBlurLevel.Low;
+        // renderer.pipeline.depthOfField.focusDistance  = 2000; // distance of the current focus point from the camera in millimeters considering 1 scene unit is 1 meter
+        // renderer.pipeline.depthOfField.focalLength  = 50; // focal length of the camera in millimeters
+        // renderer.pipeline.depthOfField.fStop  = 1.4; // aka F number of the camera defined in stops as it would be on a physical device
+        // Sharpen
+        // renderer.pipeline.sharpenEnabled = true
+        // renderer.pipeline.sharpen.edgeAmount = 0.9;
+        // Bloom
+        renderer.pipeline.bloomEnabled = true
+        renderer.pipeline.bloomThreshold = 0.8
+        renderer.pipeline.bloomWeight = 0.3
+        renderer.pipeline.bloomKernel = 64
+        renderer.pipeline.bloomScale = 1
+        // Chromatic aberration
+        renderer.pipeline.chromaticAberrationEnabled = true
+        renderer.pipeline.chromaticAberration.aberrationAmount = 500;
+        renderer.pipeline.chromaticAberration.radialIntensity = 3;
+        var rotation = Math.PI;
+        renderer.pipeline.chromaticAberration.direction.x = Math.sin(rotation)
+        renderer.pipeline.chromaticAberration.direction.y = Math.cos(rotation)
+        // Grain
+        renderer.pipeline.grainEnabled = true
+        renderer.pipeline.grain.intensity = 9
+        renderer.pipeline.grain.animated = 1
+      }
+    }
+
+    //CLOUDS
+    // See: https://www.babylonjs-playground.com/#ATDL99#0
+    // Boolean mesh
+    // See: https://www.babylonjs-playground.com/#T6NP3F#0
+    // Animated skybox
+    // See: https://www.babylonjs-playground.com/#E6OZX#122
+    // And: https://doc.babylonjs.com/extensions/sky
+
+    renderer.scene.registerBeforeRender(function (t) {
+      // WTF?
+      // renderer.camera.alpha = 1.0 * (Math.PI / 20 + Math.cos(t / 30))
+    //   renderer.camera.beta = 2.0 * (Math.PI / 20 + Math.sin(t / 50))
+    //   renderer.camera.radius = 180 + (-50 + 50 * Math.sin(t / 10))
+    })
   }
 
   // START RENDER LOOP
@@ -463,6 +544,7 @@ const Renderer3d = (game, canvas) => {
   }
 
   renderer.initRenderer()
+
 
   return renderer
 }
