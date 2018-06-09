@@ -4,4 +4,4 @@ import Main from './js/main.js'
 
 const main = Main()
 
-console.log('Game started')
+console.log('Game started!')

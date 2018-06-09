@@ -12,7 +12,11 @@ import DomUI from './lib/dom-ui'
 const Main = () => {
   const main = {}
 
-  main.sizeGame = (CONFIG, canvasWrapper) => {
+  ////////////////////////////////
+  // SIZING THINGS
+
+  // SIZE GAME
+  main.sizeGame = (canvasWrapper) => {
     const canvasWrapperWidth = canvasWrapper.offsetWidth,
           canvasWrapperHeight = canvasWrapper.offsetHeight
 
@@ -25,14 +29,12 @@ const Main = () => {
     CONFIG.render2d.cellSizeBase = fitSize
 
     // Computed vars
-
     CONFIG.render2d.cellSize = {}
     CONFIG.render2d.cellSize.width = CONFIG.render2d.cellSizeBase
     CONFIG.render2d.cellSize.height = Math.floor(CONFIG.render2d.cellSizeBase * CONFIG.render2d.cellSizeRatio)
-
-    CONFIG.render2d.mapDeepness = CONFIG.render2d.cellSizeBase / 4 // TODO: magic value!
   }
 
+  // SIZE CANVAS
   main.sizeCanvas = (canvas, game) => {
     canvas.width = game.renderer2d.mapRenderSize.width
     canvas.height = game.renderer2d.mapRenderSize.height
@@ -45,33 +47,31 @@ const Main = () => {
     }
   }
 
+  // RESIZE ALL THINGS
+  main.setSize = () => {
+    main.sizeGame(CONFIG, dom.canvas2dWrapper)
+    main.sizeCanvas(dom.canvas2d, main.game)
+  }
+
+  // START
   main.start = () => {
+    // GET DOM THINGS
+    main.domUI = DomUI()
+    
+    // Auto-size canvas
+    main.sizeGame(main.domUI.canvas2dWrapper)
+    main.ctx = main.domUI.canvas2d.getContext('2d')
+    
+    ////////////////////////////////
     // CREATE THE GAME
 
-    // GET DOM THINGS
-    const dom = {}
-
-    dom.canvas2d = document.getElementById('canvas2d')
-    dom.canvas2dWrapper = document.getElementById('canvas2d-wrapper')
-    dom.canvas3d = document.getElementById('canvas3d')
-
-    dom.btnUpdate = document.getElementById('btn-update')
-    dom.btnNew = document.getElementById('btn-new')
-
-    // Auto-size canvas
-    main.sizeGame(CONFIG, dom.canvas2dWrapper)
-
-    main.ctx = dom.canvas2d.getContext('2d')
-
-    main.game = Game(main.ctx, dom.canvas3d, CONFIG)
+    main.game = Game(main.ctx, main.domUI.canvas3d, CONFIG, main)
     main.game.map.randomizeSeed()
     main.game.generate()
+    main.domUI.setGame(main.game)
 
     // Set canvas size
-    main.sizeCanvas(dom.canvas2d, main.game)
-
-    // Dom UI
-    main.domui = DomUI(main.game, dom, main)
+    main.sizeCanvas(main.domUI.canvas2d, main.game)
 
     ////////////////////////////////
     // LAUCH LOOP
@@ -82,9 +82,10 @@ const Main = () => {
     main.game.renderer3d.startRenderLoop()
   }
 
+  // WINDOW ON LOAD
   window.onload = () => {
     main.start()
-  }	// End window.onload
+  }
 
   return main
 }

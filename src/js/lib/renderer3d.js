@@ -574,6 +574,23 @@ const Renderer3d = (game, canvas) => {
   }
 
   ////////////////////////////////////////
+  // PLOT CURSOR
+  renderer.plotCursor = () => {
+    // We try to pick an object
+  	const pick = renderer.scene.pick(renderer.scene.pointerX, renderer.scene.pointerY)
+  	if (pick.hit) {
+      if (pick.pickedMesh) {
+        const idFragments = pick.pickedMesh.id.split('-'),
+              x = parseInt(idFragments[1]),
+              y = parseInt(idFragments[2]),
+              cursorOffset = HEXLIB.hexOffset(x, y),
+              cursorHex = HEXLIB.offset2Hex(cursorOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+        return cursorHex
+      }
+  	}
+  }
+
+  ////////////////////////////////////////
   // INIT RENDERER
   renderer.initRenderer = () => {
     // Base
