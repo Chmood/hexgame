@@ -99,7 +99,9 @@ const config = {
     compress: true,
     port: 3000,
     stats: 'errors-only', // "'errors-only", "minimal", "none", "normal" & "verbose"
-    open: true
+    open: true,
+    host: '0.0.0.0'
+    // hot: true
   },
 
   devtool: 'inline-source-map'
