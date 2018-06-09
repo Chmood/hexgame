@@ -1,11 +1,10 @@
 import HEXLIB from '../vendor/hexlib.js'
-import * as shadeBlend from '../vendor/shadeblend.js'
 import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 2D
 
-const Renderer2d = (game, ctx, config) => {
+const Renderer2d = (game, ctx) => {
   const renderer = {},
         map = game.map
 
@@ -13,19 +12,18 @@ const Renderer2d = (game, ctx, config) => {
   renderer.ctx = ctx	// Backup ctx
 
   // COMPUTE MAP SCREEN ORIGIN
-  renderer.mapComputeOrigin = (cellSize, mapTopped, mapParity, mapRange, mapRangeScale) => {
+  renderer.mapComputeOrigin = (cellSize, mapTopped, mapParity) => {
     const hexAspect = Math.sqrt(3) / 2	// width/height ratio of an hexagon
-    const pespectiveRangeHeight = mapRange * mapRangeScale
     let mapOrigin = {}
 
     if (mapTopped === HEXLIB.FLAT) {
       mapOrigin.x = cellSize.width
       mapOrigin.y = mapParity === HEXLIB.ODD ?
-        cellSize.height * Math.sqrt(3) / 2 + pespectiveRangeHeight :
-        cellSize.height * 2 * hexAspect + pespectiveRangeHeight
+        cellSize.height * Math.sqrt(3) / 2 :
+        cellSize.height * 2 * hexAspect
 
     } else if (mapTopped === HEXLIB.POINTY) {
-      mapOrigin.y = cellSize.height + pespectiveRangeHeight
+      mapOrigin.y = cellSize.height
       mapOrigin.x = mapParity === HEXLIB.ODD ?
         cellSize.width * hexAspect :
         cellSize.width * 2 * hexAspect
@@ -38,18 +36,17 @@ const Renderer2d = (game, ctx, config) => {
   }
 
   // COMPUTE MAP SCREEN SIZE
-  renderer.mapComputeSize = (mapSize, cellSize, mapTopped, mapDeepness, mapRange, mapRangeScale) => {
+  renderer.mapComputeSize = (mapSize, cellSize, mapTopped) => {
 
     const hexAspect = Math.sqrt(3) / 2	// width/height ratio of an hexagon
-    const perspectiveHeight = mapDeepness + mapRange * mapRangeScale
 
     const mapRenderSize = mapTopped === HEXLIB.FLAT ?
       {
         width: (mapSize.width + 1 / 3) * 2 * 3 / 4 * cellSize.width,
-        height: (mapSize.height + 1 / 2) * 2 * cellSize.height * hexAspect + perspectiveHeight
+        height: (mapSize.height + 1 / 2) * 2 * cellSize.height * hexAspect
       } : {
         width: (mapSize.width + 1 / 2) * 2 * cellSize.width * hexAspect,
-        height: (mapSize.height + 1 / 3) * 2 * 3 / 4 * cellSize.height + perspectiveHeight
+        height: (mapSize.height + 1 / 3) * 2 * 3 / 4 * cellSize.height
       }
 
     return {
@@ -65,8 +62,6 @@ const Renderer2d = (game, ctx, config) => {
         renderer.layout, 
         HEXLIB.point(
           e.offsetX - renderer.canvasOffset.x,
-          // Computes y for non-flat 2d map
-          // e.y - renderer.canvasOffset.y + CONFIG.render2d.mapDeepness + CONFIG.render2d.mapRangeScale * CONFIG.map.mapSeaMinLevel	// TODO - better mapping
           e.offsetY - renderer.canvasOffset.y
         )
       )
@@ -79,30 +74,10 @@ const Renderer2d = (game, ctx, config) => {
     return CONFIG.map.terrain[biome].color
   }
 
-  // Z-SORTING (*kind of*)
-  renderer.zIndexSort = (index, total, mapParity) => {
-    let x
-    if (total % 2 === 1) {
-      x = mapParity === HEXLIB.EVEN ? index * 2 + 1 : x = index * 2
-      if (x >= total) x -= total
-
-    } else {
-      if (mapParity === HEXLIB.EVEN) {
-        x = index * 2 + 1
-        if (x >= total) x -= total + 1
-      } else {
-        x = index * 2
-        if (x >= total) x -= total - 1
-      }
-    }
-
-    return x
-  }
-
   // DRAWING FUNCTIONS
 
-  // DRAW POLYGON
-  renderer.drawPolygon = (corners, h = 0, color = '#ffffff') => {
+  // DRAW HEX
+  renderer.drawHex = (corners, color = '#ffffff') => {
 
     // Stroke style
     renderer.ctx.lineWidth = 1
@@ -112,82 +87,24 @@ const Renderer2d = (game, ctx, config) => {
     renderer.ctx.fillStyle = color
 
     renderer.ctx.beginPath()
-    renderer.ctx.moveTo(corners[0].x, corners[0].y + h)
+    renderer.ctx.moveTo(corners[0].x, corners[0].y)
 
     for (let c = 1; c < corners.length; c++) {
-      renderer.ctx.lineTo(corners[c].x, corners[c].y + h)
+      renderer.ctx.lineTo(corners[c].x, corners[c].y)
     }
 
-    renderer.ctx.lineTo(corners[0].x, corners[0].y + h)
+    renderer.ctx.lineTo(corners[0].x, corners[0].y)
     renderer.ctx.closePath()
 
     renderer.ctx.fill()
     renderer.ctx.stroke()
   }
 
-  // DRAW HEXAGON
-  renderer.drawHex = (corners, h, color) => {
-    renderer.drawPolygon(
-      [corners[0], corners[1], corners[2], corners[3], corners[4], corners[5]],
-      h,
-      color
-    )
-  }
+  // DRAW PLAYER
+  renderer.drawPlayer = (corners, cornersCore, color) => {
 
-  // DRAW HEX SIDES
-  renderer.drawHexSides = (corners, h, h2, color) => {
-
-    // Front-right side
-    renderer.drawPolygon([
-      { x: corners[0].x, y: corners[0].y + h },
-      { x: corners[0].x, y: corners[0].y + h2 },
-      { x: corners[1].x, y: corners[1].y + h2 },
-      { x: corners[1].x, y: corners[1].y + h }
-    ], 0, shadeBlend(-0.25, color))
-
-    // Front-left side (void if POINTY)
-    if (CONFIG.map.mapTopped !== 'pointy') {
-      renderer.drawPolygon([
-        { x: corners[2].x, y: corners[2].y + h },
-        { x: corners[2].x, y: corners[2].y + h2 },
-        { x: corners[3].x, y: corners[3].y + h2 },
-        { x: corners[3].x, y: corners[3].y + h }
-      ], 0, shadeBlend(0.25, color))
-    }
-
-    // Front (front-left side if POINTY)
-    renderer.drawPolygon([
-      { x: corners[1].x, y: corners[1].y + h },
-      { x: corners[1].x, y: corners[1].y + h2 },
-      { x: corners[2].x, y: corners[2].y + h2 },
-      { x: corners[2].x, y: corners[2].y + h }
-    ], 0, CONFIG.map.mapTopped !== 'pointy' ?
-        shadeBlend(0.0, color) : // middle
-        shadeBlend(0.25, color)) // left
-  }
-
-  // DRAW HEX TOP
-  renderer.drawHexTop = (corners, h, color) => {
-    renderer.ctx.fillStyle = color
-    renderer.drawHex(corners, h, color)
-  }
-
-  // DRAW HEX MESH
-  renderer.drawHexMesh = (corners, h, h2, color) => {
-
-    // Draw sides
-    if (CONFIG.render2d.mapHasPerspective) {
-      renderer.drawHexSides(corners, h, h2, color)
-    }
-    // Draw top
-    renderer.drawHexTop(corners, h, color)
-  }
-
-  // DRAW HEX BASE
-  renderer.drawHexBase = (corners, cornersCore, h, h2, color) => {
-
-    renderer.drawHexMesh(corners, h, h2, '#444444')
-    renderer.drawHexMesh(cornersCore, h, h + 2, color)
+    renderer.drawHex(corners, '#444444')
+    renderer.drawHex(cornersCore, color)
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -205,42 +122,34 @@ const Renderer2d = (game, ctx, config) => {
 
     // MAP LOOP
     for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-      for (let xi = 0; xi < CONFIG.map.mapSize.width; xi++) {
-
-        // Display front cells first
-        let x = renderer.zIndexSort(xi, CONFIG.map.mapSize.width, CONFIG.map.mapParity)
+      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
 
         // Cell variables
         const val = map.data[x][y].height,
-          valFlooded = Math.max(val, CONFIG.map.mapSeaMinLevel),
-          valFloor = Math.floor(val),
+              valFloor = Math.floor(val),
 
-          offset = HEXLIB.hexOffset(x, y),
-          hex = HEXLIB.offset2Hex(offset, CONFIG.map.mapTopped, CONFIG.map.mapParity),
+              offset = HEXLIB.hexOffset(x, y),
+              hex = HEXLIB.offset2Hex(offset, CONFIG.map.mapTopped, CONFIG.map.mapParity),
 
-          // point = HEXLIB.hex2Pixel(renderer.layout, hex), // Not in use for now
-          corners = HEXLIB.hexCorners(renderer.layout, hex),
-          cornersOneThird = HEXLIB.hexCorners(renderer.layout, hex, 0.3332),
-          cornersHalf = HEXLIB.hexCorners(renderer.layout, hex, 0.5),
-          cornersTwoThird = HEXLIB.hexCorners(renderer.layout, hex, 0.6667),
+              corners = HEXLIB.hexCorners(renderer.layout, hex),
+              cornersOneThird = HEXLIB.hexCorners(renderer.layout, hex, 0.3332),
+              cornersHalf = HEXLIB.hexCorners(renderer.layout, hex, 0.5),
+              cornersTwoThird = HEXLIB.hexCorners(renderer.layout, hex, 0.6667),
 
-          color = renderer.getTerrainColor(map.data[x][y].biome), // Cell color
-          h = CONFIG.render2d.mapHasPerspective ?
-            - Math.floor(valFlooded) * CONFIG.render2d.mapRangeScale : 0 // Cell height
-
+              color = renderer.getTerrainColor(map.data[x][y].biome)
 
         ////////////////////////////////////
         // DRAW
 
         // Draw terrain mesh
-        renderer.drawHexMesh(corners, h, CONFIG.render2d.mapDeepness, color)
+        renderer.drawHex(corners, color)
 
         // ON-MAP UI
 
         // Drawline
         for (let i = 0; i < ui.line.length; i++) {
           if (HEXLIB.hexEqual(hex, ui.line[i])) {
-            renderer.drawHexTop(cornersHalf, h, game.players[1].color)
+            renderer.drawHex(cornersHalf, game.players[1].color)
           }
         }
 
@@ -248,23 +157,23 @@ const Renderer2d = (game, ctx, config) => {
         if (game.ui.cursorPath) {
           for (let i = 0; i < game.ui.cursorPath.length; i++) {
             if (HEXLIB.hexEqual(hex, game.ui.cursorPath[i])) {
-              renderer.drawHexTop(cornersHalf, h, '#0080ff')
+              renderer.drawHex(cornersHalf, '#0080ff')
             }
           }
         }
 
         // Cursor
         if (HEXLIB.hexEqual(hex, cursor)) {
-          renderer.drawHexTop(corners, h, game.players[0].color)
+          renderer.drawHex(corners, game.players[0].color)
         }
 
         // Players
         if (game.players) {
           for (let p = 0; p < game.players.length; p++) {
             if (HEXLIB.hexEqual(hex, game.players[p].hex)) {
-              // renderer.drawHexTop(corners, h, game.players[p].color)
+              // renderer.drawHex(corners, game.players[p].color)
               // Draw terrain mesh 
-              renderer.drawHexBase(cornersTwoThird, cornersOneThird, h - 20, h, game.players[p].color)
+              renderer.drawPlayer(cornersTwoThird, cornersOneThird, game.players[p].color)
             }
           }
         }
@@ -297,19 +206,14 @@ const Renderer2d = (game, ctx, config) => {
     renderer.mapOrigin = renderer.mapComputeOrigin(
       CONFIG.render2d.cellSize,
       CONFIG.map.mapTopped,
-      CONFIG.map.mapParity,
-      CONFIG.map.mapValueRange.height,
-      CONFIG.render2d.mapRangeScale
+      CONFIG.map.mapParity
     )
 
     // Map render size
     renderer.mapRenderSize = renderer.mapComputeSize(
       CONFIG.map.mapSize,
       CONFIG.render2d.cellSize,
-      CONFIG.map.mapTopped,
-      CONFIG.render2d.mapDeepness,
-      CONFIG.map.mapValueRange.height,
-      CONFIG.render2d.mapRangeScale
+      CONFIG.map.mapTopped
     )
 
     // Layout

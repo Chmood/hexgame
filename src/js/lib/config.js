@@ -79,10 +79,6 @@ const CONFIG = {
     cellSizeBase: undefined,	// base size of a cell in px // COMPUTED (on DOM ready)
     cellSizeRatio: 6 / 6,	// perspective cell height diminution ratio
     cellSize: undefined, // size of the cell // COMPUTED (on DOM ready)
-    cellRandomRatio: 0.5,
-    mapHasPerspective: false,	// if not, render a (visually) flat map
-    mapDeepness: undefined, // extrudes cells below them (in pixels) // COMPUTED (on DOM ready)
-    mapRangeScale: 5, // in pixels per height unit
     displayTileText: false // debug tiles cost / height
   },
   render3d: {

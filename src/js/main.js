@@ -14,13 +14,13 @@ const Main = () => {
 
   main.sizeGame = (CONFIG, canvasWrapper) => {
     const canvasWrapperWidth = canvasWrapper.offsetWidth,
-      canvasWrapperHeight = canvasWrapper.offsetHeight
+          canvasWrapperHeight = canvasWrapper.offsetHeight
 
     // TODO: better & more accurate
     // Topped
-    const fitWidth = Math.floor(canvasWrapperWidth * (3 / 4) / (CONFIG.map.mapSize.width + 3))
-    const fitHeight = Math.floor((canvasWrapperHeight / CONFIG.render2d.cellSizeRatio) / ((CONFIG.map.mapSize.height + 2) * Math.sqrt(3)))
-    const fitSize = Math.min(fitWidth, fitHeight)
+    const fitWidth = Math.floor(canvasWrapperWidth * (3 / 4) / (CONFIG.map.mapSize.width + 3)),
+          fitHeight = Math.floor((canvasWrapperHeight / CONFIG.render2d.cellSizeRatio) / ((CONFIG.map.mapSize.height + 2) * Math.sqrt(3))),
+          fitSize = Math.min(fitWidth, fitHeight)
 
     CONFIG.render2d.cellSizeBase = fitSize
 
