@@ -47,7 +47,7 @@ const DomUI = () => {
 
     // Resize window
     window.onresize = () => {
-      game.setSize()
+      game.resizeGame()
     }
   }
 

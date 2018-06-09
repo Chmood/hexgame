@@ -49,8 +49,8 @@ const Main = () => {
 
   // RESIZE ALL THINGS
   main.setSize = () => {
-    main.sizeGame(CONFIG, dom.canvas2dWrapper)
-    main.sizeCanvas(dom.canvas2d, main.game)
+    main.sizeGame(main.domUI.canvas2dWrapper)
+    main.sizeCanvas(main.domUI.canvas2d, main.game)
   }
 
   // START

@@ -87,7 +87,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // RESIZE GAME
   game.resizeGame = () => {
-    main.resizeGame()
+    main.setSize()
 
     game.updateRenderers(['resize'])
   }
