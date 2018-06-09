@@ -20,6 +20,17 @@ waterMaterial(BABYLON)
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D
 
+// IDEAS / TODO :
+// Clouds
+// See: https://www.babylonjs-playground.com/#ATDL99#0
+// Boolean mesh
+// See: https://www.babylonjs-playground.com/#T6NP3F#0
+// Animated skybox
+// See: https://www.babylonjs-playground.com/#E6OZX#122
+// And: https://doc.babylonjs.com/extensions/sky
+// Environnement
+// See: https://doc.babylonjs.com/babylon101/environment
+
 const Renderer3d = (game, canvas) => {
   const renderer = {},
         map = game.map.data
@@ -416,40 +427,7 @@ const Renderer3d = (game, canvas) => {
     return highlightLayer
   }
 
-  // INIT RENDERER
-  renderer.initRenderer = () => {
-    // Base
-    renderer.layout = renderer.createLayout()
-    renderer.engine = new BABYLON.Engine(canvas, true) // Generate the BABYLON 3D 
-    renderer.scene = new BABYLON.Scene(renderer.engine)
-    renderer.camera = renderer.createCamera()
-
-    // Lights
-    renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
-    renderer.hemiLight.intensity = 0.33
-    renderer.hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
-	  renderer.hemiLight.specular = new BABYLON.Color3(1, 1, 1)
-	  renderer.hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
-    
-    renderer.directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
-    renderer.directionalLight.intensity = 0.8
-    renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
-	  
-    // Shadow & highlight
-    renderer.shadowGenerator = new BABYLON.ShadowGenerator(4096, renderer.directionalLight)
-    // renderer.shadowGenerator.useBlurExponentialShadowMap = true;
-    renderer.shadowGenerator.usePoissonSampling = true
-    renderer.highlightLayer = renderer.createHighlightLayer('hl1', renderer.scene)
-    renderer.highlightMeshes = []
-
-    // Materials
-    renderer.materials = renderer.createMaterials()
-
-    // Meshes
-    renderer.skybox = renderer.createSkybox()
-    renderer.ocean = renderer.createOcean()
-    renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
-
+  renderer.createPosprocessPipeline = () => {
     if (CONFIG.render3d.postprocess !== 'none') {
       if (CONFIG.render3d.postprocess === 'SSAO') {
         // Post-process
@@ -517,23 +495,56 @@ const Renderer3d = (game, canvas) => {
         renderer.pipeline.grain.animated = 1
       }
     }
-
-    //CLOUDS
-    // See: https://www.babylonjs-playground.com/#ATDL99#0
-    // Boolean mesh
-    // See: https://www.babylonjs-playground.com/#T6NP3F#0
-    // Animated skybox
-    // See: https://www.babylonjs-playground.com/#E6OZX#122
-    // And: https://doc.babylonjs.com/extensions/sky
-
-    renderer.scene.registerBeforeRender(function (t) {
-      // WTF?
-      // renderer.camera.alpha = 1.0 * (Math.PI / 20 + Math.cos(t / 30))
-    //   renderer.camera.beta = 2.0 * (Math.PI / 20 + Math.sin(t / 50))
-    //   renderer.camera.radius = 180 + (-50 + 50 * Math.sin(t / 10))
-    })
   }
 
+  // INIT RENDERER
+  renderer.initRenderer = () => {
+    // Base
+    renderer.layout = renderer.createLayout()
+    renderer.engine = new BABYLON.Engine(canvas, true) // Generate the BABYLON 3D 
+    renderer.scene = new BABYLON.Scene(renderer.engine)
+    renderer.camera = renderer.createCamera()
+
+    // Lights
+    renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
+    renderer.hemiLight.intensity = 0.33
+    renderer.hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
+	  renderer.hemiLight.specular = new BABYLON.Color3(1, 1, 1)
+	  renderer.hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
+    
+    renderer.directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
+    renderer.directionalLight.intensity = 0.8
+    renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
+	  
+    // Shadow & highlight
+    renderer.shadowGenerator = new BABYLON.ShadowGenerator(4096, renderer.directionalLight)
+    // renderer.shadowGenerator.useBlurExponentialShadowMap = true;
+    renderer.shadowGenerator.usePoissonSampling = true
+    renderer.highlightLayer = renderer.createHighlightLayer('hl1', renderer.scene)
+    renderer.highlightMeshes = []
+
+    // Materials
+    renderer.materials = renderer.createMaterials()
+
+    // Meshes
+    renderer.skybox = renderer.createSkybox()
+    renderer.ocean = renderer.createOcean()
+    renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
+
+    // Post-process
+    renderer.createPosprocessPipeline()
+
+    // Time tick
+    renderer.tick = 0
+
+    // UPDATE LOOP
+    renderer.scene.registerBeforeRender(function () {
+      // Make the camera rotate around the island
+      // renderer.camera.alpha = renderer.tick
+      renderer.tick += 0.01
+    })
+  }
+  
   // START RENDER LOOP
   // Will be fired later
   renderer.startRenderLoop = () => {
