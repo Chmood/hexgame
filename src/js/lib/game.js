@@ -39,6 +39,7 @@ const Game = (ctx, canvas3d, CONFIG) => {
     let tryLeft = 100
 
     game.renderer3d.deleteTiles()
+    game.renderer3d.deletePlayers()
 
     while (!line && tryLeft >= 0) { // TODO: potential infinity loop ?!
       tryLeft--
@@ -58,6 +59,7 @@ const Game = (ctx, canvas3d, CONFIG) => {
     if (line) {
       // Update 3d terrain
       game.renderer3d.createTiles()
+      game.renderer3d.createPlayers()
 
       game.ui.line = line
       game.renderer3d.updateHighlights()

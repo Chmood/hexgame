@@ -91,10 +91,10 @@ const CONFIG = {
     randomTileSizeFactor: 0.15,
     randomTileSizeOffset: 0, // 1 => only smaller / 0.5 => smaller & bigger / 0 => only bigger
     randomTileRotationFactor: 1, // 0 : flat / 1 : sloppy / 2 : chaos
-    betterOcean: true,
+    betterOcean: false,
     shinyIce: true,
     transparentIce: false,
-    postprocess: 'SSAO' // 'SSAO', 'multi' or 'none'
+    postprocess: 'none' // 'SSAO', 'multi' or 'none'
   },
 
   players: [
