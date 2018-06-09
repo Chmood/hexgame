@@ -90,7 +90,7 @@ const CONFIG = {
     betterOcean: false,
     shinyIce: true,
     transparentIce: false,
-    postprocess: 'none' // 'SSAO', 'multi' or 'none'
+    postprocess: 'SSAO' // 'SSAO', 'multi' or 'none'
   },
 
   players: [

@@ -14,7 +14,7 @@ import img5 from "../../img/TropicalSunnyDay_py.jpg"
 import img6 from "../../img/TropicalSunnyDay_pz.jpg"
 
 import waterMaterial from '../vendor/water-material.js'
-// Launch BABYLON material plugin
+// Launch BABYLON material plugin (ugly home-made wrapper function)
 waterMaterial(BABYLON)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ const Renderer3d = (game, canvas) => {
   
   // SKYBOX
   renderer.createSkybox = () => {
-    const skybox = BABYLON.Mesh.CreateBox('skyBox', 5000.0, renderer.scene)
+    const skybox = BABYLON.Mesh.CreateBox('skyBox', 5000, renderer.scene)
     const skyboxMaterial = new BABYLON.StandardMaterial('skyBox', renderer.scene)
     skyboxMaterial.backFaceCulling = false
     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture('./img/TropicalSunnyDay', renderer.scene)
@@ -224,7 +224,7 @@ const Renderer3d = (game, canvas) => {
     )
 
     // Ocean floor
-    renderer.oceanFloor = BABYLON.Mesh.CreateGround('oceanFloor', 1024, 1024, 16, renderer.scene, false)
+    renderer.oceanFloor = BABYLON.Mesh.CreateGround('oceanFloor', 5000, 5000, 16, renderer.scene, false)
     renderer.oceanFloor.position = new BABYLON.Vector3(
       0,
       - 20,
