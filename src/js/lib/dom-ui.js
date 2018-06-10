@@ -17,11 +17,13 @@ const DomUI = () => {
     dom.btnUpdate = document.getElementById('ui-btn-update')
     dom.btnNew = document.getElementById('ui-btn-new')
     dom.selectPosprocess = document.getElementById('ui-select-postprocess')
+    dom.checkboxBetterOcean = document.getElementById('ui-checkbox-better-ocean')
   }
 
   // SET ELEMENTS
   dom.setElements = () => {
     dom.selectPosprocess.value = CONFIG.render3d.postprocess
+    dom.checkboxBetterOcean.checked = CONFIG.render3d.betterOcean
   }
 
   // SET EVENT LISTENERS
@@ -57,6 +59,12 @@ const DomUI = () => {
     dom.selectPosprocess.addEventListener('change', () => {
       CONFIG.render3d.postprocess = dom.selectPosprocess.value
       game.renderer3d.updatePosprocessPipeline()
+    })
+    // Checkbox for better ocean
+    dom.checkboxBetterOcean.addEventListener('change', () => {
+      CONFIG.render3d.betterOcean = dom.checkboxBetterOcean.checked
+      game.renderer3d.updateOcean()
+      game.renderer3d.addToOceanRenderList()
     })
 
     // Resize window

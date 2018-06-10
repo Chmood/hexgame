@@ -38,6 +38,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       } else if (action === 'players') {
         game.renderer3d.deletePlayers()
         game.renderer3d.createPlayers()
+        game.renderer3d.addToOceanRenderList() // TODO: overkill? (only players needed)
       }
     }
     game.renderer2d.render() // Always refresh 2d canvas
@@ -123,14 +124,12 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
 
     if (line) {
-      // Update 2d renderer
-      game.renderer2d.render()
-      // Update 3d renderer
+      game.ui.line = line
       game.renderer3d.createTiles()
       game.renderer3d.createPlayers()
 
-      game.ui.line = line
-      game.renderer3d.updateHighlights()
+      game.updateRenderers(['players', 'highlights'])
+      
     } else {
       console.error('Game generation has failed!')
     }

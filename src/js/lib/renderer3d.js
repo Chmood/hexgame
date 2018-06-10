@@ -222,7 +222,7 @@ const Renderer3d = (game, canvas) => {
   
   // SKYBOX
   renderer.createSkybox = () => {
-    const skybox = BABYLON.Mesh.CreateBox('skyBox', 5000, renderer.scene)
+    const skybox = BABYLON.Mesh.CreateBox('skyBox', CONFIG.render3d.worldSize, renderer.scene)
     const skyboxMaterial = new BABYLON.StandardMaterial('skyBox', renderer.scene)
     skyboxMaterial.backFaceCulling = false
     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture('./img/TropicalSunnyDay', renderer.scene)
@@ -237,28 +237,39 @@ const Renderer3d = (game, canvas) => {
   }
 
   // OCEAN
-  renderer.createOcean = () => {
-    const ocean = BABYLON.Mesh.CreateGround('oceanSurface', 1024, 1024, 16, renderer.scene, false)
-    // Position tile mesh
-    ocean.position = new BABYLON.Vector3(
-      0,
-      CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1),
-      0
-    )
-
+  renderer.updateOcean = () => {
+    const worldSize = CONFIG.render3d.worldSize
     // Ocean floor
-    renderer.oceanFloor = BABYLON.Mesh.CreateGround('oceanFloor', 5000, 5000, 16, renderer.scene, false)
-    renderer.oceanFloor.position = new BABYLON.Vector3(
-      0,
-      - 20,
-      0
-    )
-    // const floorMaterial = new BABYLON.StandardMaterial('oceanFloor', renderer.scene)
-    // floorMaterial.diffuseColor = new BABYLON.Color3(0,0,0.6)
-    renderer.oceanFloor.material = renderer.materials['deepsea']
-    renderer.oceanFloor.isPickable = false
+    if (!renderer.oceanFloor) {
+      renderer.oceanFloor = BABYLON.Mesh.CreateGround('oceanFloor', worldSize, worldSize, 16, renderer.scene, false)
+      renderer.oceanFloor.position = new BABYLON.Vector3(
+        0,
+        // - 20,
+        0,
+        0
+      )
+      // const floorMaterial = new BABYLON.StandardMaterial('oceanFloor', renderer.scene)
+      // floorMaterial.diffuseColor = new BABYLON.Color3(0,0,0.6)
+      renderer.oceanFloor.material = renderer.materials['deepsea']
+      renderer.oceanFloor.isPickable = false
+    }
 
-    // Water
+    // Ocean surface
+    if (!renderer.ocean) {
+      renderer.ocean = BABYLON.Mesh.CreateGround('oceanSurface', worldSize, worldSize, 16, renderer.scene, false)
+      // Position tile mesh
+      renderer.ocean.position = new BABYLON.Vector3(
+        0,
+        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1),
+        0
+      )
+      renderer.ocean.isPickable = false
+    }
+    
+    // Water material
+    if (renderer.ocean.material) {
+      renderer.ocean.material.dispose()
+    }
     let water
     if (CONFIG.render3d.betterOcean) {
       // Special water material
@@ -271,9 +282,6 @@ const Renderer3d = (game, canvas) => {
       water.windDirection = new BABYLON.Vector2(1, 1)
       water.waterColor = new BABYLON.Color3(0.125, 0.6, 0.9)
       water.colorBlendFactor = 0.25
-      // Make skybox reflect into ocean
-      water.addToRenderList(renderer.skybox)
-      water.addToRenderList(renderer.oceanFloor)
     } else {
       // Simple water material
       water = new BABYLON.StandardMaterial('ocean', renderer.scene)
@@ -283,10 +291,27 @@ const Renderer3d = (game, canvas) => {
       water.bumpTexture = new BABYLON.Texture(waterbump, renderer.scene)
     }
 
-    ocean.material = water
-    ocean.isPickable = false
+    renderer.ocean.material = water
+  }
 
-    return ocean
+  // ADD TO OCEAN RENDER LIST
+  // Add all the meshes that reflect into ocean, or are seen through it
+  renderer.addToOceanRenderList = () => {
+    if (CONFIG.render3d.betterOcean) {
+      renderer.ocean.material.addToRenderList(renderer.skybox)
+      renderer.ocean.material.addToRenderList(renderer.oceanFloor)
+      // renderer.ocean.material.addToRenderList(renderer.axis) // TODO
+      // Players
+      for (const player of game.players) {
+        renderer.ocean.material.addToRenderList(player.playerMesh)
+      }
+      // Tiles
+      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+        for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+          renderer.ocean.material.addToRenderList(map[x][y].tile)
+        }
+      }
+    }
   }
 
   // SHOW AXIS
@@ -465,11 +490,6 @@ const Renderer3d = (game, canvas) => {
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
         map[x][y].tile = renderer.createTile(x, y, map[x][y])
-
-        // Compute ocean transparency
-        if (CONFIG.render3d.betterOcean) {
-          renderer.ocean.material.addToRenderList(map[x][y].tile)
-        }
       }
     }
   }
@@ -524,11 +544,6 @@ const Renderer3d = (game, canvas) => {
   renderer.createPlayers = () => {
     for (const [n, player] of game.players.entries()) {
       player.playerMesh = renderer.createPlayer(player, n)
-    }
-
-    // Compute ocean transparency
-    if (CONFIG.render3d.betterOcean) {
-      renderer.ocean.material.addToRenderList(player.playerMesh)
     }
   }
 
@@ -645,7 +660,7 @@ const Renderer3d = (game, canvas) => {
 
     // Meshes
     renderer.skybox = renderer.createSkybox()
-    renderer.ocean = renderer.createOcean()
+    renderer.updateOcean()
     renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
 
     // Post-process
@@ -657,7 +672,7 @@ const Renderer3d = (game, canvas) => {
     // UPDATE LOOP
     renderer.scene.registerBeforeRender(function () {
       // Make the camera rotate around the island
-      // renderer.camera.alpha = renderer.tick
+      renderer.camera.alpha = renderer.tick
       renderer.tick += 0.01
     })
   }

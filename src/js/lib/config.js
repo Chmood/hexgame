@@ -90,7 +90,8 @@ const CONFIG = {
     betterOcean: false,
     shinyIce: true,
     transparentIce: false,
-    postprocess: 'ssao' // 'ssao', 'multi' or 'none'
+    postprocess: 'ssao', // 'ssao', 'multi' or 'none'
+    worldSize: 4096 // Used for skybox and ocean
   },
 
   players: [
