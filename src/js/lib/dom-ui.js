@@ -14,8 +14,14 @@ const DomUI = () => {
     dom.canvas2dWrapper = document.getElementById('canvas2d-wrapper')
     dom.canvas3d = document.getElementById('canvas3d')
   
-    dom.btnUpdate = document.getElementById('btn-update')
-    dom.btnNew = document.getElementById('btn-new')
+    dom.btnUpdate = document.getElementById('ui-btn-update')
+    dom.btnNew = document.getElementById('ui-btn-new')
+    dom.selectPosprocess = document.getElementById('ui-select-postprocess')
+  }
+
+  // SET ELEMENTS
+  dom.setElements = () => {
+    dom.selectPosprocess.value = CONFIG.render3d.postprocess
   }
 
   // SET EVENT LISTENERS
@@ -45,6 +51,14 @@ const DomUI = () => {
       game.generate(true) // New random seed
     })
 
+    // UI SETTINGS
+
+    // Select post-process
+    dom.selectPosprocess.addEventListener('change', () => {
+      CONFIG.render3d.postprocess = dom.selectPosprocess.value
+      game.renderer3d.updatePosprocessPipeline()
+    })
+
     // Resize window
     window.onresize = () => {
       game.resizeGame()
@@ -57,6 +71,7 @@ const DomUI = () => {
   }
 
   dom.getElements()
+  dom.setElements()
   dom.setEventListeners()
   
   return dom

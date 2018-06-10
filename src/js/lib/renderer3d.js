@@ -124,9 +124,15 @@ const Renderer3d = (game, canvas) => {
   }
 
   // CREATE POSTPROCESS
-  renderer.createPosprocessPipeline = () => {
+  renderer.updatePosprocessPipeline = () => {
     if (CONFIG.render3d.postprocess !== 'none') {
-      if (CONFIG.render3d.postprocess === 'SSAO') {
+      if (CONFIG.render3d.postprocess === 'ssao') {
+        if (renderer.pipeline) {
+          // Disable pipeline
+          renderer.pipeline.dispose()
+          renderer.pipeline = undefined
+        }
+
         // Post-process
         // renderer.lensEffect = new BABYLON.LensRenderingPipeline(
         //   'lensEffects', 
@@ -144,7 +150,7 @@ const Renderer3d = (game, canvas) => {
         // )
     
         renderer.ssao = new BABYLON.SSAORenderingPipeline(
-          'ssaopipeline', 
+          'ssao-pipeline', 
           renderer.scene, 
           {
             ssaoRatio: 1,
@@ -154,9 +160,15 @@ const Renderer3d = (game, canvas) => {
         )
 
       } else if (CONFIG.render3d.postprocess === 'multi') {
+        if (renderer.ssao) {
+          // Disable SSAO
+          renderer.ssao.dispose()
+          renderer.ssao = undefined
+        }
+
         // DEFAULT RENDER PIPELINE
         renderer.pipeline = new BABYLON.DefaultRenderingPipeline(
-          "default", // The name of the pipeline
+          "default-pipeline", // The name of the pipeline
           true, // Do you want HDR textures ?
           renderer.scene, // The scene instance
           [renderer.camera] // The list of cameras to be attached to
@@ -190,6 +202,17 @@ const Renderer3d = (game, canvas) => {
         renderer.pipeline.grainEnabled = true
         renderer.pipeline.grain.intensity = 9
         renderer.pipeline.grain.animated = 1
+      }
+    } else {
+      if (renderer.ssao) {
+        // Disable SSAO
+        renderer.ssao.dispose()
+        renderer.ssao = undefined
+      }
+      if (renderer.pipeline) {
+        // Disable pipeline
+        renderer.pipeline.dispose()
+        renderer.pipeline = undefined
       }
     }
   }
@@ -626,7 +649,7 @@ const Renderer3d = (game, canvas) => {
     renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
 
     // Post-process
-    renderer.createPosprocessPipeline()
+    renderer.updatePosprocessPipeline()
 
     // Time tick
     renderer.tick = 0

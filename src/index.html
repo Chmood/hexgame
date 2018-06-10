@@ -25,8 +25,14 @@
     <!-- UI panel -->
     <div id="ui">
       <p>Drag mouse to move camera and use mousewheel to zoom.</p>
-      <button id="btn-update">Perturbate</button>&nbsp;
-      <button id="btn-new">New terrain</button>&nbsp;
+      <button id="ui-btn-update">Perturbate</button>&nbsp;
+      <button id="ui-btn-new">New terrain</button>&nbsp;
+      <label for="ui-select-postprocess">Post-process</label>
+      <select id="ui-select-postprocess">
+        <option value="none">None</option>
+        <option value="ssao">SSAO</option>
+        <option value="multi">Multi FX</option>
+      </select>
     </div>
   
   </div>
