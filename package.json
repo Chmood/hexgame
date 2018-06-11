@@ -8,6 +8,7 @@
     "dev": "./node_modules/.bin/webpack-dev-server",
     "build": "./node_modules/.bin/webpack",
     "build:prod": "./node_modules/.bin/webpack -p",
+    "deploy": "./deploy.sh",
     "watch": "./node_modules/.bin/webpack --watch"
   },
   "repository": {
