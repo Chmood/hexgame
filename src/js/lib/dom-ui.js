@@ -18,12 +18,14 @@ const DomUI = () => {
     dom.btnNew = document.getElementById('ui-btn-new')
     dom.selectPosprocess = document.getElementById('ui-select-postprocess')
     dom.checkboxBetterOcean = document.getElementById('ui-checkbox-better-ocean')
+    dom.checkboxCameraAutoRotate = document.getElementById('ui-camera-auto-rotate')
   }
 
   // SET ELEMENTS
   dom.setElements = () => {
     dom.selectPosprocess.value = CONFIG.render3d.postprocess
     dom.checkboxBetterOcean.checked = CONFIG.render3d.betterOcean
+    dom.checkboxCameraAutoRotate.checked = CONFIG.render3d.cameraAutoRotate
   }
 
   // SET EVENT LISTENERS
@@ -65,6 +67,10 @@ const DomUI = () => {
       CONFIG.render3d.betterOcean = dom.checkboxBetterOcean.checked
       game.renderer3d.updateOcean()
       game.renderer3d.addToOceanRenderList()
+    })
+    // Checkbox for ayto-rotating camera
+    dom.checkboxCameraAutoRotate.addEventListener('change', () => {
+      CONFIG.render3d.cameraAutoRotate = dom.checkboxCameraAutoRotate.checked
     })
 
     // Resize window

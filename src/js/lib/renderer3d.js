@@ -671,9 +671,11 @@ const Renderer3d = (game, canvas) => {
 
     // UPDATE LOOP
     renderer.scene.registerBeforeRender(function () {
-      // Make the camera rotate around the island
-      renderer.camera.alpha = renderer.tick
-      renderer.tick += 0.01
+      if (CONFIG.render3d.cameraAutoRotate) {
+        // Make the camera rotate around the island
+        renderer.camera.alpha = renderer.tick
+        renderer.tick += 0.01
+      }
     })
   }
   

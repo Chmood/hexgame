@@ -91,7 +91,8 @@ const CONFIG = {
     shinyIce: true,
     transparentIce: false,
     postprocess: 'ssao', // 'ssao', 'multi' or 'none'
-    worldSize: 4096 // Used for skybox and ocean
+    worldSize: 4096, // Used for skybox and ocean
+    cameraAutoRotate: true
   },
 
   players: [
