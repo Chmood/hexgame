@@ -661,7 +661,9 @@ const Renderer3d = (game, canvas) => {
     // Meshes
     renderer.skybox = renderer.createSkybox()
     renderer.updateOcean()
-    renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
+    if (CONFIG.render3d.showAxis) {
+      renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
+    }
 
     // Post-process
     renderer.updatePosprocessPipeline()

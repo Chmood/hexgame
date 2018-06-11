@@ -87,11 +87,13 @@ const CONFIG = {
     randomTileSizeFactor: 0.15,
     randomTileSizeOffset: 0, // 1 => only smaller / 0.5 => smaller & bigger / 0 => only bigger
     randomTileRotationFactor: 1, // 0 : flat / 1 : sloppy / 2 : chaos
-    betterOcean: false,
     shinyIce: true,
     transparentIce: false,
-    postprocess: 'ssao', // 'ssao', 'multi' or 'none'
     worldSize: 4096, // Used for skybox and ocean
+    showAxis: false,
+    // UI mods
+    betterOcean: false,
+    postprocess: 'ssao', // 'ssao', 'multi' or 'none'
     cameraAutoRotate: true
   },
 
