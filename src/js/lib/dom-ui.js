@@ -87,7 +87,7 @@ const DomUI = () => {
   dom.getElements()
   dom.setElements()
   dom.setEventListeners()
-  
+
   return dom
 }  
 

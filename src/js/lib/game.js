@@ -86,7 +86,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // MOVE CURSOR
   game.cursorMove = (direction) => {
-    game.renderer3d.debounce = 10
+    game.renderer3d.debounce = CONFIG.render3d.debounceKeyboardTime
     const directionIndex = game.getDirectionIndex(direction, game.ui.cursor)
 
     if (directionIndex !== undefined) {

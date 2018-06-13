@@ -47,19 +47,20 @@ const Renderer3d = (game, canvas) => {
 
   // CAMERA
   renderer.createCamera = () => {
-    const cameraDistanceRatio = 1
     // Add a camera to the scene and attach it to the canvas
+    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
+
     const camera = new BABYLON.ArcRotateCamera(
       'Camera',
       0, // alpha angle
-      Math.PI / 4, // beta angle
-      CONFIG.render3d.cellSize * CONFIG.map.mapSize.width * cameraDistanceRatio, // radius (aka distance)
-      new BABYLON.Vector3(
+      CONFIG.render3d.camera.beta, // beta angle
+      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
+      new BABYLON.Vector3( // target
         0,
         // focus height is one stepsize above water level
         CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
         0
-      ), // target
+      ),
       renderer.scene
     )
     // Attach control from canvas to the camera (pan, tilt...)
@@ -69,8 +70,8 @@ const Renderer3d = (game, canvas) => {
     camera.upperBetaLimit = Math.PI / 2
     // camera.lowerAlphaLimit = 0
     // camera.upperAlphaLimit = 0
-    camera.lowerRadiusLimit = CONFIG.render3d.cellSize * 5
-    camera.upperRadiusLimit = CONFIG.render3d.cellSize * 100
+    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
+    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
 
     return camera
   }
@@ -117,7 +118,10 @@ const Renderer3d = (game, canvas) => {
       BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
       BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     )
-    animationCameraAlpha.setKeys([{ frame: 0, value: 0 }, { frame: 10, value: 0 }])
+    animationCameraAlpha.setKeys([
+      { frame: 0, value: renderer.camera.alpha }, 
+      { frame: 10, value: renderer.camera.alpha }
+    ])
           
     const animationCameraBeta = new BABYLON.Animation(
       'moveCameraBeta', 
@@ -126,7 +130,10 @@ const Renderer3d = (game, canvas) => {
       BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
       BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     )
-    animationCameraBeta.setKeys([{ frame: 0, value: Math.PI / 4 }, { frame: 10, value: Math.PI / 4 }])
+    animationCameraBeta.setKeys([
+      { frame: 0, value: CONFIG.render3d.camera.beta }, 
+      { frame: 10, value: CONFIG.render3d.camera.beta }
+    ])
           
     renderer.camera.animations = [animationCamera, animationCameraAlpha, animationCameraBeta]
     renderer.scene.beginAnimation(
@@ -136,15 +143,90 @@ const Renderer3d = (game, canvas) => {
       true, // Loop (according to ANIMATIONLOOPMODE)
       5 // Speed ratio
     )
+  }
 
-    // // This is the simple, no animated, update camera code
-    // renderer.camera.target = new BABYLON.Vector3(
-    //   position.y, // Axis inversion!
-    //   height, 
-    //   position.x // Axis inversion!
-    // )
-    // renderer.camera.alpha = 0
-    // renderer.camera.beta = Math.PI / 4
+  // UPDATE CAMERA ZOOM
+  renderer.updateCameraZoom = (direction) => {
+    renderer.debounce = CONFIG.render3d.debounceKeyboardTime
+
+    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
+    let delta = 0;
+    if (direction === 'in') {
+      delta = -ratioBaseSize * CONFIG.render3d.camera.distanceRatioStep
+    } else if (direction === 'out') {
+      delta = ratioBaseSize * CONFIG.render3d.camera.distanceRatioStep
+    }
+
+    const animationCameraRadius = new BABYLON.Animation(
+      'zoomCameraRadius', 
+      'radius', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationCameraRadius.setKeys([
+      { frame: 0, value: renderer.camera.radius }, 
+      { frame: 10, value: renderer.camera.radius + delta }
+    ])
+
+    const easingFunction = new BABYLON.SineEase()
+    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
+    animationCameraRadius.setEasingFunction(easingFunction)
+
+    renderer.camera.animations = [animationCameraRadius]
+    renderer.scene.beginAnimation(
+      renderer.camera, // Target
+      0, // Start frame
+      10, // End frame
+      true, // Loop (according to ANIMATIONLOOPMODE)
+      5 // Speed ratio
+    )
+  }
+
+  // UPDATE CAMERA ALPHA
+  renderer.updateCameraAlpha = (direction) => {
+    renderer.debounce = CONFIG.render3d.debounceKeyboardTime
+
+    const alphaStep = Math.PI * 2 / 6
+    let delta = 0
+    if (direction === 'clockwise') {
+      delta = alphaStep
+    } else if (direction === 'counterclockwise') {
+      delta = -alphaStep
+    }
+
+    // Lock rotation on sixth of circle
+    // Needed when 2 animations overlapses
+    let newAlpha = renderer.camera.alpha + delta
+    newAlpha = Math.round(newAlpha / alphaStep) * alphaStep
+    // TODO: Keep alpha in the [0, 2*PI] range
+    // newAlpha = (newAlpha % (2 * Math.PI)) * (2 * Math.PI)
+
+    const animationCameraAlpha = new BABYLON.Animation(
+      'rotateCameraAlpha', 
+      'alpha', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationCameraAlpha.setKeys([
+      { frame: 0, value: renderer.camera.alpha }, 
+      { frame: 10, value: newAlpha }
+    ])
+
+    const easingFunction = new BABYLON.SineEase()
+    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
+    animationCameraAlpha.setEasingFunction(easingFunction)
+
+    renderer.camera.animations = [animationCameraAlpha]
+    renderer.scene.beginAnimation(
+      renderer.camera, // Target
+      0, // Start frame
+      10, // End frame
+      true, // Loop (according to ANIMATIONLOOPMODE)
+      5 // Speed ratio
+    )
+    console.log(renderer.camera.alpha / alphaStep)
   }
 
   // MATERIALS
@@ -720,6 +802,14 @@ const Renderer3d = (game, canvas) => {
           game.cursorMove('up')
         } else if (renderer.map['ArrowDown']) {
           game.cursorMove('down')
+        } else if (renderer.map['e']) {
+          renderer.updateCameraZoom('in')
+        } else if (renderer.map['r']) {
+          renderer.updateCameraZoom('out')
+        } else if (renderer.map['t']) {
+          renderer.updateCameraAlpha('counterclockwise')
+        } else if (renderer.map['y']) {
+          renderer.updateCameraAlpha('clockwise')
         }
       }
     })

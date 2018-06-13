@@ -90,7 +90,15 @@ const CONFIG = {
     // UI mods
     betterOcean: false,
     postprocess: 'multi', // 'ssao', 'multi' or 'none'
-    cameraAutoRotate: false
+    cameraAutoRotate: false,
+    debounceKeyboardTime: 8, // In locksteppeded frames
+    camera: {
+      distanceRatio: 1, // Size of the map / camera distance (radius)
+      distanceRatioMin: 0.1,
+      distanceRatioMax: 2,
+      distanceRatioStep: 0.25,
+      beta: Math.PI / 4
+    }
   },
 
   players: [

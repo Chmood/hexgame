@@ -2,13 +2,13 @@
 
 ## Known bugs
 
-* pointy map pathfinding is broken
+* Pointy map pathfinding is broken
+* Focus is not on the 3D canvas on load, and is lost whenever the user click on UI panel
+* Moving cursor with arrow keys should adapt to camera beta rotation
 
 ## Improvements
 
-* makes diagonal cursor moves (2 arrow keys at the same time)
-* add camera rotation (6 different angles)
-* add camera zoom in and out
+* Makes diagonal cursor moves (2 arrow keys at the same time)
 
 ## Ideas
 
