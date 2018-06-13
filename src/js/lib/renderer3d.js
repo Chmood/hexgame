@@ -20,17 +20,6 @@ waterMaterial(BABYLON)
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D
 
-// IDEAS / TODO :
-// Clouds
-// See: https://www.babylonjs-playground.com/#ATDL99#0
-// Boolean mesh
-// See: https://www.babylonjs-playground.com/#T6NP3F#0
-// Animated skybox
-// See: https://www.babylonjs-playground.com/#E6OZX#122
-// And: https://doc.babylonjs.com/extensions/sky
-// Environnement
-// See: https://doc.babylonjs.com/babylon101/environment
-
 const Renderer3d = (game, canvas) => {
   const renderer = {},
         map = game.map.data
@@ -58,14 +47,13 @@ const Renderer3d = (game, canvas) => {
 
   // CAMERA
   renderer.createCamera = () => {
+    const cameraDistanceRatio = 1
     // Add a camera to the scene and attach it to the canvas
     const camera = new BABYLON.ArcRotateCamera(
       'Camera',
-      // Math.PI / 4, 
-      // Math.PI / 4, 
       0, // alpha angle
-      0, // beta angle
-      60, // radius (aka distance)
+      Math.PI / 4, // beta angle
+      CONFIG.render3d.cellSize * CONFIG.map.mapSize.width * cameraDistanceRatio, // radius (aka distance)
       new BABYLON.Vector3(
         0,
         // focus height is one stepsize above water level
@@ -74,14 +62,89 @@ const Renderer3d = (game, canvas) => {
       ), // target
       renderer.scene
     )
-    camera.attachControl(canvas, true)
+    // Attach control from canvas to the camera (pan, tilt...)
+    // camera.attachControl(canvas, true)
     // Constrain camera rotation & zooming
     camera.lowerBetaLimit = 0
     camera.upperBetaLimit = Math.PI / 2
+    // camera.lowerAlphaLimit = 0
+    // camera.upperAlphaLimit = 0
     camera.lowerRadiusLimit = CONFIG.render3d.cellSize * 5
     camera.upperRadiusLimit = CONFIG.render3d.cellSize * 100
 
     return camera
+  }
+
+  // UPDATE CAMERA POSITION
+  // Makes the camera look at the given hex
+  renderer.updateCameraPosition = (hex) => {
+    const position = HEXLIB.hex2Pixel(renderer.layout, hex), // center of tile top
+          tileData = game.map.getFromHex(hex),
+          height = tileData.height * CONFIG.render3d.cellStepHeight
+
+    const animationCamera = new BABYLON.Animation(
+      'moveCamera', 
+      'target', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationCamera.enableBlending = true;
+    animationCamera.blendingSpeed = 0.1;
+
+    const easingFunction = new BABYLON.SineEase()
+    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
+    animationCamera.setEasingFunction(easingFunction)
+
+    const nextTarget = new BABYLON.Vector3( // end value
+      position.y, // Axis inversion!
+      height, 
+      position.x // Axis inversion!
+    )
+    animationCamera.setKeys([
+      { frame: 0, value: renderer.camera.target },
+      { frame: 10, value: nextTarget }
+    ])
+    
+    // The animation trick here is that changing the camera target ALSO changes
+    // its alpha and beta angles. So we have to animate those too, in order to
+    // keep them on the same constant value
+
+    const animationCameraAlpha = new BABYLON.Animation(
+      'moveCameraAlpha', 
+      'alpha', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationCameraAlpha.setKeys([{ frame: 0, value: 0 }, { frame: 10, value: 0 }])
+          
+    const animationCameraBeta = new BABYLON.Animation(
+      'moveCameraBeta', 
+      'beta', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationCameraBeta.setKeys([{ frame: 0, value: Math.PI / 4 }, { frame: 10, value: Math.PI / 4 }])
+          
+    renderer.camera.animations = [animationCamera, animationCameraAlpha, animationCameraBeta]
+    renderer.scene.beginAnimation(
+      renderer.camera, // Target
+      0, // Start frame
+      10, // End frame
+      true, // Loop (according to ANIMATIONLOOPMODE)
+      5 // Speed ratio
+    )
+
+    // // This is the simple, no animated, update camera code
+    // renderer.camera.target = new BABYLON.Vector3(
+    //   position.y, // Axis inversion!
+    //   height, 
+    //   position.x // Axis inversion!
+    // )
+    // renderer.camera.alpha = 0
+    // renderer.camera.beta = Math.PI / 4
   }
 
   // MATERIALS
@@ -589,7 +652,7 @@ const Renderer3d = (game, canvas) => {
           )
 
     // Sanitize inputs
-    if (offset.col && offset.row && 
+    if (offset.col !== undefined && offset.row !== undefined && 
         offset.col >= 0 && offset.row >= 0 &&
         offset.col < CONFIG.map.mapSize.width && offset.row < CONFIG.map.mapSize.height
       ) {
@@ -629,11 +692,48 @@ const Renderer3d = (game, canvas) => {
   }
 
   ////////////////////////////////////////
+  // INIT
+
+  // INIT UPDATE LOOP
+  // Lockstepped function that run before render
+  renderer.initUpdateLoop = () => {
+    renderer.scene.onBeforeStepObservable.add((scene) => {
+      // console.log('Performing game logic, BEFORE animations and physics for stepId: ' + scene.getStepId());
+      // Cheap debounce
+      if (renderer.debounce > 0) {
+        renderer.debounce--
+      }
+  
+      const fps = Math.floor(renderer.engine.getFps())
+      // if (CONFIG.render3d.cameraAutoRotate) {
+      //   // Make the camera rotate around the island
+      //   renderer.camera.alpha = renderer.tick
+      //   renderer.tick += 0.01
+      // }
+      // console.log(fps + ' FPS')
+      if (renderer.debounce === 0) {
+        if (renderer.map['ArrowRight']) {
+          game.cursorMove('right')
+        } else if (renderer.map['ArrowLeft']) {
+          game.cursorMove('left')
+        } else if (renderer.map['ArrowUp']) {
+          game.cursorMove('up')
+        } else if (renderer.map['ArrowDown']) {
+          game.cursorMove('down')
+        }
+      }
+    })
+  }
+
   // INIT RENDERER
+  // Creates all the Babylon magic!
   renderer.initRenderer = () => {
     // Base
     renderer.layout = renderer.createLayout()
-    renderer.engine = new BABYLON.Engine(canvas, true) // Generate the BABYLON 3D 
+    renderer.engine = new BABYLON.Engine(canvas, true, {
+      deterministicLockstep: true,
+      lockstepMaxSteps: 4
+    })
     renderer.scene = new BABYLON.Scene(renderer.engine)
     renderer.camera = renderer.createCamera()
 
@@ -668,17 +768,29 @@ const Renderer3d = (game, canvas) => {
     // Post-process
     renderer.updatePosprocessPipeline()
 
-    // Time tick
+    // 'Time' tick
     renderer.tick = 0
+    renderer.debounce = 0
 
-    // UPDATE LOOP
-    renderer.scene.registerBeforeRender(function () {
-      if (CONFIG.render3d.cameraAutoRotate) {
-        // Make the camera rotate around the island
-        renderer.camera.alpha = renderer.tick
-        renderer.tick += 0.01
-      }
-    })
+    // ACTION MANAGER
+    renderer.map = {} //object for multiple key presses
+    renderer.scene.actionManager = new BABYLON.ActionManager(renderer.scene)
+   
+    renderer.scene.actionManager.registerAction(
+      new BABYLON.ExecuteCodeAction(
+        BABYLON.ActionManager.OnKeyDownTrigger, 
+        (event) => { renderer.map[event.sourceEvent.key] = event.sourceEvent.type == "keydown" }
+      )
+    )
+    
+    renderer.scene.actionManager.registerAction(
+      new BABYLON.ExecuteCodeAction(
+        BABYLON.ActionManager.OnKeyUpTrigger,
+        (event) => { renderer.map[event.sourceEvent.key] = event.sourceEvent.type == "keydown" }
+      )
+    )
+
+    renderer.initUpdateLoop()
   }
   
   // START RENDER LOOP

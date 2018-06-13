@@ -18,34 +18,34 @@ const DomUI = () => {
     dom.btnNew = document.getElementById('ui-btn-new')
     dom.selectPosprocess = document.getElementById('ui-select-postprocess')
     dom.checkboxBetterOcean = document.getElementById('ui-checkbox-better-ocean')
-    dom.checkboxCameraAutoRotate = document.getElementById('ui-camera-auto-rotate')
+    // dom.checkboxCameraAutoRotate = document.getElementById('ui-camera-auto-rotate')
   }
 
   // SET ELEMENTS
   dom.setElements = () => {
     dom.selectPosprocess.value = CONFIG.render3d.postprocess
     dom.checkboxBetterOcean.checked = CONFIG.render3d.betterOcean
-    dom.checkboxCameraAutoRotate.checked = CONFIG.render3d.cameraAutoRotate
+    // dom.checkboxCameraAutoRotate.checked = CONFIG.render3d.cameraAutoRotate
   }
 
   // SET EVENT LISTENERS
   dom.setEventListeners = () => {
 
-    // Mouse move over canvases
-    dom.canvas2d.addEventListener('mousemove', (e) => {
-      game.updateCursor(game.renderer2d.plotCursor(e))
-    })
-    dom.canvas3d.addEventListener('mousemove', () => { 
-      game.updateCursor(game.renderer3d.plotCursor())
-    }) 
+    // // Mouse move over canvases
+    // dom.canvas2d.addEventListener('mousemove', (e) => {
+    //   game.updateCursor(game.renderer2d.plotCursor(e))
+    // })
+    // dom.canvas3d.addEventListener('mousemove', () => { 
+    //   game.updateCursor(game.renderer3d.plotCursor())
+    // }) 
 
-    // Click on canvases
-    dom.canvas2d.addEventListener('click', (e) => {
-      game.setDestination(game.renderer2d.plotCursor(e))
-    })
-    dom.canvas3d.addEventListener('click', () => {
-      game.setDestination(game.renderer3d.plotCursor())
-    })
+    // // Click on canvases
+    // dom.canvas2d.addEventListener('click', (e) => {
+    //   game.setDestination(game.renderer2d.plotCursor(e))
+    // })
+    // dom.canvas3d.addEventListener('click', () => {
+    //   game.setDestination(game.renderer3d.plotCursor())
+    // })
 
     // UI buttons
     dom.btnUpdate.addEventListener('click', () => {
@@ -68,10 +68,10 @@ const DomUI = () => {
       game.renderer3d.updateOcean()
       game.renderer3d.addToOceanRenderList()
     })
-    // Checkbox for ayto-rotating camera
-    dom.checkboxCameraAutoRotate.addEventListener('change', () => {
-      CONFIG.render3d.cameraAutoRotate = dom.checkboxCameraAutoRotate.checked
-    })
+    // // Checkbox for auto-rotating camera
+    // dom.checkboxCameraAutoRotate.addEventListener('change', () => {
+    //   CONFIG.render3d.cameraAutoRotate = dom.checkboxCameraAutoRotate.checked
+    // })
 
     // Resize window
     window.onresize = () => {

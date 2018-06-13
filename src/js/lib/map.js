@@ -478,13 +478,13 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
           // Cost backup
           const nextOffset = HEXLIB.hex2Offset(next)
+          // console.warn(nextOffset) // TODO: this may be out of bounds and throw error with HEXLIB.POINTY!
           map.data[nextOffset.col][nextOffset.row].cost = Math.floor(newCost)
         }
       }
     }
 
     // BUILD PATH BACK FROM GOAL
-
     if (goal && found) {
       let current = goal
       let path = [goal]

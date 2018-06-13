@@ -47,6 +47,66 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   ////////////////////////////////////////
   // GAME ACTIONS
 
+  // GET DIRECTION INDEX
+  game.getDirectionIndex = (direction, hex) => {
+    const cursorOffset = HEXLIB.hex2Offset(hex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+    let directionIndex
+
+    if (CONFIG.map.mapTopped === HEXLIB.FLAT) {
+      // FLAT map
+      if (direction === 'up') { directionIndex = 5 }
+      else if (direction === 'down') { directionIndex = 2 }
+      else if (
+        cursorOffset.col % 2 === 0 && CONFIG.map.mapParity === HEXLIB.ODD ||
+        cursorOffset.col % 2 !== 0 && CONFIG.map.mapParity === HEXLIB.EVEN
+      ) {
+        if (direction === 'left') { directionIndex = 3 }
+        else if (direction === 'right') { directionIndex = 1 }
+      } else {
+        if (direction === 'left') { directionIndex = 4 }
+        else if (direction === 'right') { directionIndex = 0 }
+      }
+    } else {
+      // POINTY map
+      if (direction === 'left') { directionIndex = 4 }
+      else if (direction === 'right') { directionIndex = 1 }
+      else if (
+        cursorOffset.row % 2 === 0 && CONFIG.map.mapParity === HEXLIB.ODD ||
+        cursorOffset.row % 2 !== 0 && CONFIG.map.mapParity === HEXLIB.EVEN
+      ) {
+        if (direction === 'up') { directionIndex = 0 }
+        else if (direction === 'down') { directionIndex = 2 }
+      } else {
+        if (direction === 'up') { directionIndex = 5 }
+        else if (direction === 'down') { directionIndex = 3 }
+      }
+    }
+    return directionIndex
+  }
+
+  // MOVE CURSOR
+  game.cursorMove = (direction) => {
+    game.renderer3d.debounce = 10
+    const directionIndex = game.getDirectionIndex(direction, game.ui.cursor)
+
+    if (directionIndex !== undefined) {
+      const hex = HEXLIB.hexNeighbors(game.ui.cursor)[directionIndex]
+      const offset = HEXLIB.hex2Offset(hex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      if (
+        offset.col >= 0 && 
+        offset.row >= 0 && 
+        offset.col < CONFIG.map.mapSize.width &&
+        offset.row < CONFIG.map.mapSize.height
+      ) {
+        game.updateCursor(hex)
+        game.renderer3d.updateCameraPosition(hex)
+        console.log(offset)
+      } else {
+        console.warn('Edge of the map!')
+      }
+    }
+  }
+
   // UPDATE CURSOR
   game.updateCursor = (hex) => {
     if (hex) { // May be called with invalid cursor hex
@@ -102,8 +162,8 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.map.randomizeSeed()
     }
 
-    let line = undefined
-    let tryLeft = 100
+    let line,
+        tryLeft = 100
 
     game.renderer3d.deleteTiles()
     game.renderer3d.deletePlayers()
@@ -127,6 +187,11 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.ui.line = line
       game.renderer3d.createTiles()
       game.renderer3d.createPlayers()
+
+      const startingHex = game.players[0].hex // Place the cursor on first player
+      game.ui.cursor = startingHex
+      // game.updateCursor(startingHex) // Don't needed here?
+      game.renderer3d.updateCameraPosition(startingHex)
 
       game.updateRenderers(['players', 'highlights'])
       

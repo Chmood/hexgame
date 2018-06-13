@@ -8,11 +8,8 @@ const CONFIG = {
     mapSeed: undefined, // Computed later
     // mapSize: 						{ width: 29, height: 25 }, // Logical map size, in cells
     mapSize: { width: 29, height: 25 }, // Logical map size, in cells
-    // TODO: Map topping: POINTY is broken!
     mapTopped: HEXLIB.FLAT, // FLAT or POINTY
-    // TODO: Map parity: EVEN is broken!
-    // mapParity: 					(Math.random() < 0.5) ? EVEN : ODD, // EVEN or ODD
-    mapParity: HEXLIB.ODD, // EVEN or ODD
+    mapParity: Math.random() > 0.5 ? HEXLIB.EVEN : HEXLIB.ODD, // HEXLIB.EVEN or HEXLIB.ODD
 
     mapSeaMinLevel: 2, // Sea is flat below this value
     mapValueRange: {
@@ -30,7 +27,6 @@ const CONFIG = {
         stupidRandom: false,
         frequencyRatio: 0.72, // Noise base size
         frequency: undefined, // To be computed later
-        // harmonics: [0.5, 0.3, 0.2], // Amplitude of noise octaves 0, 1 and 2 (must sum up to 1)
         harmonics: [0.7, 0.2, 0.1] // Amplitude of noise octaves 0, 1 and 2 (must sum up to 1)
       }
     },
@@ -90,11 +86,11 @@ const CONFIG = {
     shinyIce: true,
     transparentIce: false,
     worldSize: 4096, // Used for skybox and ocean
-    showAxis: false,
+    showAxis: true,
     // UI mods
     betterOcean: false,
-    postprocess: 'ssao', // 'ssao', 'multi' or 'none'
-    cameraAutoRotate: true
+    postprocess: 'multi', // 'ssao', 'multi' or 'none'
+    cameraAutoRotate: false
   },
 
   players: [
