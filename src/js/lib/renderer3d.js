@@ -781,37 +781,20 @@ const Renderer3d = (game, canvas) => {
   renderer.initUpdateLoop = () => {
     renderer.scene.onBeforeStepObservable.add((scene) => {
       // console.log('Performing game logic, BEFORE animations and physics for stepId: ' + scene.getStepId());
+
       // Cheap debounce
       if (renderer.debounce > 0) {
         renderer.debounce--
       }
   
       const fps = Math.floor(renderer.engine.getFps())
+      // console.log(fps + ' FPS')
+
       // if (CONFIG.render3d.cameraAutoRotate) {
       //   // Make the camera rotate around the island
       //   renderer.camera.alpha = renderer.tick
       //   renderer.tick += 0.01
       // }
-      // console.log(fps + ' FPS')
-      if (renderer.debounce === 0) {
-        if (renderer.map['ArrowRight']) {
-          game.cursorMove('right')
-        } else if (renderer.map['ArrowLeft']) {
-          game.cursorMove('left')
-        } else if (renderer.map['ArrowUp']) {
-          game.cursorMove('up')
-        } else if (renderer.map['ArrowDown']) {
-          game.cursorMove('down')
-        } else if (renderer.map['e']) {
-          renderer.updateCameraZoom('in')
-        } else if (renderer.map['r']) {
-          renderer.updateCameraZoom('out')
-        } else if (renderer.map['t']) {
-          renderer.updateCameraAlpha('counterclockwise')
-        } else if (renderer.map['y']) {
-          renderer.updateCameraAlpha('clockwise')
-        }
-      }
     })
   }
 
@@ -862,23 +845,23 @@ const Renderer3d = (game, canvas) => {
     renderer.tick = 0
     renderer.debounce = 0
 
-    // ACTION MANAGER
-    renderer.map = {} //object for multiple key presses
-    renderer.scene.actionManager = new BABYLON.ActionManager(renderer.scene)
+    // // ACTION MANAGER
+    // // Clean way to capture keyboard event, but requires the canvas to have focus
+    // renderer.keys = {} //object for multiple key presses
+    // renderer.scene.actionManager = new BABYLON.ActionManager(renderer.scene)
    
-    renderer.scene.actionManager.registerAction(
-      new BABYLON.ExecuteCodeAction(
-        BABYLON.ActionManager.OnKeyDownTrigger, 
-        (event) => { renderer.map[event.sourceEvent.key] = event.sourceEvent.type == "keydown" }
-      )
-    )
-    
-    renderer.scene.actionManager.registerAction(
-      new BABYLON.ExecuteCodeAction(
-        BABYLON.ActionManager.OnKeyUpTrigger,
-        (event) => { renderer.map[event.sourceEvent.key] = event.sourceEvent.type == "keydown" }
-      )
-    )
+    // renderer.scene.actionManager.registerAction(
+    //   new BABYLON.ExecuteCodeAction(
+    //     BABYLON.ActionManager.OnKeyDownTrigger, 
+    //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }
+    //   )
+    // )
+    // renderer.scene.actionManager.registerAction(
+    //   new BABYLON.ExecuteCodeAction(
+    //     BABYLON.ActionManager.OnKeyUpTrigger,
+    //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }
+    //   )
+    // )
 
     renderer.initUpdateLoop()
   }

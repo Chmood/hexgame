@@ -5,7 +5,8 @@ import CONFIG from './config'
 
 const DomUI = () => {
 
-  const dom = {}
+  const dom = {},
+        keys = {}
   let game = undefined
 
   // GET ELEMENTS
@@ -30,6 +31,15 @@ const DomUI = () => {
 
   // SET EVENT LISTENERS
   dom.setEventListeners = () => {
+
+    // Keyboard events
+    document.addEventListener('keydown', (event) => {
+      keys[event.key] = true
+      game.onKeyDown(keys)
+    })
+    document.addEventListener('keyup', (event) => {
+      delete keys[event.key]
+    })
 
     // // Mouse move over canvases
     // dom.canvas2d.addEventListener('mousemove', (e) => {

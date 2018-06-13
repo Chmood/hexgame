@@ -3,7 +3,6 @@
 ## Known bugs
 
 * Pointy map pathfinding is broken
-* Focus is not on the 3D canvas on load, and is lost whenever the user click on UI panel
 * Moving cursor with arrow keys should adapt to camera beta rotation
 
 ## Improvements
