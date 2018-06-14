@@ -479,7 +479,8 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
           // Cost backup
           const nextOffset = HEXLIB.hex2Offset(next)
           // console.warn(nextOffset) // TODO: this may be out of bounds and throw error with HEXLIB.POINTY!
-          map.data[nextOffset.col][nextOffset.row].cost = Math.floor(newCost)
+          // map.data[nextOffset.col][nextOffset.row].cost = Math.floor(newCost)
+          map.data[nextOffset.col][nextOffset.row].cost = newCost
         }
       }
     }
@@ -493,7 +494,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         current = map.findFromHex(cameFrom, current)
         path.push(current)
       }
-
+// console.log('Cost so far', costSoFar)
       return path.reverse()
     } else {
       return undefined

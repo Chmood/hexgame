@@ -131,6 +131,7 @@ const Renderer2d = (game, ctx) => {
               offset = HEXLIB.hexOffset(x, y),
               hex = HEXLIB.offset2Hex(offset, CONFIG.map.mapTopped, CONFIG.map.mapParity),
 
+              point = HEXLIB.hex2Pixel(renderer.layout, hex),
               corners = HEXLIB.hexCorners(renderer.layout, hex),
               cornersOneThird = HEXLIB.hexCorners(renderer.layout, hex, 0.3332),
               cornersHalf = HEXLIB.hexCorners(renderer.layout, hex, 0.5),
@@ -147,9 +148,11 @@ const Renderer2d = (game, ctx) => {
         // ON-MAP UI
 
         // Drawline
-        for (let i = 0; i < ui.line.length; i++) {
-          if (HEXLIB.hexEqual(hex, ui.line[i])) {
-            renderer.drawHex(cornersHalf, game.players[1].color)
+        if (ui.line) {
+          for (let i = 0; i < ui.line.length; i++) {
+            if (HEXLIB.hexEqual(hex, ui.line[i])) {
+              renderer.drawHex(cornersHalf, game.players[1].color)
+            }
           }
         }
 
@@ -180,7 +183,7 @@ const Renderer2d = (game, ctx) => {
 
         // CELL TEXT
         if (CONFIG.render2d.displayTileText) {
-          renderer.ctx.font = '10px Arial'
+          renderer.ctx.font = '8px Arial'
           renderer.ctx.lineWidth = 0
           renderer.ctx.fillStyle = 'rgba(255,255,255,0.5)'
 
@@ -190,10 +193,10 @@ const Renderer2d = (game, ctx) => {
             renderer.ctx.fillStyle = 'rgba(0,0,0,0.75)'
           }
 
-          // renderer.ctx.fillText(valFloor, point.x - 3, point.y + 3 + h)// display height
-          // if (map.data[x][y].cost < 1000000) {
-          //   renderer.ctx.fillText(map.data[x][y].cost, point.x - 3, point.y + 3 + h)
-          // }
+          // renderer.ctx.fillText(valFloor, point.x - 3, point.y + 3)// display height
+          if (map.data[x][y].cost < 1000000) {
+            renderer.ctx.fillText(Math.floor(map.data[x][y].cost), point.x - 3, point.y + 3)
+          }
         }
       }
     }

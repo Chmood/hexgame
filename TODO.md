@@ -2,11 +2,15 @@
 
 ## Known bugs
 
-* Pointy map pathfinding is broken
+* [CRITICAL] Pointy map pathfinding is broken
 * Moving cursor with arrow keys should adapt to camera beta rotation
+* Due to map parity lateral move (when flat-topped), some tile cannot be reached/selected
 
 ## Improvements
 
+* Make players have multiple units
+* Add multiple hightlight layers (all-in-one is clumpsy)
+* Animate player's movements (tile by tile)
 * Makes diagonal cursor moves (2 arrow keys at the same time)
 
 ## Ideas

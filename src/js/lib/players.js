@@ -9,7 +9,11 @@ const Players = (PLAYERS, mapTopped, mapParity, playerZoneRatio = 1) => {
   const players = []
 
   for (let p = 0; p < PLAYERS.length; p++) {
-    let player = Player(PLAYERS[p].color)
+    let player = Player({
+      color: PLAYERS[p].color,
+      name: PLAYERS[p].name,
+      movement: PLAYERS[p].movement
+    })
     let col, row
 
     const randomCol = Math.random(),

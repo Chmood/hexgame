@@ -3,10 +3,12 @@ import HEXLIB from '../vendor/hexlib.js'
 ////////////////////////////////////////////////////////////////////////////////
 // PLAYER
 
-const Player = (color) => {
+const Player = (config) => {
   const player = {}
 
-  player.color = color
+  player.name = config.name
+  player.color = config.color
+  player.movement = config.movement
 
   player.moveToHex = (hex, mapTopped, mapParity) => {
     player.hex = hex

@@ -20,9 +20,11 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // UI OVERLAY
   game.ui = {}
-  game.ui.cursor = HEXLIB.hex(-1, -1) // out of bound cursor
-  game.ui.line = []
-  game.ui.cursorPath = []
+  // game.ui.cursor = HEXLIB.hex(-1, -1) // out of bound cursor
+  // game.ui.cursorBackup = game.ui.cursor
+  // game.ui.line = []
+  // game.ui.cursorPath = []
+  // game.ui.moveZone = []
 
   // UPDATE RENDERERS
   game.updateRenderers = (actions) => {
@@ -59,7 +61,57 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
       } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
       } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
+      } else if (keys['x']) {           game.doAction()
+      } else if (keys['c']) {           game.cancelAction()
       }
+    }
+  }
+
+  // DO ACTION
+  game.doAction = () => {
+    if (game.mode === 'select') {
+      let isSomethingSelected = false
+      for (const player of game.players) {
+        if (HEXLIB.hexEqual(game.ui.cursor, player.hex)) {
+          isSomethingSelected = true
+          game.mode = 'move'
+          game.selectedPlayer = player
+          // Highlight the whole movement zone
+          game.ui.moveZone = game.getMoveZone(player)
+          console.log(`Player selected: ${player.name} (movement: ${player.movement}, move zone length: ${game.ui.moveZone.length})`)
+          game.updateRenderers(['highlights'])
+          // Backup cursor in case of cancel
+          game.ui.cursorBackup = game.ui.cursor
+        }
+      }
+      if (!isSomethingSelected) {
+        console.log('Nothing to select here!')
+      }
+    } else if (game.mode === 'move') {
+      game.selectedPlayer.moveToHex(game.ui.cursor, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      game.ui.cursorPath = []
+      game.ui.moveZone = []
+      game.updateRenderers(['players', 'highlights'])
+      game.mode = 'select'
+      console.log(`Player moved: ${game.selectedPlayer.name}`)
+    }
+  }
+
+  // CANCEL ACTION
+  game.cancelAction = () => {
+    if (game.mode === 'select') {
+      console.log('Nothing to cancel!')
+      // Nothing to do
+    } else if (game.mode === 'move') {
+      // TODO: move the cursor back on the player
+      game.mode = 'select'
+      game.ui.cursor = game.ui.cursorBackup
+      game.ui.cursorPath = []
+      game.ui.moveZone = []
+      game.updateRenderers(['highlights'])
+      // game.updateCursor(game.ui.cursor)
+      game.renderer3d.updateCameraPosition(game.ui.cursor)
+      console.log('Move has been cancelled')
     }
   }
 
@@ -103,6 +155,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // MOVE CURSOR
   game.cursorMove = (direction) => {
     game.renderer3d.debounce = CONFIG.render3d.debounceKeyboardTime
+
     const directionIndex = game.getDirectionIndex(direction, game.ui.cursor)
 
     if (directionIndex !== undefined) {
@@ -114,11 +167,27 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         offset.col < CONFIG.map.mapSize.width &&
         offset.row < CONFIG.map.mapSize.height
       ) {
+        // In move mode, cursor can only move on valid tiles (aka move zone)
+        if (game.mode === 'move') {
+          let isValidMove = false
+          
+          for(const validHex of game.ui.moveZone) {
+            if (HEXLIB.hexEqual(hex, validHex)) {
+              isValidMove = true
+              break
+            }
+          }
+          if (!isValidMove) {
+            console.log('Invalid move!')
+            return
+          }
+        }
+        // Move the cursor
         game.updateCursor(hex)
         game.renderer3d.updateCameraPosition(hex)
-        console.log(offset)
+
       } else {
-        console.warn('Edge of the map!')
+        console.log('Cannot go there, edge of the map reached!')
       }
     }
   }
@@ -130,7 +199,11 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         // Cursor has moved
         game.ui.cursor = hex // Update the new cursor
         // Update the cursor line
-        game.ui.cursorPath = game.getCursorLine(hex, game.players[0].hex)
+        if (game.mode === 'move') {
+          game.ui.cursorPath = game.getCursorLine(hex, game.selectedPlayer.hex)
+        } else {
+          game.ui.cursorPath = []
+        }
 
         game.updateRenderers(['highlights'])
       }
@@ -147,8 +220,29 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
   }
 
+  // GET MOVE ZONE
+  // Grab all the tiles with a cost lower than the player movement value
+  game.getMoveZone = (player) => {
+    // Scan the whole graph to compute cost of each tile
+    // The goal is an invalid hex, and early exit is set to false
+    game.map.findPath(player.hex, HEXLIB.hex(-1,-1), false)
+    game.renderer2d.render() // Draw numbers on 2D map
+
+    const moveZone = []
+    for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+        const tile = game.map.data[x][y]
+        if (tile.cost <= player.movement) {
+          moveZone.push(tile.hex)
+        }
+      }
+    }
+    return moveZone
+  }
+
+  // TODO: remove this?
   // SET DESTINATION
-  // Try to set the destination tile when clicking on a map (2d or 3d)
+  // Try to set the destination tile
   game.setDestination = (hex) => {
     if (hex) { // May be called with invalid cursor hex
       const line = game.map.findPath(game.players[0].hex, hex)
@@ -200,14 +294,19 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
 
     if (line) {
-      game.ui.line = line
+      // game.ui.line = line
       game.renderer3d.createTiles()
       game.renderer3d.createPlayers()
 
       const startingHex = game.players[0].hex // Place the cursor on first player
       game.ui.cursor = startingHex
-      // game.updateCursor(startingHex) // Don't needed here?
+      game.ui.cursorBackup = startingHex
       game.renderer3d.updateCameraPosition(startingHex)
+
+      game.ui.moveZone = []
+
+      game.mode = 'select'
+      game.selectedPlayer = undefined
 
       game.updateRenderers(['players', 'highlights'])
       

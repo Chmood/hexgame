@@ -707,11 +707,15 @@ const Renderer3d = (game, canvas) => {
   // UPDATE HIGHLIGHTS
   renderer.updateHighlights = () => {
     // Clear all highlights
-    for (let mesh of renderer.highlightMeshes) {
+    for (const mesh of renderer.highlightMeshes) {
       renderer.highlightLayer.removeMesh(mesh.mesh)
     }
     renderer.highlightMeshes = []
     
+    // Move zone
+    for (const hex of game.ui.moveZone) {
+      renderer.hightlightTile(hex, BABYLON.Color3.White())
+    }
     // Path line
     renderer.highlightLine(game.ui.line, BABYLON.Color3.Red())
     // Cursor line
