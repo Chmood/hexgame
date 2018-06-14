@@ -707,30 +707,34 @@ const Renderer3d = (game, canvas) => {
   // UPDATE HIGHLIGHTS
   renderer.updateHighlights = () => {
     // Clear all highlights
-    for (const mesh of renderer.highlightMeshes) {
-      renderer.highlightLayer.removeMesh(mesh.mesh)
+    for (let n = 0; n < renderer.highlightMeshes.length; n++) {
+      for (const mesh of renderer.highlightMeshes[n]) {
+        renderer.highlightLayer[n].removeMesh(mesh.mesh)
+      }
+      renderer.highlightMeshes[n] = []
     }
-    renderer.highlightMeshes = []
     
     // Move zone
     for (const hex of game.ui.moveZone) {
-      renderer.hightlightTile(hex, BABYLON.Color3.White())
+      renderer.hightlightTile(hex, BABYLON.Color3.White(), 0)
     }
     // Path line
-    renderer.highlightLine(game.ui.line, BABYLON.Color3.Red())
+    renderer.highlightLine(game.ui.line, BABYLON.Color3.Red(), 1)
     // Cursor line
-    renderer.highlightLine(game.ui.cursorPath, BABYLON.Color3.Blue())
+    renderer.highlightLine(game.ui.cursorPath, BABYLON.Color3.Blue(), 1)
     // Cursor tile
-    renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue())
+    renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue(), 1)
 
     // Add selected meshes to highlight layer
-    for (let mesh of renderer.highlightMeshes) {
-      renderer.highlightLayer.addMesh(mesh.mesh, mesh.color)
+    for (let n = 0; n < renderer.highlightMeshes.length; n++) {
+      for (let mesh of renderer.highlightMeshes[n]) {
+        renderer.highlightLayer[n].addMesh(mesh.mesh, mesh.color)
+      }
     }
   }
 
   // HIGHTLIGHT TILE
-  renderer.hightlightTile = (hex, color = BABYLON.Color3.White()) => {
+  renderer.hightlightTile = (hex, color = BABYLON.Color3.White(), n = 0) => {
     const offset = HEXLIB.hex2Offset(
             hex, 
             CONFIG.map.mapTopped, 
@@ -743,7 +747,7 @@ const Renderer3d = (game, canvas) => {
         offset.col < CONFIG.map.mapSize.width && offset.row < CONFIG.map.mapSize.height
       ) {
       // Add to layer
-      renderer.highlightMeshes.push({
+      renderer.highlightMeshes[n].push({
         mesh: map[offset.col][offset.row].tile,
         color: color
       })
@@ -751,11 +755,11 @@ const Renderer3d = (game, canvas) => {
   }
 
   // HIGHLIGHT LINE
-  renderer.highlightLine = (line, color) => {
+  renderer.highlightLine = (line, color, n = 0) => {
     // Draw line tiles
     if (line) {
       for (let i = 0; i < line.length; i++) {
-        renderer.hightlightTile(line[i], color)
+        renderer.hightlightTile(line[i], color, n)
       }
     }
   }
@@ -825,12 +829,19 @@ const Renderer3d = (game, canvas) => {
     renderer.directionalLight.intensity = 0.8
     renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
 	  
-    // Shadow & highlight
+    // Shadow
     renderer.shadowGenerator = new BABYLON.ShadowGenerator(4096, renderer.directionalLight)
     // renderer.shadowGenerator.useBlurExponentialShadowMap = true;
     renderer.shadowGenerator.usePoissonSampling = true
-    renderer.highlightLayer = renderer.createHighlightLayer('hl1', renderer.scene)
+
+    // Highlight layers
+    const nHightlighLayers = 2
+    renderer.highlightLayer = []
     renderer.highlightMeshes = []
+    for (let n = 0; n < nHightlighLayers; n++) {
+      renderer.highlightLayer[n] = renderer.createHighlightLayer(`highlightLayer${n}`, renderer.scene)
+      renderer.highlightMeshes[n] = []
+    }
 
     // Materials
     renderer.materials = renderer.createMaterials()

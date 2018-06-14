@@ -9,9 +9,9 @@
 ## Improvements
 
 * Make players have multiple units
-* Add multiple hightlight layers (all-in-one is clumpsy)
 * Animate player's movements (tile by tile)
 * Makes diagonal cursor moves (2 arrow keys at the same time)
+* Players can be on the same tile
 
 ## Ideas
 
