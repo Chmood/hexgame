@@ -88,12 +88,15 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         console.log('Nothing to select here!')
       }
     } else if (game.mode === 'move') {
-      game.selectedPlayer.moveToHex(game.ui.cursor, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      // Avoid the user to move cursor or do other actions during movement
+      game.mode = 'passive'
       game.ui.cursorPath = []
       game.ui.moveZone = []
-      game.updateRenderers(['players', 'highlights'])
-      game.mode = 'select'
-      console.log(`Player moved: ${game.selectedPlayer.name}`)
+      game.updateRenderers(['highlights'])
+      const path = game.map.findPath(game.selectedPlayer.hex, game.ui.cursor)
+      path.shift()
+      game.renderer3d.movePlayer(game.selectedPlayer, path)
+      // game.updateRenderers(['players'])
     }
   }
 
@@ -156,6 +159,9 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   game.cursorMove = (direction) => {
     game.renderer3d.debounce = CONFIG.render3d.debounceKeyboardTime
 
+    if (game.mode !== 'select' && game.mode !== 'move') {
+      return
+    }
     const directionIndex = game.getDirectionIndex(direction, game.ui.cursor)
 
     if (directionIndex !== undefined) {

@@ -9,7 +9,8 @@ const CONFIG = {
     // mapSize: 						{ width: 29, height: 25 }, // Logical map size, in cells
     mapSize: { width: 29, height: 25 }, // Logical map size, in cells
     mapTopped: HEXLIB.FLAT, // FLAT or POINTY
-    mapParity: Math.random() > 0.5 ? HEXLIB.EVEN : HEXLIB.ODD, // HEXLIB.EVEN or HEXLIB.ODD
+    // mapParity: Math.random() > 0.5 ? HEXLIB.EVEN : HEXLIB.ODD, // HEXLIB.EVEN or HEXLIB.ODD
+    mapParity: HEXLIB.EVEN, // HEXLIB.EVEN or HEXLIB.ODD
 
     mapSeaMinLevel: 2, // Sea is flat below this value
     mapValueRange: {
@@ -86,7 +87,7 @@ const CONFIG = {
     shinyIce: true,
     transparentIce: false,
     worldSize: 4096, // Used for skybox and ocean
-    showAxis: true,
+    showAxis: false,
     // UI mods
     betterOcean: false,
     postprocess: 'multi', // 'ssao', 'multi' or 'none'
