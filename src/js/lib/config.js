@@ -8,9 +8,10 @@ const CONFIG = {
     mapSeed: undefined, // Computed later
     // mapSize: 						{ width: 29, height: 25 }, // Logical map size, in cells
     mapSize: { width: 29, height: 25 }, // Logical map size, in cells
-    mapTopped: HEXLIB.FLAT, // FLAT or POINTY
-    // mapParity: Math.random() > 0.5 ? HEXLIB.EVEN : HEXLIB.ODD, // HEXLIB.EVEN or HEXLIB.ODD
-    mapParity: HEXLIB.EVEN, // HEXLIB.EVEN or HEXLIB.ODD
+    mapTopped: Math.random() > 0.5 ? HEXLIB.FLAT : HEXLIB.POINTY, // HEXLIB.FLAT or HEXLIB.POINTY
+    // mapTopped: HEXLIB.FLAT, // HEXLIB.FLAT or HEXLIB.POINTY
+    mapParity: Math.random() > 0.5 ? HEXLIB.EVEN : HEXLIB.ODD, // HEXLIB.EVEN or HEXLIB.ODD
+    // mapParity: HEXLIB.EVEN, // HEXLIB.EVEN or HEXLIB.ODD
 
     mapSeaMinLevel: 2, // Sea is flat below this value
     mapValueRange: {

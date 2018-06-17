@@ -318,7 +318,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
   // GET MOVE COST
   map.getMoveCost = (fromHeight, toHeight, toBiome) => {
-    let cost = 10000,
+    let cost = 1,
         heightCost = toHeight - fromHeight
 
     // Heightcost is positive when we move upward
@@ -424,8 +424,18 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     return hexes
   }  
 
-  // A-STAR PATHFINDING
-  // Find a path between 2 hexes
+  // RESET COSTS
+  // Reset all move costs to max value
+  map.resetCosts = () => {
+    for (let y = 0; y < config.mapSize.height; y++) {
+      for (let x = 0; x < config.mapSize.width; x++) {
+        map.data[x][y].cost = 100000000
+      }
+    }
+  }
+
+  // FIND PATH
+  // Find a path between 2 hexes, with A-star algorithm
   // From: 
   //	http://www.redblobgames.com/pathfinding/a-star/introduction.html
   //	http://www.redblobgames.com/pathfinding/a-star/implementation.html
@@ -434,12 +444,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     // if (!map.getFromHex(start).isInGraph) console.warn('A*: start hex is NOT in graph!')
     // if (!map.getFromHex(goal).isInGraph) console.warn('A*: goal hex is NOT in graph!')
 
-    // Reset all move costs to max value
-    for (let y = 0; y < config.mapSize.height; y++) {
-      for (let x = 0; x < config.mapSize.width; x++) {
-        map.data[x][y].cost = 100000000
-      }
-    }
+    map.resetCosts()
 
     const frontier = PriorityQueue() // List of the places that are still to be explored
     const cameFrom = [] // List of places where we've already been
@@ -481,18 +486,15 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
         if (!HEXLIB.hexIndexOf(comeSoFarHexes, next) || newCost < costSoFar[next]) {
           costSoFar.push([next, newCost])
-          let priority = 1 // If no goal, static priority for all cells
+          let priority = newCost
           if (goal) {
-            priority = newCost + HEXLIB.hexDistance(next, goal) // heuristic
+            priority += HEXLIB.hexDistance(next, goal) // heuristic
           }
           frontier.push(next, priority)
           cameFrom.push([next, current])
 
           // Cost backup
           const nextOffset = HEXLIB.hex2Offset(next, config.mapTopped, config.mapParity)
-          // console.warn(nextOffset) 
-          // map.data[nextOffset.col][nextOffset.row].cost = Math.floor(newCost)
-          // TODO: this may be out of bounds and throw error with HEXLIB.POINTY or EVEN parity!
           map.data[nextOffset.col][nextOffset.row].cost = newCost
         }
       }
@@ -507,7 +509,6 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         current = map.findFromHex(cameFrom, current)
         path.push(current)
       }
-// console.log('Cost so far', costSoFar)
       return path.reverse()
     } else {
       return undefined

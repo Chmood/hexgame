@@ -229,6 +229,10 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // GET MOVE ZONE
   // Grab all the tiles with a cost lower than the player movement value
   game.getMoveZone = (player) => {
+    // TODO: 
+    // * add a movement parameter / Dijkstra mode
+    // * make findPath return an array of cells in that range
+    
     // Scan the whole graph to compute cost of each tile
     // We call map.findPath() without the goal parameter
     game.map.findPath(player.hex)
