@@ -257,6 +257,9 @@ const Renderer3d = (game, canvas) => {
       materials.players[n].specularColor = new BABYLON.Color3.Black()
     }
 
+    materials.unitNeutral = new BABYLON.StandardMaterial(`unit-black`, renderer.scene)
+    materials.unitNeutral.diffuseColor = new BABYLON.Color3.FromHexString('#aaaaaa')
+
     return materials
   }
 
@@ -655,6 +658,34 @@ const Renderer3d = (game, canvas) => {
   ////////////////////////////////////////
   // UNITS
 
+  // CREATE MULTIPART UNIT
+    renderer.createMultipartUnit = (name, idPlayer, idUnit, parentMesh, baseSize, parts) => {
+    for (const part of parts) {
+      // Create box mesh
+      const p = BABYLON.MeshBuilder.CreateBox(
+        `player-${idPlayer}-${name}-${idUnit}-base`, 
+        {
+          height: baseSize * part.size.height, // height
+          width: baseSize * part.size.length, // length
+          depth: baseSize * part.size.width // width
+        }
+      )
+      // Position
+      p.position = new BABYLON.Vector3(
+        baseSize * part.position.x,
+        baseSize * part.position.y,
+        baseSize * part.position.z
+      )
+      // Parenting
+      p.parent = parentMesh
+      // Material
+      p.material = part.material
+      // Shadows
+      renderer.shadowGenerator.getShadowMap().renderList.push(p)
+      p.receiveShadows = true
+    }
+  }
+
   // CREATE UNIT
   renderer.createUnit = (unit, idPlayer, idUnit) => {
     const hex = unit.hex,
@@ -682,84 +713,38 @@ const Renderer3d = (game, canvas) => {
     ////////////////////////////////////////
     // PARTS MESHES
 
-    // Base
-    const unitBase = BABYLON.MeshBuilder.CreateBox(
-      `player-${idPlayer}-unit-${idUnit}-base`, 
+    renderer.createMultipartUnit('tank', idPlayer, idUnit, unit.mesh, cellSize, [
       {
-        height: cellSize / 6, // height
-        width: cellSize / 4 * 3, // length
-        depth: cellSize / 2 // width
-      }
-    )
-    unitBase.position = new BABYLON.Vector3(0, cellSize / 4, 0)
-
-    // Tracks
-    const unitTrackLeft = BABYLON.MeshBuilder.CreateBox(
-      `player-${idPlayer}-unit-${idUnit}-track-left`, 
+        name: 'base',
+        size: {height: 1/6, length: 3/4, width: 1/2},
+        position: {x: 0, y: 1/4, z: 0},
+        material: renderer.materials.unitNeutral
+      },
       {
-        height: cellSize / 3, 
-        width: cellSize,
-        depth: cellSize / 4
-      }
-    )
-    const unitTrackRight = BABYLON.MeshBuilder.CreateBox(
-      `player-${idPlayer}-unit-${idUnit}-track-right`, 
+        name: 'trackLeft',
+        size: {height: 1/3, length: 1, width: 1/4},
+        position: {x: 0, y: 1/4, z: 1/3},
+        material: renderer.materials.players[idPlayer]
+      },
       {
-        height: cellSize / 3, 
-        width: cellSize,
-        depth: cellSize / 4
-      }
-    )
-    unitTrackLeft.position = new BABYLON.Vector3(0, cellSize / 4, cellSize / 3)
-    unitTrackRight.position = new BABYLON.Vector3(0, cellSize / 4, -cellSize / 3)
-
-    // Body
-    const unitBody = BABYLON.MeshBuilder.CreateBox(
-      `player-${idPlayer}-unit-${idUnit}-body`, 
+        name: 'trackRight',
+        size: {height: 1/3, length: 1, width: 1/4},
+        position: {x: 0, y: 1/4, z: -1/3},
+        material: renderer.materials.players[idPlayer]
+      },
       {
-        height: cellSize / 4, // height
-        width: cellSize / 4, // length
-        depth: cellSize / 4 // width
-      }
-    )
-    unitBody.position = new BABYLON.Vector3(0, cellSize / 2, 0)
-
-    // Cannon
-    const unitCannon = BABYLON.MeshBuilder.CreateBox(
-      `player-${idPlayer}-unit-${idUnit}-body`, 
+        name: 'body',
+        size: {height: 1/4, length: 1/4, width: 1/4},
+        position: {x: 0, y: 1/2, z: 0},
+        material: renderer.materials.players[idPlayer]
+      },
       {
-        height: cellSize / 16, // height
-        width: cellSize / 2, // length
-        depth: cellSize / 16 // width
+        name: 'cannon',
+        size: {height: 1/16, length: 1/2, width: 1/16},
+        position: {x: -1/4, y: 1/2, z: 0},
+        material: renderer.materials.players[idPlayer]
       }
-    )
-    unitCannon.position = new BABYLON.Vector3(-cellSize / 4, cellSize / 2, 0)
-
-    // Grouping (aka parenting)
-    unitBase.parent = unit.mesh
-    unitTrackLeft.parent = unit.mesh
-    unitTrackRight.parent = unit.mesh
-    unitBody.parent = unit.mesh
-    unitCannon.parent = unit.mesh
-
-    // MATERIAL
-    // unitBase.material = renderer.materials.players[idPlayer]
-    unitTrackLeft.material = renderer.materials.players[idPlayer]
-    unitTrackRight.material = renderer.materials.players[idPlayer]
-    unitBody.material = renderer.materials.players[idPlayer]
-    unitCannon.material = renderer.materials.players[idPlayer]
-    // Make and receive shadows
-    renderer.shadowGenerator.getShadowMap().renderList.push(unitBase)
-    renderer.shadowGenerator.getShadowMap().renderList.push(unitTrackLeft)
-    renderer.shadowGenerator.getShadowMap().renderList.push(unitTrackRight)
-    renderer.shadowGenerator.getShadowMap().renderList.push(unitBody)
-    renderer.shadowGenerator.getShadowMap().renderList.push(unitCannon)
-
-    unitBase.receiveShadows = true
-    unitTrackLeft.receiveShadows = true
-    unitTrackRight.receiveShadows = true
-    unitBody.receiveShadows = true
-    unitCannon.receiveShadows = true
+    ])
   }
 
   // CREATE UNITS
