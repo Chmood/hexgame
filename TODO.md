@@ -3,7 +3,6 @@
 ## Known bugs
 
 * [CRITICAL] Pointy map pathfinding is broken
-* [CRITICAL] Sometimes ocean is valid tiles, findPath() is broken and so on...
 * Moving cursor with arrow keys should adapt to camera beta rotation
 * Due to map parity lateral move (when flat-topped), some tile cannot be reached/selected
 * Players can be on the same tile

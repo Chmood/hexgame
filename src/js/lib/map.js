@@ -9,12 +9,30 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   const map = {}
 
   // ARRAY 2D
-  const array2d = (x, y) => Array(...Array(x)).map(() => Array(y))
+  // Create an empty 2D array with given width and height
+  const array2d = (width, height) => Array(...Array(width)).map(() => Array(height))
 
+  // CELL STRUCTURE:
+  // {
+  //   hex,       // Hex
+  //   hexOffset, // HexOffset
+  //   isInGraph, // Boolean
+  //
+  //   height,    // Number - the elevation of the tile
+  //   moisture,  // Number - the humidity of the tile
+  //   biome,     // String - the name of the biome
+  //
+  //   neighbors, // [Hex] - array of VALID neighbors' hexes
+  //   cost,      // Number - CURRENT pathfinding move cost from origin
+  //   costs,     // [Number] - array of VALID neighbors' move costs
+  //
+  //   tile       // BABYLON.Mesh - reference to the tile mesh
+  // }
   map.data = array2d(config.mapSize.width, config.mapSize.height)
-  
-  // Backup configuration
-  map.config = config
+
+  // TODO: remove this if proven unnecessary!
+  // // Backup configuration
+  // map.config = config
 
   // RANDOMIZE SEED
   // Random seed the noise generator
@@ -36,9 +54,11 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
       if (map.data[hexOffset.col][hexOffset.row]) {
         return map.data[hexOffset.col][hexOffset.row]
       } else {
+        console.warn(`Map.getFromHex(): unknown row ${hexOffset.row}`)
         return undefined
       }
     } else {
+      console.warn(`Map.getFromHex(): unknown column ${hexOffset.col}`)
       return undefined
     }
   }
@@ -109,14 +129,8 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
       hexVertical = HEXLIB.offset2Hex(offsetVertical, config.mapTopped, config.mapParity),
       hexHorizontal = HEXLIB.offset2Hex(offsetHorizontal, config.mapTopped, config.mapParity)
 
-    const distanceMaxVertical = HEXLIB.hexDistance(
-      hexCenter,
-      hexVertical
-    )
-    const distanceMaxHorizontal = HEXLIB.hexDistance(
-      hexCenter,
-      hexHorizontal
-    )
+    const distanceMaxVertical = HEXLIB.hexDistance(hexCenter, hexVertical)
+    const distanceMaxHorizontal = HEXLIB.hexDistance(hexCenter, hexHorizontal)
     const distanceMax = Math.min(distanceMaxVertical, distanceMaxHorizontal)
 
     for (let x = 0; x < config.mapSize.width; x++) {
@@ -293,14 +307,11 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     if (config.mapPostprocess[type].normalize) {
       map.normalizeMap(type, config.mapValueRange[type])
     }
-
-    // 		// Make map values as integers
-    // 		map.roundMapHeight(dataMap)
   }
 
   // IS VALID CELL
   // Tells if the cell is part of the graph or not, depending on its biome
-  map.isValidCell = (biome) => {
+  map.isValidBiome = (biome) => {
     // The biomes we can't move on
     return (biome !== 'deepsea' && biome !== 'sea' && biome !== 'shore')
   }
@@ -342,71 +353,58 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         const hexOffset = HEXLIB.hexOffset(x, y),
           hex = HEXLIB.offset2Hex(hexOffset, config.mapTopped, config.mapParity),
           neighborsAll = HEXLIB.hexNeighbors(hex),
-          neighbors = [],
-          costs = [],
-          // height = map.data[x][y].height, // Not in use for now
-          biome = map.data[x][y].biome,
-          height = map.data[x][y].height
+          neighbors = [], // VALID neighbors of the cell
+          costs = [], // Move costs to VALID neighbors
+          cell = map.data[x][y] // Reference to the cell map data
 
         // Add the cell to graph if the height is valid
-        map.data[x][y].isInGraph = map.isValidCell(biome)
+        cell.isInGraph = map.isValidBiome(cell.biome)
 
-        if (map.data[x][y].isInGraph) {
+        if (cell.isInGraph) {
 
           // Each (eventual) neighbor of the cell
           for (let i = 0; i < 6; i++) {
-            const n = neighborsAll[i],
-              no = HEXLIB.hex2Offset(n, config.mapTopped, config.mapParity)
+            const neighbor = neighborsAll[i],
+                  neighborOffset = HEXLIB.hex2Offset(neighbor, config.mapTopped, config.mapParity)
 
             // Is the neighbor on/in the map?
-            if (no.col >= 0 &&
-              no.row >= 0 &&
-              no.col < config.mapSize.width &&
-              no.row < config.mapSize.height) {
+            if (neighborOffset.col >= 0 &&
+              neighborOffset.row >= 0 &&
+              neighborOffset.col < config.mapSize.width &&
+              neighborOffset.row < config.mapSize.height) {
 
               // Is the neighbor a valid move?
-              const neighborHeight = map.data[no.col][no.row].height,
-                neighborBiome = map.data[no.col][no.row].biome
+              const neighborHeight = map.data[neighborOffset.col][neighborOffset.row].height,
+                neighborBiome = map.data[neighborOffset.col][neighborOffset.row].biome
 
-              if (map.isValidCell(neighborBiome)) {
-                const cost = map.getMoveCost(height, neighborHeight, neighborBiome)
-                // cost = Math.floor(cost)
+              if (map.isValidBiome(neighborBiome)) {
+                const cost = map.getMoveCost(cell.height, neighborHeight, neighborBiome)
                 costs.push(cost)	// add the edge cost to the graph
 
                 // ADD EGDE
-                neighbors.push(n)
+                neighbors.push(neighbor)
               }
             }
           }
         }
 
         // Backup things into cell
-        map.data[x][y].hex = hex
-        map.data[x][y].hexOffset = hexOffset
-        map.data[x][y].neighbors = neighbors
-        map.data[x][y].costs = costs
+        cell.hex = hex
+        cell.hexOffset = hexOffset
+        cell.neighbors = neighbors
+        cell.costs = costs
       }
     }
+    // console.warn('MAP', map.data)
   }
 
   //////////////////////////////////////////////////////////////////////////////
   // PATH FINDING
 
-  // As we have no string hex notation, we use hex objects as 'indexes'
-  // in a 2d array: [hex][value]
-
-  // GET INDEX HEXES
-  // Return an array of hexes from an array with theses hexes as indexes
-  map.getIndexHexes = (cameFrom) => {
-    const hexes = []
-    for (let h = 0; h < cameFrom.length; h++) {
-      hexes.push(cameFrom[h][0])
-    }
-    return hexes
-  }
-
   // FIND FROM HEX
   // Return a value from an hex index
+  // As we have no string hex notation, we use hex objects as 'indexes'
+  // in a 2d array: [hex][value]
   map.findFromHex = (data, hex) => {
     for (let h = 0; h < data.length; h++) {
       if (HEXLIB.hexEqual(data[h][0], hex)) {
@@ -415,6 +413,16 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     }
     return undefined
   }
+
+  // GET INDEX HEXES
+  // Return an array of hexes from an array with theses hexes as indexes
+  map.getIndexHexes = (cameFrom) => {
+    const hexes = []
+    for (let h = 0; h < cameFrom.length; h++) {
+      hexes.push(cameFrom[h][0])
+    }  
+    return hexes
+  }  
 
   // A-STAR PATHFINDING
   // Find a path between 2 hexes
@@ -426,15 +434,16 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     // if (!map.getFromHex(start).isInGraph) console.warn('A*: start hex is NOT in graph!')
     // if (!map.getFromHex(goal).isInGraph) console.warn('A*: goal hex is NOT in graph!')
 
+    // Reset all move costs to max value
     for (let y = 0; y < config.mapSize.height; y++) {
       for (let x = 0; x < config.mapSize.width; x++) {
         map.data[x][y].cost = 100000000
       }
     }
 
-    const frontier = PriorityQueue() // List of the places still to explore
-    const cameFrom = [] // List of where we've already been
-    const costSoFar = []	// The price we paid to go there
+    const frontier = PriorityQueue() // List of the places that are still to be explored
+    const cameFrom = [] // List of places where we've already been
+    const costSoFar = [] // The price we paid to go there
     let found = false
 
     frontier.push(start, 0)
@@ -472,14 +481,18 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
         if (!HEXLIB.hexIndexOf(comeSoFarHexes, next) || newCost < costSoFar[next]) {
           costSoFar.push([next, newCost])
-          const priority = newCost + HEXLIB.hexDistance(next, goal) // heuristic
+          let priority = 1 // If no goal, static priority for all cells
+          if (goal) {
+            priority = newCost + HEXLIB.hexDistance(next, goal) // heuristic
+          }
           frontier.push(next, priority)
           cameFrom.push([next, current])
 
           // Cost backup
-          const nextOffset = HEXLIB.hex2Offset(next)
-          // console.warn(nextOffset) // TODO: this may be out of bounds and throw error with HEXLIB.POINTY!
+          const nextOffset = HEXLIB.hex2Offset(next, config.mapTopped, config.mapParity)
+          // console.warn(nextOffset) 
           // map.data[nextOffset.col][nextOffset.row].cost = Math.floor(newCost)
+          // TODO: this may be out of bounds and throw error with HEXLIB.POINTY or EVEN parity!
           map.data[nextOffset.col][nextOffset.row].cost = newCost
         }
       }

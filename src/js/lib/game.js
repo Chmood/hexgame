@@ -230,8 +230,8 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // Grab all the tiles with a cost lower than the player movement value
   game.getMoveZone = (player) => {
     // Scan the whole graph to compute cost of each tile
-    // The goal is an invalid hex, and early exit is set to false
-    game.map.findPath(player.hex, HEXLIB.hex(-1,-1), false)
+    // We call map.findPath() without the goal parameter
+    game.map.findPath(player.hex)
     game.renderer2d.render() // Draw numbers on 2D map
 
     const moveZone = []
@@ -279,13 +279,15 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
 
     let line,
-        tryLeft = 100
+        nTry = 0,
+        nTryLeft = 100
 
     game.renderer3d.deleteTiles()
     game.renderer3d.deletePlayers()
 
-    while (!line && tryLeft >= 0) {
-      tryLeft--
+    while (!line && nTryLeft >= 0) {
+      nTryLeft--
+      nTry++
       // PLAYERS
       game.players = Players(
         CONFIG.players,
@@ -300,6 +302,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
 
     if (line) {
+      console.log(game.map.data)
       // game.ui.line = line
       game.renderer3d.createTiles()
       game.renderer3d.createPlayers()
@@ -315,6 +318,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.selectedPlayer = undefined
 
       game.updateRenderers(['players', 'highlights'])
+      console.log(`Game generated in ${nTry} tries`)
       
     } else {
       console.error('Game generation has failed!')
