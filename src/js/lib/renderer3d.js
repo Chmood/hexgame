@@ -27,7 +27,7 @@ const Renderer3d = (game, canvas) => {
   ////////////////////////////////////////
   // BASE
 
-  // LAYOUT
+  // CREATE LAYOUT
   renderer.createLayout = () => {
     return HEXLIB.layout(
       CONFIG.map.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
@@ -45,7 +45,7 @@ const Renderer3d = (game, canvas) => {
     )
   }
 
-  // CAMERA
+  // CREATE CAMERA
   renderer.createCamera = () => {
     // Add a camera to the scene and attach it to the canvas
     const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
@@ -65,6 +65,37 @@ const Renderer3d = (game, canvas) => {
     )
     // Attach control from canvas to the camera (pan, tilt...)
     // camera.attachControl(canvas, true)
+    // Constrain camera rotation & zooming
+    camera.lowerBetaLimit = 0
+    camera.upperBetaLimit = Math.PI / 2
+    // camera.lowerAlphaLimit = 0
+    // camera.upperAlphaLimit = 0
+    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
+    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
+
+    return camera
+  }
+
+  // CREATE CAMERA FREE
+  renderer.createCameraFree = () => {
+    // Add a camera to the scene and attach it to the canvas
+    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
+
+    const camera = new BABYLON.ArcRotateCamera(
+      'Camera',
+      0, // alpha angle
+      CONFIG.render3d.camera.beta, // beta angle
+      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
+      new BABYLON.Vector3( // target
+        0,
+        // focus height is one stepsize above water level
+        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
+        0
+      ),
+      renderer.scene
+    )
+    // Attach control from canvas to the camera (pan, tilt...)
+    camera.attachControl(canvas, true)
     // Constrain camera rotation & zooming
     camera.lowerBetaLimit = 0
     camera.upperBetaLimit = Math.PI / 2
@@ -229,7 +260,16 @@ const Renderer3d = (game, canvas) => {
     console.log(renderer.camera.alpha / alphaStep)
   }
 
-  // MATERIALS
+  // SWITCH ACTIVE CAMERA
+  renderer.switchActiveCamera = () => {
+    if (renderer.scene.activeCamera === renderer.camera) {
+      renderer.scene.activeCamera = renderer.cameraFree
+    } else {
+      renderer.scene.activeCamera = renderer.camera
+    }
+  }
+
+  // CREATE MATERIALS
   renderer.createMaterials = () => {
     const materials = {}
 
@@ -271,7 +311,7 @@ const Renderer3d = (game, canvas) => {
     return highlightLayer
   }
 
-  // CREATE POSTPROCESS
+  // UPDATE POSTPROCESS PIPELINE
   renderer.updatePosprocessPipeline = () => {
     if (CONFIG.render3d.postprocess !== 'none') {
       if (CONFIG.render3d.postprocess === 'ssao') {
@@ -304,7 +344,7 @@ const Renderer3d = (game, canvas) => {
             ssaoRatio: 1,
             combineRatio: 1.0
           },
-          [renderer.camera]
+          [renderer.camera, renderer.cameraFree]
         )
 
       } else if (CONFIG.render3d.postprocess === 'multi') {
@@ -319,7 +359,7 @@ const Renderer3d = (game, canvas) => {
           "default-pipeline", // The name of the pipeline
           true, // Do you want HDR textures ?
           renderer.scene, // The scene instance
-          [renderer.camera] // The list of cameras to be attached to
+          [renderer.camera, renderer.cameraFree] // The list of cameras to be attached to
         )
         // Base
         renderer.pipeline.samples = 4
@@ -368,7 +408,7 @@ const Renderer3d = (game, canvas) => {
   ////////////////////////////////////////
   // ENVIRONMENT
   
-  // SKYBOX
+  // CREATE SKYBOX
   renderer.createSkybox = () => {
     const skybox = BABYLON.Mesh.CreateBox('skyBox', CONFIG.render3d.worldSize, renderer.scene)
     const skyboxMaterial = new BABYLON.StandardMaterial('skyBox', renderer.scene)
@@ -384,7 +424,7 @@ const Renderer3d = (game, canvas) => {
     return skybox
   }
 
-  // OCEAN
+  // UPDATE OCEAN
   renderer.updateOcean = () => {
     const worldSize = CONFIG.render3d.worldSize
     // Ocean floor
@@ -464,7 +504,7 @@ const Renderer3d = (game, canvas) => {
     }
   }
 
-  // SHOW AXIS
+  // SHOW WORLD AXIS
   renderer.showWorldAxis = (size) => {
     // From: https://doc.babylonjs.com/snippets/world_axes
     const makeTextPlane = (text, color, size) => {
@@ -516,11 +556,7 @@ const Renderer3d = (game, canvas) => {
   ////////////////////////////////////////
   // TILES
 
-  // // HEXAPRISM
-  // // aka extruded hexagon
-  // renderer.createHexaprismMesh = (corners) => {
-  // }
-
+  // GET HEXAPRISM VERTEX DATA
   renderer.getHexaprismVertexData = (hex, topHeight, bottomHeight = 0, topScaling = 1, bottomScaling = 1) => {
     const cornersTop = HEXLIB.hexCorners(renderer.layout, hex, CONFIG.render3d.cellSize * topScaling),
           cornersBottom = HEXLIB.hexCorners(renderer.layout, hex, CONFIG.render3d.cellSize * bottomScaling)
@@ -579,7 +615,7 @@ const Renderer3d = (game, canvas) => {
     return vertexData
   }
 
-  // ELEVATION GAP
+  // REDISTRIBUTE ELEVATION WITH GAP
   renderer.redistributeElevationWithGap = (height) => {
     // Increase height gap between lower land & higher sea
     if (
@@ -598,7 +634,7 @@ const Renderer3d = (game, canvas) => {
     return height
   }
 
-  // TILE
+  // CREATE TILE
   renderer.createTile = (x, y, cell) => {
     const offset = HEXLIB.hexOffset(x, y),
       hex = HEXLIB.offset2Hex(
@@ -635,7 +671,7 @@ const Renderer3d = (game, canvas) => {
     return tile
   }
 
-  // TILES
+  // CREATE TILES
   renderer.createTiles = () => {
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
@@ -659,7 +695,7 @@ const Renderer3d = (game, canvas) => {
   // UNITS
 
   // CREATE MULTIPART UNIT
-    renderer.createMultipartUnit = (name, idPlayer, idUnit, parentMesh, baseSize, parts) => {
+  renderer.createMultipartUnit = (name, idPlayer, idUnit, parentMesh, baseSize, parts) => {
     for (const part of parts) {
       // Create box mesh
       const p = BABYLON.MeshBuilder.CreateBox(
@@ -1007,11 +1043,11 @@ const Renderer3d = (game, canvas) => {
       const fps = Math.floor(renderer.engine.getFps())
       // console.log(fps + ' FPS')
 
-      // if (CONFIG.render3d.cameraAutoRotate) {
-      //   // Make the camera rotate around the island
-      //   renderer.camera.alpha = renderer.tick
-      //   renderer.tick += 0.01
-      // }
+      if (CONFIG.render3d.cameraAutoRotate) {
+        // Make the camera rotate around the island
+        renderer.cameraFree.alpha = renderer.tick
+        renderer.tick += 0.01
+      }
     })
   }
 
@@ -1026,6 +1062,8 @@ const Renderer3d = (game, canvas) => {
     })
     renderer.scene = new BABYLON.Scene(renderer.engine)
     renderer.camera = renderer.createCamera()
+    renderer.cameraFree = renderer.createCameraFree()
+    renderer.scene.activeCamera = renderer.camera
 
     // Lights
     renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)

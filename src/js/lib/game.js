@@ -50,18 +50,20 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // ON KEY CHANGE
   game.onKeyDown = (keys) => {
-    // console.log(keys)
-    if (game.renderer3d.debounce === 0) {
-      if        (keys['ArrowRight']) {  game.cursorMove('right')
-      } else if (keys['ArrowLeft']) {   game.cursorMove('left')
-      } else if (keys['ArrowUp']) {     game.cursorMove('up')
-      } else if (keys['ArrowDown']) {   game.cursorMove('down')
-      } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
-      } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
-      } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
-      } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
-      } else if (keys['x']) {           game.doAction()
-      } else if (keys['c']) {           game.cancelAction()
+    if (game.renderer3d.scene.activeCamera === game.renderer3d.camera) {
+      // Only catch key events if the standard camera is active
+      if (game.renderer3d.debounce === 0) {
+        if        (keys['ArrowRight']) {  game.cursorMove('right')
+        } else if (keys['ArrowLeft']) {   game.cursorMove('left')
+        } else if (keys['ArrowUp']) {     game.cursorMove('up')
+        } else if (keys['ArrowDown']) {   game.cursorMove('down')
+        } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
+        } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
+        } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
+        } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
+        } else if (keys['x']) {           game.doAction()
+        } else if (keys['c']) {           game.cancelAction()
+        }
       }
     }
   }

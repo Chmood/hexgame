@@ -19,7 +19,8 @@ const DomUI = () => {
     dom.btnNew = document.getElementById('ui-btn-new')
     dom.selectPosprocess = document.getElementById('ui-select-postprocess')
     dom.checkboxBetterOcean = document.getElementById('ui-checkbox-better-ocean')
-    // dom.checkboxCameraAutoRotate = document.getElementById('ui-camera-auto-rotate')
+    dom.checkboxCameraAutoRotate = document.getElementById('ui-camera-auto-rotate')
+    dom.checkboxCameraFree = document.getElementById('ui-camera-free')
   }
 
   // SET ELEMENTS
@@ -76,10 +77,14 @@ const DomUI = () => {
       game.renderer3d.updateOcean()
       game.renderer3d.addToOceanRenderList()
     })
-    // // Checkbox for auto-rotating camera
-    // dom.checkboxCameraAutoRotate.addEventListener('change', () => {
-    //   CONFIG.render3d.cameraAutoRotate = dom.checkboxCameraAutoRotate.checked
-    // })
+    // Checkbox for auto-rotating camera
+    dom.checkboxCameraAutoRotate.addEventListener('change', () => {
+      CONFIG.render3d.cameraAutoRotate = dom.checkboxCameraAutoRotate.checked
+    })
+    // Checkbox for switching camera ('free mode')
+    dom.checkboxCameraFree.addEventListener('change', () => {
+      game.renderer3d.switchActiveCamera()
+    })
 
     // Resize window
     window.onresize = () => {
