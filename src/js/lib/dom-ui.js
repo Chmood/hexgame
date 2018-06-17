@@ -51,10 +51,8 @@ const DomUI = () => {
 
     // // Click on canvases
     // dom.canvas2d.addEventListener('click', (e) => {
-    //   game.setDestination(game.renderer2d.plotCursor(e))
     // })
     // dom.canvas3d.addEventListener('click', () => {
-    //   game.setDestination(game.renderer3d.plotCursor())
     // })
 
     // UI buttons

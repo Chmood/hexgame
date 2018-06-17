@@ -8,8 +8,8 @@ const CONFIG = {
     mapSeed: undefined, // Computed later
     // mapSize: 						{ width: 29, height: 25 }, // Logical map size, in cells
     mapSize: { width: 29, height: 25 }, // Logical map size, in cells
-    mapTopped: Math.random() > 0.5 ? HEXLIB.FLAT : HEXLIB.POINTY, // HEXLIB.FLAT or HEXLIB.POINTY
-    // mapTopped: HEXLIB.FLAT, // HEXLIB.FLAT or HEXLIB.POINTY
+    // mapTopped: Math.random() > 0.5 ? HEXLIB.FLAT : HEXLIB.POINTY, // HEXLIB.FLAT or HEXLIB.POINTY
+    mapTopped: HEXLIB.FLAT, // HEXLIB.FLAT or HEXLIB.POINTY
     mapParity: Math.random() > 0.5 ? HEXLIB.EVEN : HEXLIB.ODD, // HEXLIB.EVEN or HEXLIB.ODD
     // mapParity: HEXLIB.EVEN, // HEXLIB.EVEN or HEXLIB.ODD
 
@@ -104,9 +104,15 @@ const CONFIG = {
   },
 
   players: [
-    { name: 'Player 1', color: '#ff8000', movement: 10 }, // ORIGIN
-    { name: 'Player 2', color: '#ff0080', movement: 5 }  // DESTINATION
-  ]
+    { id: 0, name: 'Player 1', color: '#ff8000', movement: 10 },
+    { id: 1, name: 'Player 2', color: '#ff0080', movement: 5 },
+    { id: 2, name: 'Player 3', color: '#00ff00', movement: 7 },
+    { id: 3, name: 'Player 4', color: '#0080ff', movement: 12 }
+  ],
+
+  game: {
+    playerStartingZoneRatio: 2 // portion of the map dedicated to player's units initial placement
+  }
 }
 
 // Computed config vars

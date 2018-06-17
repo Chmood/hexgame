@@ -22,7 +22,6 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   game.ui = {}
   // game.ui.cursor = HEXLIB.hex(-1, -1) // out of bound cursor
   // game.ui.cursorBackup = game.ui.cursor
-  // game.ui.line = []
   // game.ui.cursorPath = []
   // game.ui.moveZone = []
 
@@ -38,8 +37,8 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         game.renderer3d.updateHighlights()
 
       } else if (action === 'players') {
-        game.renderer3d.deletePlayers()
-        game.renderer3d.createPlayers()
+        game.renderer3d.deleteUnits()
+        game.renderer3d.createUnits()
         game.renderer3d.addToOceanRenderList() // TODO: overkill? (only players needed)
       }
     }
@@ -72,16 +71,18 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     if (game.mode === 'select') {
       let isSomethingSelected = false
       for (const player of game.players) {
-        if (HEXLIB.hexEqual(game.ui.cursor, player.hex)) {
-          isSomethingSelected = true
-          game.mode = 'move'
-          game.selectedPlayer = player
-          // Highlight the whole movement zone
-          game.ui.moveZone = game.getMoveZone(player)
-          console.log(`Player selected: ${player.name} (movement: ${player.movement}, move zone length: ${game.ui.moveZone.length})`)
-          game.updateRenderers(['highlights'])
-          // Backup cursor in case of cancel
-          game.ui.cursorBackup = game.ui.cursor
+        for (const unit of player.units) {
+          if (HEXLIB.hexEqual(game.ui.cursor, unit.hex)) {
+            isSomethingSelected = true
+            game.mode = 'move'
+            game.selectedUnit = unit
+            // Highlight the whole movement zone
+            game.ui.moveZone = game.getMoveZone(unit)
+            console.log(`Unit selected: ${unit.name} `)
+            game.updateRenderers(['highlights'])
+            // Backup cursor in case of cancel
+            game.ui.cursorBackup = game.ui.cursor
+          }
         }
       }
       if (!isSomethingSelected) {
@@ -93,9 +94,9 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.ui.cursorPath = []
       game.ui.moveZone = []
       game.updateRenderers(['highlights'])
-      const path = game.map.findPath(game.selectedPlayer.hex, game.ui.cursor)
+      const path = game.map.findPath(game.selectedUnit.hex, game.ui.cursor)
       path.shift()
-      game.renderer3d.movePlayer(game.selectedPlayer, path)
+      game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
       // game.updateRenderers(['players'])
     }
   }
@@ -206,7 +207,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         game.ui.cursor = hex // Update the new cursor
         // Update the cursor line
         if (game.mode === 'move') {
-          game.ui.cursorPath = game.getCursorLine(hex, game.selectedPlayer.hex)
+          game.ui.cursorPath = game.getCursorLine(hex, game.selectedUnit.hex)
         } else {
           game.ui.cursorPath = []
         }
@@ -250,22 +251,6 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     return moveZone
   }
 
-  // TODO: remove this?
-  // SET DESTINATION
-  // Try to set the destination tile
-  game.setDestination = (hex) => {
-    if (hex) { // May be called with invalid cursor hex
-      const line = game.map.findPath(game.players[0].hex, hex)
-      if (line) {
-        // Update game
-        game.players[1].moveToHex(hex)
-        game.ui.line = game.map.findPath(game.players[0].hex, game.players[1].hex)
-
-        game.updateRenderers(['players', 'highlights'])
-      }
-    }
-  }
-
   // RESIZE GAME
   game.resizeGame = () => {
     main.setSize()
@@ -283,43 +268,43 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
 
     let line,
+        success = false,
         nTry = 0,
         nTryLeft = 100
 
     game.renderer3d.deleteTiles()
-    game.renderer3d.deletePlayers()
+    game.renderer3d.deleteUnits()
 
-    while (!line && nTryLeft >= 0) {
+    while (!success && nTryLeft >= 0) {
       nTryLeft--
       nTry++
-      // PLAYERS
-      game.players = Players(
-        CONFIG.players,
-        CONFIG.map.mapTopped,
-        CONFIG.map.mapParity
-        //playerZoneRatio has default value
-      )
-      game.map.generate()
 
+      // MAP
+      game.map.generate()
+      // PLAYERS
+      game.players = Players(CONFIG.players, game.map)
+
+      success = true
       // Try to draw a path between the two first players
-      line = game.map.findPath(game.players[0].hex, game.players[1].hex)
+      // line = game.map.findPath(game.players[0].hex, game.players[1].hex)
     }
 
-    if (line) {
-      console.log(game.map.data)
+    if (success) {
+      console.log('MAP DATA', game.map.data)
       // game.ui.line = line
       game.renderer3d.createTiles()
-      game.renderer3d.createPlayers()
+      game.renderer3d.createUnits()
 
-      const startingHex = game.players[0].hex // Place the cursor on first player
+      const startingHex = game.players[0].units[0].hex // Place the cursor on first player's first unit
       game.ui.cursor = startingHex
       game.ui.cursorBackup = startingHex
       game.renderer3d.updateCameraPosition(startingHex)
 
       game.ui.moveZone = []
 
+      game.currentPlayerId = 0
       game.mode = 'select'
-      game.selectedPlayer = undefined
+      game.selectedUnit = undefined
 
       game.updateRenderers(['players', 'highlights'])
       console.log(`Game generated in ${nTry} tries`)

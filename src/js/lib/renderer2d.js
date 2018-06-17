@@ -100,8 +100,8 @@ const Renderer2d = (game, ctx) => {
     renderer.ctx.stroke()
   }
 
-  // DRAW PLAYER
-  renderer.drawPlayer = (corners, cornersCore, color) => {
+  // DRAW UNIT
+  renderer.drawUnit = (corners, cornersCore, color) => {
 
     renderer.drawHex(corners, '#444444')
     renderer.drawHex(cornersCore, color)
@@ -147,15 +147,6 @@ const Renderer2d = (game, ctx) => {
 
         // ON-MAP UI
 
-        // Drawline
-        if (ui.line) {
-          for (let i = 0; i < ui.line.length; i++) {
-            if (HEXLIB.hexEqual(hex, ui.line[i])) {
-              renderer.drawHex(cornersHalf, game.players[1].color)
-            }
-          }
-        }
-
         // Draw cursor path
         if (game.ui.cursorPath) {
           for (let i = 0; i < game.ui.cursorPath.length; i++) {
@@ -172,11 +163,13 @@ const Renderer2d = (game, ctx) => {
 
         // Players
         if (game.players) {
-          for (let p = 0; p < game.players.length; p++) {
-            if (HEXLIB.hexEqual(hex, game.players[p].hex)) {
-              // renderer.drawHex(corners, game.players[p].color)
-              // Draw terrain mesh 
-              renderer.drawPlayer(cornersTwoThird, cornersOneThird, game.players[p].color)
+          for (const player of game.players) {
+            if (player.units) {
+              for (const unit of player.units) {
+                if (HEXLIB.hexEqual(hex, unit.hex)) {
+                  renderer.drawUnit(cornersTwoThird, cornersOneThird, unit.color)
+                }
+              }
             }
           }
         }

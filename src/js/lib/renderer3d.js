@@ -4,8 +4,8 @@ import CONFIG from './config.js'
 
 // image import (for Webpack loading & bundling as dependencies)
 import waterbump from "../../img/waterbump.png"
-// 'useless' ones are because of BabylonJS skybox structure
-// (no direct link to these images in the code below)
+// 'useless' imports are because of BabylonJS skybox structure
+// (no direct link to those images in the code below)
 import img1 from "../../img/TropicalSunnyDay_nx.jpg"
 import img2 from "../../img/TropicalSunnyDay_ny.jpg"
 import img3 from "../../img/TropicalSunnyDay_nz.jpg"
@@ -448,7 +448,9 @@ const Renderer3d = (game, canvas) => {
       // renderer.ocean.material.addToRenderList(renderer.axis) // TODO
       // Players
       for (const player of game.players) {
-        renderer.ocean.material.addToRenderList(player.playerMesh)
+        for (const unit of player.units) {
+          renderer.ocean.material.addToRenderList(unit.mesh)
+        }
       }
       // Tiles
       for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
@@ -651,24 +653,23 @@ const Renderer3d = (game, canvas) => {
   }
 
   ////////////////////////////////////////
-  // PLAYERS
+  // UNITS
 
-  // PLAYER
-  // TODO: solve rotation, position and pivot issues!
-  renderer.createPlayer = (player, n) => {
-    const hex = player.hex,
+  // CREATE UNIT
+  renderer.createUnit = (unit, idPlayer, idUnit) => {
+    const hex = unit.hex,
           position = HEXLIB.hex2Pixel(renderer.layout, hex), // center of tile top
           cellSize = CONFIG.render3d.cellSize,
-          cell = map[player.hexOffset.col][player.hexOffset.row],
+          cell = map[unit.hexOffset.col][unit.hexOffset.row],
           cellHeight = cell.height,
           tile = cell.tile
                 
-    player.mesh = BABYLON.MeshBuilder.CreateBox(
-      `player-${n}`, {height: 0.01, width: 0.01, depth: 0.01}
+      unit.mesh = BABYLON.MeshBuilder.CreateBox(
+      `unit-${idPlayer}`, {height: 0.01, width: 0.01, depth: 0.01}
     )
 
     // POSITION
-    player.mesh.position = new BABYLON.Vector3(
+    unit.mesh.position = new BABYLON.Vector3(
       position.y,
       cellHeight * CONFIG.render3d.cellStepHeight,
       position.x
@@ -676,11 +677,14 @@ const Renderer3d = (game, canvas) => {
 
     // ROTATION
     // Same rotation as the underneath tile
-    player.mesh.rotation = tile.rotation
+    unit.mesh.rotation = tile.rotation
+
+    ////////////////////////////////////////
+    // PARTS MESHES
 
     // Base
     const unitBase = BABYLON.MeshBuilder.CreateBox(
-      `player-${n}-base`, 
+      `player-${idPlayer}-unit-${idUnit}-base`, 
       {
         height: cellSize / 6, // height
         width: cellSize / 4 * 3, // length
@@ -691,7 +695,7 @@ const Renderer3d = (game, canvas) => {
 
     // Tracks
     const unitTrackLeft = BABYLON.MeshBuilder.CreateBox(
-      `player-${n}-track-left`, 
+      `player-${idPlayer}-unit-${idUnit}-track-left`, 
       {
         height: cellSize / 3, 
         width: cellSize,
@@ -699,7 +703,7 @@ const Renderer3d = (game, canvas) => {
       }
     )
     const unitTrackRight = BABYLON.MeshBuilder.CreateBox(
-      `player-${n}-track-right`, 
+      `player-${idPlayer}-unit-${idUnit}-track-right`, 
       {
         height: cellSize / 3, 
         width: cellSize,
@@ -711,7 +715,7 @@ const Renderer3d = (game, canvas) => {
 
     // Body
     const unitBody = BABYLON.MeshBuilder.CreateBox(
-      `player-${n}-body`, 
+      `player-${idPlayer}-unit-${idUnit}-body`, 
       {
         height: cellSize / 4, // height
         width: cellSize / 4, // length
@@ -722,7 +726,7 @@ const Renderer3d = (game, canvas) => {
 
     // Cannon
     const unitCannon = BABYLON.MeshBuilder.CreateBox(
-      `player-${n}-body`, 
+      `player-${idPlayer}-unit-${idUnit}-body`, 
       {
         height: cellSize / 16, // height
         width: cellSize / 2, // length
@@ -731,46 +735,59 @@ const Renderer3d = (game, canvas) => {
     )
     unitCannon.position = new BABYLON.Vector3(-cellSize / 4, cellSize / 2, 0)
 
-    // unitBase.material = renderer.materials.players[n]
-    unitTrackLeft.material = renderer.materials.players[n]
-    unitTrackRight.material = renderer.materials.players[n]
-    unitBody.material = renderer.materials.players[n]
-    unitCannon.material = renderer.materials.players[n]
-
-    // Grouping
-    unitBase.parent = player.mesh
-    unitTrackLeft.parent = player.mesh
-    unitTrackRight.parent = player.mesh
-    unitBody.parent = player.mesh
-    unitCannon.parent = player.mesh
-
+    // Grouping (aka parenting)
+    unitBase.parent = unit.mesh
+    unitTrackLeft.parent = unit.mesh
+    unitTrackRight.parent = unit.mesh
+    unitBody.parent = unit.mesh
+    unitCannon.parent = unit.mesh
 
     // MATERIAL
-    // Give the tile mesh a material
-    player.mesh.material = renderer.materials.players[n]
+    // unitBase.material = renderer.materials.players[idPlayer]
+    unitTrackLeft.material = renderer.materials.players[idPlayer]
+    unitTrackRight.material = renderer.materials.players[idPlayer]
+    unitBody.material = renderer.materials.players[idPlayer]
+    unitCannon.material = renderer.materials.players[idPlayer]
     // Make and receive shadows
-    renderer.shadowGenerator.getShadowMap().renderList.push(player.mesh)
-    player.mesh.receiveShadows = true;
+    renderer.shadowGenerator.getShadowMap().renderList.push(unitBase)
+    renderer.shadowGenerator.getShadowMap().renderList.push(unitTrackLeft)
+    renderer.shadowGenerator.getShadowMap().renderList.push(unitTrackRight)
+    renderer.shadowGenerator.getShadowMap().renderList.push(unitBody)
+    renderer.shadowGenerator.getShadowMap().renderList.push(unitCannon)
+
+    unitBase.receiveShadows = true
+    unitTrackLeft.receiveShadows = true
+    unitTrackRight.receiveShadows = true
+    unitBody.receiveShadows = true
+    unitCannon.receiveShadows = true
   }
 
-  // PLAYERS
-  renderer.createPlayers = () => {
-    for (const [n, player] of game.players.entries()) {
-      player.playerMesh = renderer.createPlayer(player, n)
+  // CREATE UNITS
+  renderer.createUnits = () => {
+    for (const player of game.players) {
+      for (const unit of player.units) {
+        console.log('playerId', player.id, 'unitId', unit.id)
+        renderer.createUnit(unit, player.id, unit.id)
+      }
     }
   }
 
-  // DELETE PLAYERS
-  renderer.deletePlayers = () => {
+  // DELETE UNITS
+  renderer.deleteUnits = () => {
     if (game.players) {
       for (const player of game.players) {
-        if (player.mesh) {
-          player.mesh.dispose()
+        if (player.units) {
+          for (const unit of player.units) {
+            if (unit.mesh) {
+              unit.mesh.dispose()
+            }
+          }
         }
       }
     }
   }
 
+  // Easing 'standard' function
   const setEasing = (animation) => {
     const easingFunction = new BABYLON.SineEase()
     easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
@@ -780,7 +797,7 @@ const Renderer3d = (game, canvas) => {
   // ROTATE UNIT
   // Rotate a unit on itself, facing one the 6 directions
   // TODO: cleanup!
-  renderer.rotateUnit = (player, step, callback) => {
+  renderer.rotateUnit = (unit, step, callback) => {
     const position = HEXLIB.hex2Pixel(renderer.layout, step),
           stepData = game.map.getFromHex(step),
           height = stepData.height * CONFIG.render3d.cellStepHeight,
@@ -791,37 +808,33 @@ const Renderer3d = (game, canvas) => {
           )
 
     // Get the direction of the move
-    const targetAngle = nextPosition.subtract(player.mesh.position)
+    const targetAngle = nextPosition.subtract(unit.mesh.position)
     const hypothenuse = CONFIG.render3d.cellSize * Math.sqrt(3) * 1.000001 // Avoid NaN
     let angle = Math.acos(-targetAngle.x / hypothenuse)
     if (targetAngle.z < 0) {
       angle *= -1
     }
-    // console.log('angle', angle)
-    // console.log('player angle', player.mesh.rotation.y)
-    const deltaAngle = angle - player.mesh.rotation.y + 0.00001
-    // console.warn('delta angle', deltaAngle)
+    const deltaAngle = angle - unit.mesh.rotation.y + 0.00001
     const speed = 2 * Math.PI / Math.abs(deltaAngle)
-    // console.log('speed ratio', speed)
 
     // ANIMATE ROTATION
     const animationPlayerRotation = new BABYLON.Animation(
-      'player.mesh',
+      'unit.mesh',
       'rotation', 
       10, 
       BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
       BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     )
     animationPlayerRotation.setKeys([
-      { frame: 0, value: player.mesh.rotation },
+      { frame: 0, value: unit.mesh.rotation },
       { frame: 10, value: new BABYLON.Vector3(0, angle, 0) }
     ])
     setEasing(animationPlayerRotation)
 
-    player.mesh.animations = [animationPlayerRotation]
+    unit.mesh.animations = [animationPlayerRotation]
 
     renderer.scene.beginAnimation(
-      player.mesh, // Target
+      unit.mesh, // Target
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
@@ -832,54 +845,54 @@ const Renderer3d = (game, canvas) => {
 
   // MOVE UNIT
   // Move a unit to an adjacent tile
-  // TODO: the rotation part seems fuxed up!
-  renderer.moveUnit = (player, step, callback) => {
+  // TODO: the rotation part seems fuxed up!?
+  renderer.moveUnit = (unit, step, callback) => {
     const position = HEXLIB.hex2Pixel(renderer.layout, step),
-    stepData = game.map.getFromHex(step),
-    height = stepData.height * CONFIG.render3d.cellStepHeight,
-    nextPosition = new BABYLON.Vector3( // end value
-      position.y, // Axis inversion!
-      height, 
-      position.x // Axis inversion!
-    ),
-    nextRotation = stepData.tile.rotation
+          stepData = game.map.getFromHex(step),
+          height = stepData.height * CONFIG.render3d.cellStepHeight,
+          nextPosition = new BABYLON.Vector3( // end value
+            position.y, // Axis inversion!
+            height, 
+            position.x // Axis inversion!
+          ),
+          nextRotation = stepData.tile.rotation
 
     // POSITION
     const animationPlayerPosition = new BABYLON.Animation(
-      'player.mesh',
+      'unit.mesh',
       'position', 
       10, 
       BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
       BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     )
     animationPlayerPosition.setKeys([
-      { frame: 0, value: player.mesh.position }, 
+      { frame: 0, value: unit.mesh.position }, 
       { frame: 10, value: nextPosition }
     ])
     setEasing(animationPlayerPosition)
 
     // ROTATION
     const animationPlayerRotation = new BABYLON.Animation(
-      'player.mesh',
+      'unit.mesh',
       'rotation', 
       10, 
       BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
       BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     )
     animationPlayerRotation.setKeys([
-      { frame: 0, value: player.mesh.rotation }, 
+      { frame: 0, value: unit.mesh.rotation }, 
       { frame: 10, value: new BABYLON.Vector3(
         nextRotation.x,
-        player.mesh.rotation.y,
+        unit.mesh.rotation.y,
         nextRotation.y
       )}
     ])
     setEasing(animationPlayerPosition)
 
-    player.mesh.animations = [animationPlayerPosition, animationPlayerRotation]
+    unit.mesh.animations = [animationPlayerPosition, animationPlayerRotation]
 
     renderer.scene.beginAnimation(
-      player.mesh, // Target
+      unit.mesh, // Target
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
@@ -888,26 +901,26 @@ const Renderer3d = (game, canvas) => {
     )
   }
 
-  // MOVE PLAYER
-  // Rotate a unit then move it to an adjacent tile
-  renderer.movePlayer = (player, path) => {
+  // MOVE UNIT ON PATH
+  // Rotate a unit then move it to an adjacent tile, repeatedly
+  renderer.moveUnitOnPath = (unit, path) => {
     if (path.length === 0) {
       // The path is over
       game.mode = 'select'
-      console.log(`Player moved: ${game.selectedPlayer.name}`)
+      console.log(`Unit moved: ${game.selectedUnit.name}`)
       return
     }
     const step = path[0] // Get the first step
     path.shift() // Remove the first step from the path
-    player.mesh.animations = []
+    unit.mesh.animations = []
     // Make the camera follow the moving unit
     renderer.updateCameraPosition(step)
 
-    renderer.rotateUnit(player, step, () => {
-      renderer.moveUnit(player, step, () => {
-        // Update player's position
-        player.moveToHex(step, CONFIG.map.mapTopped, CONFIG.map.mapParity)
-        renderer.movePlayer(player, path) // Recusivity!
+    renderer.rotateUnit(unit, step, () => {
+      renderer.moveUnit(unit, step, () => {
+        // Update unit's position
+        unit.moveToHex(step, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+        renderer.moveUnitOnPath(unit, path) // Recusivity!
       })
     })
   }

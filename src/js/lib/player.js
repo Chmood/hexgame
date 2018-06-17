@@ -1,4 +1,4 @@
-import HEXLIB from '../vendor/hexlib.js'
+import Unit from './unit'
 
 ////////////////////////////////////////////////////////////////////////////////
 // PLAYER
@@ -6,13 +6,22 @@ import HEXLIB from '../vendor/hexlib.js'
 const Player = (config) => {
   const player = {}
 
+  // BASE
+  player.id = config.id
   player.name = config.name
   player.color = config.color
-  player.movement = config.movement
 
-  player.moveToHex = (hex, mapTopped, mapParity) => {
-    player.hex = hex
-    player.hexOffset = HEXLIB.hex2Offset(hex, mapTopped, mapParity)
+  // UNITS
+  player.units = []
+  for (let n = 0; n < 5; n++) {
+    const unit = Unit({
+      playerId: config.id,
+      name: `Player-${config.id}-tank-${n}`,
+      color: config.color,
+      movement: config.movement
+    })
+
+    player.units.push(unit)
   }
 
   return player

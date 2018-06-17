@@ -2,13 +2,12 @@
 
 ## Known bugs
 
+* Players can be on the same tile => keep map graph updated with units positions as high cost?
 * Due to map parity lateral move (when flat-topped), some tile cannot be reached/selected
-* Players can be on the same tile
+* Moving cursor with arrow keys should adapt to camera beta rotation
 
 ## Improvements
 
-* Moving cursor with arrow keys should adapt to camera beta rotation
-* Make players have multiple units
 * Use two cameras, and let the user switch from one to another
 * Makes diagonal cursor moves (2 arrow keys at the same time)
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
