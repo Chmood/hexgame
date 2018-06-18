@@ -6,6 +6,7 @@ import HEXLIB from '../vendor/hexlib.js'
 const Unit = (config) => {
   const unit = {}
 
+  unit.id = config.id
   unit.playerId = config.playerId
   unit.name = config.name
   unit.color = config.color

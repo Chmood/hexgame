@@ -808,7 +808,6 @@ const Renderer3d = (game, canvas) => {
   renderer.createUnits = () => {
     for (const player of game.players) {
       for (const unit of player.units) {
-        console.log('playerId', player.id, 'unitId', unit.id)
         renderer.createUnit(unit, player.id, unit.id)
       }
     }
@@ -1072,6 +1071,15 @@ const Renderer3d = (game, canvas) => {
     })
   }
 
+  // START RENDER LOOP
+  // Will be fired later
+  renderer.startRenderLoop = () => {
+    // Register a render loop to repeatedly render the scene
+    renderer.engine.runRenderLoop(() => {
+      renderer.scene.render()
+    })
+  }
+
   // INIT RENDERER
   // Creates all the Babylon magic!
   renderer.initRenderer = () => {
@@ -1153,15 +1161,6 @@ const Renderer3d = (game, canvas) => {
     renderer.initUpdateLoop()
   }
   
-  // START RENDER LOOP
-  // Will be fired later
-  renderer.startRenderLoop = () => {
-    // Register a render loop to repeatedly render the scene
-    renderer.engine.runRenderLoop(() => {
-      renderer.scene.render()
-    })
-  }
-
   renderer.initRenderer()
 
   return renderer
