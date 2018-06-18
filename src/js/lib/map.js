@@ -469,7 +469,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // From: 
   //	http://www.redblobgames.com/pathfinding/a-star/introduction.html
   //	http://www.redblobgames.com/pathfinding/a-star/implementation.html
-  map.findPath = (start, goal, earlyExit = true) => {
+  map.findPath = (start, goal, earlyExit = true, blacklist) => {
 
     // if (!map.getCellFromHex(start).isInGraph) console.warn('A*: start hex is NOT in graph!')
     // if (!map.getCellFromHex(goal).isInGraph) console.warn('A*: goal hex is NOT in graph!')
@@ -526,6 +526,11 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         if (!map.getCellFromHex(neighbors[n]).isInGraph) {
           console.error('map.findPath(): neighbor NOT in graph!', neighbors[n])
         }
+        // Skip this location if blacklisted
+        if (blacklist && HEXLIB.hexIndexOf(blacklist, neighbors[n])) {
+          continue
+        }
+
         const next = neighbors[n],
               // cost of the move from current hex to this neighbor hex
               nextCost = neighborsCosts[n],

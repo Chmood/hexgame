@@ -2,16 +2,15 @@
 
 ## Known bugs
 
-* Players can be on the same tile => keep map graph updated with units positions as high cost?
-* Due to map parity lateral move (when flat-topped), some tile cannot be reached/selected
-* Moving cursor with arrow keys should adapt to camera beta rotation
+* [CRITICAL] Due to map parity lateral move (when flat-topped), some tile cannot be reached/selected
 * Improve post-processing when camera switch (SSAO is fucked up)
 * Most tanks are floating above the ground
-* Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 
 ## Improvements
 
 * Makes diagonal cursor moves (2 arrow keys at the same time)
+* Moving cursor with arrow keys should adapt to camera beta rotation
+* Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 
 ## Ideas
 

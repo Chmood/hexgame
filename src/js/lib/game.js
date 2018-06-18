@@ -68,39 +68,78 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
   }
 
+  // GET UNITS HEXES
+  game.getUnitsHexes = () => {
+    const unitsHexes = []
+    for (const player of game.players) {
+      for (const unit of player.units) {
+        unitsHexes.push(unit.hex)
+      }
+    }
+    return unitsHexes
+  }
+
+  // SELECT UNIT
+  game.selectUnit = () => {
+    let isSomethingSelected = false
+    for (const player of game.players) {
+      for (const unit of player.units) {
+        if (HEXLIB.hexEqual(game.ui.cursor, unit.hex)) {
+          isSomethingSelected = true
+          game.mode = 'move'
+          game.selectedUnit = unit
+          // Backup cursor in case of cancel
+          game.ui.cursorBackup = game.ui.cursor
+          // Highlight the whole movement zone
+          console.log(`Unit selected: ${unit.name} `)
+          
+          game.ui.moveZone = game.getMoveZone(unit)
+          if (game.ui.moveZone.length === 0) {
+            console.log('Nowhere to go, the unit is blocked!')
+            game.cancelMove()
+          }
+
+          game.updateRenderers(['highlights'])
+        }
+      }
+    }
+    if (!isSomethingSelected) {
+      console.log('Nothing to select here!')
+      // TODO: open game menu (ala Fire Emblem!)
+    }
+  }
+
+  // SELECT DESTINATION
+  game.selectDestination = () => {
+    // Avoid the user to move cursor or do other actions during movement
+    game.mode = 'passive'
+    game.ui.moveZone = []
+    const path = game.ui.cursorPath
+    path.shift()
+    game.ui.cursorPath = []
+    game.updateRenderers(['highlights'])
+    game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
+  }
+
   // DO ACTION
   game.doAction = () => {
     if (game.mode === 'select') {
-      let isSomethingSelected = false
-      for (const player of game.players) {
-        for (const unit of player.units) {
-          if (HEXLIB.hexEqual(game.ui.cursor, unit.hex)) {
-            isSomethingSelected = true
-            game.mode = 'move'
-            game.selectedUnit = unit
-            // Highlight the whole movement zone
-            game.ui.moveZone = game.getMoveZone(unit)
-            console.log(`Unit selected: ${unit.name} `)
-            game.updateRenderers(['highlights'])
-            // Backup cursor in case of cancel
-            game.ui.cursorBackup = game.ui.cursor
-          }
-        }
-      }
-      if (!isSomethingSelected) {
-        console.log('Nothing to select here!')
-      }
+      game.selectUnit()
     } else if (game.mode === 'move') {
-      // Avoid the user to move cursor or do other actions during movement
-      game.mode = 'passive'
-      game.ui.cursorPath = []
-      game.ui.moveZone = []
-      game.updateRenderers(['highlights'])
-      const path = game.map.findPath(game.selectedUnit.hex, game.ui.cursor)
-      path.shift()
-      game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
-      // game.updateRenderers(['players'])
+      game.selectDestination()
     }
+  }
+
+  // CANCEL MOVE
+  game.cancelMove = () => {
+    game.mode = 'select'
+    game.ui.cursor = game.ui.cursorBackup
+    game.ui.cursorPath = []
+    game.ui.moveZone = []
+    game.updateRenderers(['highlights'])
+    // game.updateCursor(game.ui.cursor)
+    game.renderer3d.updateCameraPosition(game.ui.cursor)
+    console.log('Move has been cancelled')
   }
 
   // CANCEL ACTION
@@ -109,15 +148,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       console.log('Nothing to cancel!')
       // Nothing to do
     } else if (game.mode === 'move') {
-      // TODO: move the cursor back on the player
-      game.mode = 'select'
-      game.ui.cursor = game.ui.cursorBackup
-      game.ui.cursorPath = []
-      game.ui.moveZone = []
-      game.updateRenderers(['highlights'])
-      // game.updateCursor(game.ui.cursor)
-      game.renderer3d.updateCameraPosition(game.ui.cursor)
-      console.log('Move has been cancelled')
+      game.cancelMove()
     }
   }
 
@@ -209,7 +240,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         game.ui.cursor = hex // Update the new cursor
         // Update the cursor line
         if (game.mode === 'move') {
-          game.ui.cursorPath = game.getCursorLine(hex, game.selectedUnit.hex)
+          game.ui.cursorPath = game.getCursorLine(hex, game.selectedUnit.hex, game.selectedUnit)
         } else {
           game.ui.cursorPath = []
         }
@@ -220,9 +251,14 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   }
 
   // CURSOR LINE
-  game.getCursorLine = (cursor, target) => {
+  game.getCursorLine = (cursor, target, unit) => {
     if (game.map.getCellFromHex(cursor) && game.map.getCellFromHex(cursor).isInGraph) {
-      const cursorLine = game.map.findPath(target, cursor)
+      const cursorLine = game.map.findPath(
+        target, 
+        cursor,
+        true,
+        game.getUnitsHexes()
+      )
       if (cursorLine) {
         return cursorLine
       }
@@ -231,21 +267,26 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // GET MOVE ZONE
   // Grab all the tiles with a cost lower than the player movement value
-  game.getMoveZone = (player) => {
+  game.getMoveZone = (unit) => {
     // TODO: 
     // * add a movement parameter / Dijkstra mode
     // * make findPath return an array of cells in that range
     
     // Scan the whole graph to compute cost of each tile
     // We call map.findPath() without the goal parameter
-    game.map.findPath(player.hex)
+    game.map.findPath(
+      unit.hex, 
+      undefined, // no goal
+      undefined, // no early exit
+      game.getUnitsHexes() // blacklist
+    )
     game.renderer2d.render() // Draw numbers on 2D map
 
     const moveZone = []
     for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
       for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
         const tile = game.map.data[x][y]
-        if (tile.cost <= player.movement) {
+        if (tile.cost <= unit.movement) {
           moveZone.push(tile.hex)
         }
       }
