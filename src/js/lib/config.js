@@ -84,6 +84,7 @@ const CONFIG = {
     cellStepHeight: 0.5,
     randomTileSizeFactor: 0.15,
     randomTileSizeOffset: 0, // 1 => only smaller / 0.5 => smaller & bigger / 0 => only bigger
+    randomTileRotation: true, // Shall we random rotate the tiles
     randomTileRotationFactor: 1, // 0 : flat / 1 : sloppy / 2 : chaos
     shinyIce: true,
     transparentIce: false,

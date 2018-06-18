@@ -4,7 +4,7 @@
 
 * [CRITICAL] Due to map parity lateral move (when flat-topped), some tile cannot be reached/selected
 * Improve post-processing when camera switch (SSAO is fucked up)
-* Most tanks are floating above the ground
+* Tanks are floating above the ground, and their rotation doesn't follow the underneath tile
 
 ## Improvements
 

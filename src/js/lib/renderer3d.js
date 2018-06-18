@@ -635,6 +635,7 @@ const Renderer3d = (game, canvas) => {
   }
 
   // REDISTRIBUTE ELEVATION WITH GAP
+  // TODO: rewrite all this crap! (not used by now)
   renderer.redistributeElevationWithGap = (height) => {
     // Increase height gap between lower land & higher sea
     if (
@@ -656,29 +657,37 @@ const Renderer3d = (game, canvas) => {
   // CREATE TILE
   renderer.createTile = (x, y, cell) => {
     const offset = HEXLIB.hexOffset(x, y),
-      hex = HEXLIB.offset2Hex(
-        offset,
-        CONFIG.map.mapTopped,
-        CONFIG.map.mapParity
-      ),
-      position = HEXLIB.hex2Pixel(renderer.layout, hex), // center of tile top
-      tile = new BABYLON.Mesh(`tile-${x}-${y}`, renderer.scene)
-
-    let height = renderer.redistributeElevationWithGap(cell.height)
+          hex = HEXLIB.offset2Hex(
+            offset,
+            CONFIG.map.mapTopped,
+            CONFIG.map.mapParity
+          ),
+          position = HEXLIB.hex2Pixel(renderer.layout, hex), // center of tile top
+          tile = new BABYLON.Mesh(`tile-${x}-${y}`, renderer.scene),
+          height = cell.height
 
     // BUILD MESH
-    const vertexData = renderer.getHexaprismVertexData(hex, height, 0, 1, 1.25)
+    const vertexData = renderer.getHexaprismVertexData(
+      hex, 
+      // TODO: why the fuck is this +0.2 needed for the units to stick to the floor?!?!
+      (height + 0.3), 
+      0, 
+      1, 
+      1.25
+    )
     vertexData.applyToMesh(tile)
 
     // ROTATION
     // Set pivot (local center for transformations)
     tile.setPivotPoint(new BABYLON.Vector3(position.y, height * CONFIG.render3d.cellStepHeight, position.x))
     // Random rotation
-    tile.rotation = new BABYLON.Vector3(
-      (Math.random() - 0.5) * 2 * Math.PI / 16 * CONFIG.render3d.randomTileRotationFactor, 
-      0, 
-      (Math.random() - 0.5) * 2 * Math.PI / 16 * CONFIG.render3d.randomTileRotationFactor
-    )
+    if (CONFIG.render3d.randomTileRotation) {
+      tile.rotation = new BABYLON.Vector3(
+        (Math.random() - 0.5) * 2 * Math.PI / 16 * CONFIG.render3d.randomTileRotationFactor, 
+        0, 
+        (Math.random() - 0.5) * 2 * Math.PI / 16 * CONFIG.render3d.randomTileRotationFactor
+      )
+    }
 
     // MATERIAL
     // Give the tile mesh a material
