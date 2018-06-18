@@ -50,8 +50,8 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // ON KEY CHANGE
   game.onKeyDown = (keys) => {
+    // Only catch key events if the standard camera is active
     if (game.renderer3d.scene.activeCamera === game.renderer3d.camera) {
-      // Only catch key events if the standard camera is active
       if (game.renderer3d.debounce === 0) {
         if        (keys['ArrowRight']) {  game.cursorMove('right')
         } else if (keys['ArrowLeft']) {   game.cursorMove('left')
@@ -200,13 +200,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
     if (directionIndex !== undefined) {
       const hex = HEXLIB.hexNeighbors(game.ui.cursor)[directionIndex]
-      const offset = HEXLIB.hex2Offset(hex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
-      if (
-        offset.col >= 0 && 
-        offset.row >= 0 && 
-        offset.col < CONFIG.map.mapSize.width &&
-        offset.row < CONFIG.map.mapSize.height
-      ) {
+      if (game.map.isHexOnMap(hex)) {
         // In move mode, cursor can only move on valid tiles (aka move zone)
         if (game.mode === 'move') {
           let isValidMove = false

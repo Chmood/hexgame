@@ -1096,13 +1096,13 @@ const Renderer3d = (game, canvas) => {
 
     // Lights
     renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
-    renderer.hemiLight.intensity = 0.33
+    renderer.hemiLight.intensity = 0.4
     renderer.hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
 	  renderer.hemiLight.specular = new BABYLON.Color3(1, 1, 1)
 	  renderer.hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
     
     renderer.directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
-    renderer.directionalLight.intensity = 0.8
+    renderer.directionalLight.intensity = 0.85
     renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
 	  
     // Shadow
