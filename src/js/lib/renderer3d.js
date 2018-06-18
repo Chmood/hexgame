@@ -1094,6 +1094,23 @@ const Renderer3d = (game, canvas) => {
     renderer.cameraFree = renderer.createCameraFree()
     renderer.scene.activeCamera = renderer.camera
 
+    // Asset manager
+    // TODO: figure out how this thing works
+    // See: https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+    renderer.assetsManager = new BABYLON.AssetsManager(renderer.scene)
+    renderer.imageTask = renderer.assetsManager.addImageTask('img1', img1)
+    renderer.imageTask = renderer.assetsManager.addImageTask('img2', img2)
+    renderer.imageTask = renderer.assetsManager.addImageTask('img3', img3)
+    renderer.imageTask = renderer.assetsManager.addImageTask('img4', img4)
+    renderer.imageTask = renderer.assetsManager.addImageTask('img5', img5)
+    renderer.imageTask = renderer.assetsManager.addImageTask('img6', img6)
+    renderer.assetsManager.onFinish = function (tasks) {
+      renderer.startRenderLoop()
+      // console.warn('ASSETS LOADED!', tasks)
+    }
+    
+    renderer.assetsManager.load()
+
     // Lights
     renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
     renderer.hemiLight.intensity = 0.4

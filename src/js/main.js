@@ -79,7 +79,7 @@ const Main = () => {
     // 2D: Initial rendering
     main.game.renderer2d.render()
     // 3D: Start engine!
-    main.game.renderer3d.startRenderLoop()
+    // main.game.renderer3d.startRenderLoop()
   }
 
   // WINDOW ON LOAD
