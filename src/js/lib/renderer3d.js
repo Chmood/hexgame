@@ -278,6 +278,7 @@ const Renderer3d = (game, canvas) => {
       materials[name] = new BABYLON.StandardMaterial(name, renderer.scene)
       materials[name].diffuseColor = new BABYLON.Color3.FromHexString(value.color)
       materials[name].specularColor = new BABYLON.Color3.Black()
+      materials[name].freeze()
     }
 
     // Let ice shine (aka specular reflections)!
@@ -295,10 +296,12 @@ const Renderer3d = (game, canvas) => {
       materials.players[n] = new BABYLON.StandardMaterial(`player-${n}`, renderer.scene)
       materials.players[n].diffuseColor = new BABYLON.Color3.FromHexString(player.color)
       materials.players[n].specularColor = new BABYLON.Color3.Black()
+      materials.players[n].freeze()
     }
 
     materials.unitNeutral = new BABYLON.StandardMaterial(`unit-black`, renderer.scene)
     materials.unitNeutral.diffuseColor = new BABYLON.Color3.FromHexString('#aaaaaa')
+    materials.unitNeutral.freeze()
 
     return materials
   }
@@ -421,12 +424,16 @@ const Renderer3d = (game, canvas) => {
     skybox.material = skyboxMaterial
     skybox.isPickable = false
 
+    skyboxMaterial.freeze()
+    skybox.freezeWorldMatrix()
+
     return skybox
   }
 
   // UPDATE OCEAN
   renderer.updateOcean = () => {
     const worldSize = CONFIG.render3d.worldSize
+
     // Ocean floor
     if (!renderer.oceanFloor) {
       renderer.oceanFloor = BABYLON.Mesh.CreateGround('oceanFloor', worldSize, worldSize, 16, renderer.scene, false)
@@ -440,6 +447,8 @@ const Renderer3d = (game, canvas) => {
       // floorMaterial.diffuseColor = new BABYLON.Color3(0,0,0.6)
       renderer.oceanFloor.material = renderer.materials['deepsea']
       renderer.oceanFloor.isPickable = false
+
+      renderer.oceanFloor.freezeWorldMatrix()
     }
 
     // Ocean surface
@@ -452,6 +461,8 @@ const Renderer3d = (game, canvas) => {
         0
       )
       renderer.ocean.isPickable = false
+
+      renderer.ocean.freezeWorldMatrix()
     }
     
     // Water material
@@ -470,6 +481,7 @@ const Renderer3d = (game, canvas) => {
       water.windDirection = new BABYLON.Vector2(1, 1)
       water.waterColor = new BABYLON.Color3(0.125, 0.6, 0.9)
       water.colorBlendFactor = 0.25
+      water.freeze()
     } else {
       // Simple water material
       water = new BABYLON.StandardMaterial('ocean', renderer.scene)
@@ -477,6 +489,7 @@ const Renderer3d = (game, canvas) => {
       // water.emissiveColor = new BABYLON.Color3(0.1,0.2,1)
       water.alpha = 0.5
       water.bumpTexture = new BABYLON.Texture(waterbump, renderer.scene)
+      water.freeze()
     }
 
     renderer.ocean.material = water
@@ -516,6 +529,8 @@ const Renderer3d = (game, canvas) => {
       plane.material.backFaceCulling = false
       plane.material.specularColor = new BABYLON.Color3(0, 0, 0)
       plane.material.diffuseTexture = dynamicTexture
+
+      plane.freezeWorldMatrix()
       return plane
     }
 
@@ -551,6 +566,10 @@ const Renderer3d = (game, canvas) => {
     axisZ.color = new BABYLON.Color3(0, 0, 1)
     const zChar = makeTextPlane('Z', 'blue', size / 10)
     zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size)
+
+    axisX.freezeWorldMatrix()
+    axisY.freezeWorldMatrix()
+    axisZ.freezeWorldMatrix()
   }
 
   ////////////////////////////////////////
@@ -667,6 +686,8 @@ const Renderer3d = (game, canvas) => {
     // Make and receive shadows
     renderer.shadowGenerator.getShadowMap().renderList.push(tile)
     tile.receiveShadows = true;
+
+    tile.freezeWorldMatrix()
 
     return tile
   }
@@ -1106,6 +1127,10 @@ const Renderer3d = (game, canvas) => {
     // 'Time' tick
     renderer.tick = 0
     renderer.debounce = 0
+
+    // Freeze the active meshes
+    // TODO: seems too agressive, maybe use it with mesh.alwaysSelectAsActiveMesh = true
+    // renderer.scene.freezeActiveMeshes()
 
     // // ACTION MANAGER
     // // Clean way to capture keyboard event, but requires the canvas to have focus
