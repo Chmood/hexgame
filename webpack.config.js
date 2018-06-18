@@ -104,7 +104,15 @@ const config = {
     // hot: true
   },
 
-  devtool: 'inline-source-map'
+  devtool: 'inline-source-map',
+
+  // Eliminating BABYLON dependencies warnings
+  // See: https://doc.babylonjs.com/features/npm_support#eliminating-the-dependencies-warnings
+  externals: {
+    "oimo": true,
+    "cannon": true,
+    "earcut": true
+  }
 }
 
 module.exports = config
