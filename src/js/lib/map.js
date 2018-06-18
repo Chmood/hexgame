@@ -46,19 +46,19 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     noise.seed(config.mapSeed)
   }
 
-  // GET FROM HEX
+  // GET CELL FROM HEX
   // Returns a map cell from a given (cubic) hex
-  map.getFromHex = (hex) => {
+  map.getCellFromHex = (hex) => {
     const hexOffset = HEXLIB.hex2Offset(hex, config.mapTopped, config.mapParity)
     if (map.data[hexOffset.col]) {
       if (map.data[hexOffset.col][hexOffset.row]) {
         return map.data[hexOffset.col][hexOffset.row]
       } else {
-        console.warn(`Map.getFromHex(): unknown row ${hexOffset.row}`)
+        console.warn(`Map.getCellFromHex(): unknown row ${hexOffset.row}`)
         return undefined
       }
     } else {
-      console.warn(`Map.getFromHex(): unknown column ${hexOffset.col}`)
+      console.warn(`Map.getCellFromHex(): unknown column ${hexOffset.col}`)
       return undefined
     }
   }
@@ -310,10 +310,27 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   }
 
   // IS VALID CELL
-  // Tells if the cell is part of the graph or not, depending on its biome
+  // Tells if the cell is part of the graph or not
+  map.isValidCell = (cell) => {
+    return map.isValidBiome(cell.biome)
+  }
+
+  // IS VALID BIOME
+  // Tells if the cell's biome is part of the graph
   map.isValidBiome = (biome) => {
     // The biomes we can't move on
     return (biome !== 'deepsea' && biome !== 'sea' && biome !== 'shore')
+  }
+
+  // IS HEX ON MAP
+  // Is the hex within the map boundaries?
+  map.isHexOnMap = (hex) => {
+    const hexOffset = HEXLIB.hex2Offset(hex, config.mapTopped, config.mapParity)
+
+    return (hexOffset.col >= 0 &&
+      hexOffset.row >= 0 &&
+      hexOffset.col < config.mapSize.width &&
+      hexOffset.row < config.mapSize.height)
   }
 
   // GET MOVE COST
@@ -351,34 +368,30 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
       for (let y = 0; y < config.mapSize.height; y++) {
 
         const hexOffset = HEXLIB.hexOffset(x, y),
-          hex = HEXLIB.offset2Hex(hexOffset, config.mapTopped, config.mapParity),
-          neighborsAll = HEXLIB.hexNeighbors(hex),
-          neighbors = [], // VALID neighbors of the cell
-          costs = [], // Move costs to VALID neighbors
-          cell = map.data[x][y] // Reference to the cell map data
+              hex = HEXLIB.offset2Hex(hexOffset, config.mapTopped, config.mapParity),
+              neighborsAll = HEXLIB.hexNeighbors(hex),
+              neighbors = [], // VALID neighbors of the cell
+              costs = [], // Move costs to VALID neighbors
+              cell = map.data[x][y] // Reference to the cell map data
 
         // Add the cell to graph if the height is valid
-        cell.isInGraph = map.isValidBiome(cell.biome)
+        cell.isInGraph = map.isValidCell(cell)
 
         if (cell.isInGraph) {
-
           // Each (eventual) neighbor of the cell
-          for (let i = 0; i < 6; i++) {
-            const neighbor = neighborsAll[i],
-                  neighborOffset = HEXLIB.hex2Offset(neighbor, config.mapTopped, config.mapParity)
-
+          for (const neighbor of neighborsAll) {
             // Is the neighbor on/in the map?
-            if (neighborOffset.col >= 0 &&
-              neighborOffset.row >= 0 &&
-              neighborOffset.col < config.mapSize.width &&
-              neighborOffset.row < config.mapSize.height) {
+            if (map.isHexOnMap(neighbor)) {
+              // Get the neigbor cell
+              const neighborCell = map.getCellFromHex(neighbor)
 
               // Is the neighbor a valid move?
-              const neighborHeight = map.data[neighborOffset.col][neighborOffset.row].height,
-                neighborBiome = map.data[neighborOffset.col][neighborOffset.row].biome
-
-              if (map.isValidBiome(neighborBiome)) {
-                const cost = map.getMoveCost(cell.height, neighborHeight, neighborBiome)
+              if (map.isValidCell(neighborCell)) {
+                const cost = map.getMoveCost(
+                  cell.height, 
+                  neighborCell.height, 
+                  neighborCell.biome
+                )
                 costs.push(cost)	// add the edge cost to the graph
 
                 // ADD EGDE
@@ -404,22 +417,39 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // FIND FROM HEX
   // Return a value from an hex index
   // As we have no string hex notation, we use hex objects as 'indexes'
-  // in a 2d array: [hex][value]
-  map.findFromHex = (data, hex) => {
-    for (let h = 0; h < data.length; h++) {
-      if (HEXLIB.hexEqual(data[h][0], hex)) {
-        return data[h][1]
+  // in a data 2d array: [hex][value]
+  map.getFromHex = (data, hex) => {
+    for (const d of data) {
+      if (HEXLIB.hexEqual(d[0], hex)) {
+        return d[1]
       }
     }
     return undefined
   }
 
+  // SET FROM HEX
+  // Replace or add a value from an hex index in a data 2d array: [hex][value]
+  map.setFromHex = (data, hex, value) => {
+    let isSet = false
+    for (const d of data) {
+      if (HEXLIB.hexEqual(d[0], hex)) {
+        d[1] = value
+        isSet = true
+        break
+      }
+    }
+    if (!isSet) {
+      data.push([hex, value])
+    }
+  }
+
   // GET INDEX HEXES
   // Return an array of hexes from an array with theses hexes as indexes
-  map.getIndexHexes = (cameFrom) => {
+  // Same principle as map.getFromHex(), see above
+  map.getIndexHexes = (data) => {
     const hexes = []
-    for (let h = 0; h < cameFrom.length; h++) {
-      hexes.push(cameFrom[h][0])
+    for (const d of data) {
+      hexes.push(d[0])
     }  
     return hexes
   }  
@@ -435,82 +465,125 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   }
 
   // FIND PATH
-  // Find a path between 2 hexes, with A-star algorithm
+  // Find a path between 2 hexes, using a A-star algorithm
   // From: 
   //	http://www.redblobgames.com/pathfinding/a-star/introduction.html
   //	http://www.redblobgames.com/pathfinding/a-star/implementation.html
   map.findPath = (start, goal, earlyExit = true) => {
 
-    // if (!map.getFromHex(start).isInGraph) console.warn('A*: start hex is NOT in graph!')
-    // if (!map.getFromHex(goal).isInGraph) console.warn('A*: goal hex is NOT in graph!')
+    // if (!map.getCellFromHex(start).isInGraph) console.warn('A*: start hex is NOT in graph!')
+    // if (!map.getCellFromHex(goal).isInGraph) console.warn('A*: goal hex is NOT in graph!')
 
     map.resetCosts()
 
-    const frontier = PriorityQueue() // List of the places that are still to be explored
-    const cameFrom = [] // List of places where we've already been
-    const costSoFar = [] // The price we paid to go there
-    let found = false
-
+    // List of the places that are still to be explored (close to our zone)
+    // [hex, priority, hex, priority, hex, priority...]
+    // Note: priority is reversed, lower priority will come first
+    const frontier = PriorityQueue()
     frontier.push(start, 0)
+
+    // List of places where we've already been, with the previous place
+    // [[hex, previousHex], [hex, previousHex], [hex, previousHex]...]
+    const cameFrom = []
     cameFrom.push([start, undefined])
+
+    // Total movement cost from the start location to a given hex
+    // [[hex, cost], [hex, cost], [hex, cost]...]
+    // See: https://www.redblobgames.com/pathfinding/a-star/introduction.html#dijkstra
+    const costSoFar = []
     costSoFar.push([start, 0])
 
-    // LOOP
+    // Have we reached the goal?
+    let found = false
+
+    // Loop while there are still frontier hexes to explore
     while (frontier.length() > 0) {
+      // Remove and return the hex of lowest priority/cost
+      const currentHex = frontier.pop()
+      // Get the associated cell
+      const currentCell = map.getCellFromHex(currentHex)
+      // if (!currentCell.isInGraph) console.error('A*: current hex is NOT in graph!')
 
-      const current = frontier.pop()
-      const currentHex = map.getFromHex(current)
-      // if (!currentHex.isInGraph) console.error('A*: current hex is NOT in graph!')
+      // Get the neighbors and their associated costs
+      // const	neighbors = arrayShuffle(currentCell.neighbors)	// cheapo edge breaks
+      const neighbors = currentCell.neighbors
+      const neighborsCosts = currentCell.costs
 
-      // const	neighbors = arrayShuffle(currentHex.neighbors)	// cheapo edge breaks
-      const neighbors = currentHex.neighbors
-      const costs = currentHex.costs
-
+      // Are we looking for a specific goal?
       if (goal) {
-        if (HEXLIB.hexEqual(current, goal)) {
+        // Have we reached this goal?
+        if (HEXLIB.hexEqual(currentHex, goal)) {
           found = true
           // Early exit (stop exploring map when goal is reached)
+          // See: https://www.redblobgames.com/pathfinding/a-star/introduction.html#early-exit
           if (earlyExit) break
         }
       }
 
+      // For each neighbor
       for (let n = 0; n < neighbors.length; n++) {
-        if (!map.getFromHex(neighbors[n]).isInGraph) console.error('argl!')
-
+        // Is the neighbor in the graph? (it should, otherwise the graph is broken!)
+        if (!map.getCellFromHex(neighbors[n]).isInGraph) {
+          console.error('map.findPath(): neighbor NOT in graph!', neighbors[n])
+        }
         const next = neighbors[n],
-          nextCost = costs[n],
-          newCost = map.findFromHex(costSoFar, current) // sum of the current cost...
-            + nextCost, // ...plus the cost of the next move
-          // cameFromHexes = map.getIndexHexes(cameFrom), // Not in use for now
-          comeSoFarHexes = map.getIndexHexes(costSoFar)
+              // cost of the move from current hex to this neighbor hex
+              nextCost = neighborsCosts[n],
+              // cost from start to this neighbor
+              newCost =
+                map.getFromHex(costSoFar, currentHex) // sum of the current cost...
+                + nextCost, // ...plus the cost of the neighbor move
+              // List of the already visited hexes
+              comeSoFarHexes = map.getIndexHexes(costSoFar),
+              // Eventual current best cost for this neigbor
+              costSoFarNext = map.getFromHex(costSoFar, next)
 
-        if (!HEXLIB.hexIndexOf(comeSoFarHexes, next) || newCost < costSoFar[next]) {
-          costSoFar.push([next, newCost])
+        // We can visit a location multiple times, with different costs
+        if (
+          !HEXLIB.hexIndexOf(comeSoFarHexes, next) || // if neigbor not already visited...
+          newCost < costSoFarNext // ...or neighbor cost is better than the eventual best previous path
+        ) {
+          // Replace or push the new best cost
+          map.setFromHex(costSoFar, next, newCost)
+
+          // Compute priority (lower = first)
+          // Note: if no goal is provided, this boils down to the Dijkstra’s algorithm
           let priority = newCost
+          // A-star heuristic: prioritize locations near the goal AND close to the start
+          // See: https://www.redblobgames.com/pathfinding/a-star/introduction.html#astar
           if (goal) {
-            priority += HEXLIB.hexDistance(next, goal) // heuristic
+            priority += HEXLIB.hexDistance(next, goal)
           }
+          // Add the neighbor to the frontier
           frontier.push(next, priority)
-          cameFrom.push([next, current])
 
-          // Cost backup
-          const nextOffset = HEXLIB.hex2Offset(next, config.mapTopped, config.mapParity)
-          map.data[nextOffset.col][nextOffset.row].cost = newCost
+          // Replace or push the neighbor location
+          map.setFromHex(cameFrom, next, currentHex)
+
+          // Cost backup into map
+          const nextCell = map.getCellFromHex(next)
+          nextCell.cost = newCost
         }
       }
     }
 
     // BUILD PATH BACK FROM GOAL
+    // We had a goal, and we reached it
     if (goal && found) {
-      let current = goal
+      let currentHex = goal
       let path = [goal]
 
-      while (!HEXLIB.hexEqual(current, start)) {
-        current = map.findFromHex(cameFrom, current)
-        path.push(current)
+      // Did we came back to the start?
+      while (!HEXLIB.hexEqual(currentHex, start)) {
+        // If not, get the previous place...
+        currentHex = map.getFromHex(cameFrom, currentHex)
+        // and add it to our reverse path
+        path.push(currentHex)
       }
+      // Reverse the path (from goal->start to start->goal)
       return path.reverse()
     } else {
+      // No path from start to goal has be found
       return undefined
     }
   }

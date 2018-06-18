@@ -53,7 +53,7 @@ const Players = (PLAYERS, map) => {
         unit.hex = HEXLIB.offset2Hex(unit.hexOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
     
         // Check if the unit position is a valid cell
-        const isValidBiome = map.isValidBiome(map.getFromHex(unit.hex).biome)
+        const isValidBiome = map.isValidBiome(map.getCellFromHex(unit.hex).biome)
 
         // Check if the unit position is not already occupied by another unit
         let isFreeHex = true

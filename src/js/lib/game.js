@@ -221,7 +221,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // CURSOR LINE
   game.getCursorLine = (cursor, target) => {
-    if (game.map.getFromHex(cursor) && game.map.getFromHex(cursor).isInGraph) {
+    if (game.map.getCellFromHex(cursor) && game.map.getCellFromHex(cursor).isInGraph) {
       const cursorLine = game.map.findPath(target, cursor)
       if (cursorLine) {
         return cursorLine

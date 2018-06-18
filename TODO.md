@@ -8,7 +8,6 @@
 * Improve post-processing when camera switch (SSAO is fucked up)
 * Most tanks are floating above the ground
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
-* Tank move path sometimes differ from what was path-finded with the cursor
 
 ## Improvements
 

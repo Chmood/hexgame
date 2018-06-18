@@ -111,7 +111,7 @@ const Renderer3d = (game, canvas) => {
   // Makes the camera look at the given hex
   renderer.updateCameraPosition = (hex) => {
     const position = HEXLIB.hex2Pixel(renderer.layout, hex), // center of tile top
-          tileData = game.map.getFromHex(hex),
+          tileData = game.map.getCellFromHex(hex),
           height = tileData.height * CONFIG.render3d.cellStepHeight
 
     const animationCamera = new BABYLON.Animation(
@@ -840,7 +840,7 @@ const Renderer3d = (game, canvas) => {
   // TODO: cleanup!
   renderer.rotateUnit = (unit, step, callback) => {
     const position = HEXLIB.hex2Pixel(renderer.layout, step),
-          stepData = game.map.getFromHex(step),
+          stepData = game.map.getCellFromHex(step),
           height = stepData.height * CONFIG.render3d.cellStepHeight,
           nextPosition = new BABYLON.Vector3( // end value
             position.y, // Axis inversion!
@@ -889,7 +889,7 @@ const Renderer3d = (game, canvas) => {
   // TODO: the rotation part seems fuxed up!?
   renderer.moveUnit = (unit, step, callback) => {
     const position = HEXLIB.hex2Pixel(renderer.layout, step),
-          stepData = game.map.getFromHex(step),
+          stepData = game.map.getCellFromHex(step),
           height = stepData.height * CONFIG.render3d.cellStepHeight,
           nextPosition = new BABYLON.Vector3( // end value
             position.y, // Axis inversion!
