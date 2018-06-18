@@ -1,1 +1,52 @@
-<!DOCTYPE html> <html class=no-js lang=en> <head> <meta charset=utf-8> <meta http-equiv=x-ua-compatible content="ie=edge"> <title>Hexgame</title> <meta name=description content=""> <meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"> <link href="./css/app.css" rel="stylesheet"></head> <body> <div class=game-wrapper> <canvas id=canvas3d touch-action=none></canvas> <div id=canvas2d-wrapper> <canvas id=canvas2d> Your browser is an old, or you don't have JavaScript enabled </canvas> </div> <div id=ui> <p>Drag mouse to move camera and use mousewheel to zoom.</p> <p> <button id=ui-btn-update>Perturbate</button>&nbsp; <button id=ui-btn-new>New terrain</button> </p> <p> <label for=ui-select-postprocess>Post-process</label> <select id=ui-select-postprocess> <option value=none>None</option> <option value=ssao>SSAO</option> <option value=multi>Multi FX</option> </select> <label for=ui-checkbox-better-ocean>Realistic ocean</label> <input id=ui-checkbox-better-ocean type=checkbox> <label for=ui-camera-auto-rotate>Auto-rotate</label> <input id=ui-camera-auto-rotate type=checkbox> </p> </div> </div> <script type="text/javascript" src="app.bundle.js"></script></body> </html> 
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Hexgame</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="./css/app.css" rel="stylesheet"></head>
+
+<body>
+  <div class="game-wrapper">
+
+    <!-- 3d canvas -->
+    <canvas id="canvas3d" touch-action="none"></canvas>
+  
+    <!-- 2d canvas -->
+    <div id="canvas2d-wrapper">
+      <canvas id="canvas2d">
+        Your browser is old, or you don't have JavaScript enabled!
+      </canvas>
+    </div>
+
+    <!-- UI panel -->
+    <div id="ui">
+      <p>KEYS: arrows to move cursor, X to do action, C to cancel, E and R to zoom in and out, T and Y to rotate camera</p>
+      <p>
+        <button id="ui-btn-update">Perturbate</button>&nbsp;
+        <button id="ui-btn-new">New terrain</button>
+      </p>
+      <p>
+        <label for="ui-select-postprocess">Post-process</label>
+        <select id="ui-select-postprocess">
+          <option value="none">None</option>
+          <option value="ssao">SSAO</option>
+          <option value="multi">Multi FX</option>
+        </select>
+        <label for="ui-checkbox-better-ocean">Realistic ocean</label>
+        <input id="ui-checkbox-better-ocean" type="checkbox">
+        <label for="ui-camera-free">Free camera</label>
+        <input id="ui-camera-free" type="checkbox">
+        <label for="ui-camera-auto-rotate">Auto-rotate</label>
+        <input id="ui-camera-auto-rotate" type="checkbox">
+      </p>
+    </div>
+  
+  </div>
+<script type="text/javascript" src="app.bundle.js"></script></body>
+
+</html>
+
