@@ -16,10 +16,9 @@ const Player = (config) => {
   for (let n = 0; n < 5; n++) {
     const unit = Unit({
       id: n,
-      playerId: config.id,
-      name: `Player-${config.id}-tank-${n}`,
-      color: config.color,
-      movement: config.movement
+      playerId: player.id,
+      type: 'tank',
+      color: player.color
     })
 
     player.units.push(unit)

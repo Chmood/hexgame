@@ -1,16 +1,22 @@
 import HEXLIB from '../vendor/hexlib.js'
+import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // UNIT
 
 const Unit = (config) => {
-  const unit = {}
-
-  unit.id = config.id
-  unit.playerId = config.playerId
-  unit.name = config.name
-  unit.color = config.color
-  unit.movement = config.movement
+  const unit = Object.assign(
+    {},
+    CONFIG.game.units[config.type],
+    {
+      id: config.id,
+      playerId: config.playerId,
+      type: config.type,
+      color: config.color,
+      name: `${config.type}-${config.id}`
+    }
+  )
+  console.log(unit)
 
   unit.moveToHex = (hex, mapTopped, mapParity) => {
     unit.hex = hex

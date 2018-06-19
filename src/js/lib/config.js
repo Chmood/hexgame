@@ -105,14 +105,51 @@ const CONFIG = {
   },
 
   players: [
-    { id: 0, name: 'Player 1', color: '#ff8000', movement: 10 },
-    { id: 1, name: 'Player 2', color: '#ff0080', movement: 5 },
-    { id: 2, name: 'Player 3', color: '#00ff00', movement: 7 },
-    { id: 3, name: 'Player 4', color: '#0080ff', movement: 12 }
+    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000' },
+    { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080' },
+    { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00' },
+    { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff' }
   ],
 
   game: {
-    playerStartingZoneRatio: 2 // portion of the map dedicated to player's units initial placement
+    playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
+    // Units stats
+    units: {
+      tank: {
+        class: 'Tank',
+        startLevel: 1, // starting level
+
+        // See: http://fireemblem.wikia.com/wiki/Category:Stats
+        maxHealth: 20, // http://fireemblem.wikia.com/wiki/HP
+        strength: 7, // http://fireemblem.wikia.com/wiki/Strength
+        magic: 5, // http://fireemblem.wikia.com/wiki/Magic_(stat)
+        skill: 7, // http://fireemblem.wikia.com/wiki/Skill_(stat)
+        speed: 8, // http://fireemblem.wikia.com/wiki/Speed_(stat)
+        luck: 6, // http://fireemblem.wikia.com/wiki/Luck
+        defense: 6, // http://fireemblem.wikia.com/wiki/Defense_(stat)
+        resistance: 3, // http://fireemblem.wikia.com/wiki/Resistance
+        movement: 8, // http://fireemblem.wikia.com/wiki/Movement
+
+        attackRangeMin: 1,
+        attackRangeMax: 2,
+
+        // Computed
+        // See: http://fireemblem.wikia.com/wiki/Battle_Formulas
+        // attackSpeed,
+        // repeatedAttack,
+        // hitRate,
+        // avoid,
+        // accuracy,
+        // attackPower,
+        // defensePowerPhysical,
+        // defensePowerMagical,
+        // damage,
+        // criticalDamage,
+        // criticalRate,
+        // criticalEvade,
+        // criticalChance
+      }
+    }
   }
 }
 
