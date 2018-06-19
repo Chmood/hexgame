@@ -105,10 +105,10 @@ const CONFIG = {
   },
 
   players: [
-    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000' },
-    { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080' },
-    { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00' },
-    { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff' }
+    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000', colorDesaturated: '#c48444' },
+    { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080', colorDesaturated: '#c44484' },
+    { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00', colorDesaturated: '#44c444' },
+    { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff', colorDesaturated: '#4484c4' }
   ],
 
   game: {

@@ -13,7 +13,8 @@ const Unit = (config) => {
       playerId: config.playerId,
       type: config.type,
       color: config.color,
-      name: `${config.type}-${config.id}`
+      name: `${config.type}-${config.id}`,
+      hasPlayed: false
     }
   )
 

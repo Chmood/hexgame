@@ -293,10 +293,15 @@ const Renderer3d = (game, canvas) => {
     // Player materials
     materials.players = {}
     for (let [n, player] of Object.entries(CONFIG.players)) {
-      materials.players[n] = new BABYLON.StandardMaterial(`player-${n}`, renderer.scene)
-      materials.players[n].diffuseColor = new BABYLON.Color3.FromHexString(player.color)
-      materials.players[n].specularColor = new BABYLON.Color3.Black()
-      materials.players[n].freeze()
+      materials.players[n] = [] // [0] is base color, [1] is desaturated color
+      materials.players[n][0] = new BABYLON.StandardMaterial(`player-${n}`, renderer.scene)
+      materials.players[n][0].diffuseColor = new BABYLON.Color3.FromHexString(player.color)
+      materials.players[n][0].specularColor = new BABYLON.Color3.Black()
+      materials.players[n][0].freeze()
+      materials.players[n][1] = new BABYLON.StandardMaterial(`player-${n}-desaturated`, renderer.scene)
+      materials.players[n][1].diffuseColor = new BABYLON.Color3.FromHexString(player.colorDesaturated)
+      materials.players[n][1].specularColor = new BABYLON.Color3.Black()
+      materials.players[n][1].freeze()
     }
 
     materials.unitNeutral = new BABYLON.StandardMaterial(`unit-black`, renderer.scene)
@@ -726,6 +731,7 @@ const Renderer3d = (game, canvas) => {
 
   // CREATE MULTIPART UNIT
   renderer.createMultipartUnit = (name, idPlayer, idUnit, parentMesh, baseSize, parts) => {
+    const meshes = []
     for (const part of parts) {
       // Create box mesh
       const p = BABYLON.MeshBuilder.CreateBox(
@@ -749,7 +755,12 @@ const Renderer3d = (game, canvas) => {
       // Shadows
       renderer.shadowGenerator.getShadowMap().renderList.push(p)
       p.receiveShadows = true
+
+      if (part.dontAdd === undefined) {
+        meshes.push(p)
+      }
     }
+    return meshes
   }
 
   // CREATE UNIT
@@ -778,37 +789,37 @@ const Renderer3d = (game, canvas) => {
 
     ////////////////////////////////////////
     // PARTS MESHES
-
-    renderer.createMultipartUnit('tank', idPlayer, idUnit, unit.mesh, cellSize, [
+    unit.meshes = renderer.createMultipartUnit('tank', idPlayer, idUnit, unit.mesh, cellSize, [
       {
         name: 'base',
         size: {height: 1/6, length: 3/4, width: 1/2},
         position: {x: 0, y: 1/4, z: 0},
-        material: renderer.materials.unitNeutral
+        material: renderer.materials.unitNeutral,
+        dontAdd: true
       },
       {
         name: 'trackLeft',
         size: {height: 1/3, length: 1, width: 1/4},
         position: {x: 0, y: 1/4, z: 1/3},
-        material: renderer.materials.players[idPlayer]
+        material: renderer.materials.players[idPlayer][0]
       },
       {
         name: 'trackRight',
         size: {height: 1/3, length: 1, width: 1/4},
         position: {x: 0, y: 1/4, z: -1/3},
-        material: renderer.materials.players[idPlayer]
+        material: renderer.materials.players[idPlayer][0]
       },
       {
         name: 'body',
         size: {height: 1/4, length: 1/4, width: 1/4},
         position: {x: 0, y: 1/2, z: 0},
-        material: renderer.materials.players[idPlayer]
+        material: renderer.materials.players[idPlayer][0]
       },
       {
         name: 'cannon',
         size: {height: 1/16, length: 1/2, width: 1/16},
         position: {x: -1/4, y: 1/2, z: 0},
-        material: renderer.materials.players[idPlayer]
+        material: renderer.materials.players[idPlayer][0]
       }
     ])
   }
@@ -956,8 +967,9 @@ const Renderer3d = (game, canvas) => {
   renderer.moveUnitOnPath = (unit, path) => {
     if (path.length === 0) {
       // The path is over
+      renderer.changeUnitMaterial(unit, 'colorDesaturated')
       game.mode = 'select'
-      console.log(`Unit moved: ${game.selectedUnit.name}`)
+      console.log(`Unit moved: ${unit.name}`)
       return
     }
     const step = path[0] // Get the first step
@@ -973,6 +985,14 @@ const Renderer3d = (game, canvas) => {
         renderer.moveUnitOnPath(unit, path) // Recusivity!
       })
     })
+  }
+
+  // CHANGE UNIT MATERIAL
+  renderer.changeUnitMaterial = (unit, color) => {
+    const materialIndex = color === 'colorDesaturated' ? 1 : 0
+    for (const mesh of unit.meshes) {
+      mesh.material = renderer.materials.players[unit.playerId][materialIndex]
+    }
   }
 
   ////////////////////////////////////////

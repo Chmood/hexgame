@@ -70,6 +70,37 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
   }
 
+  // CHANGE CURRENT PLAYER
+  game.changeCurrentPlayer = (playerId) => {
+    if (game.currentPlayer === undefined) {
+      // First call
+      game.currentPlayer = game.players[0]
+
+    } else if (playerId !== undefined) {
+      game.currentPlayer = game.players[playerId]
+
+    } else {
+      // Clean up last player
+      console.log(`Last player was ${game.currentPlayer.name}`)
+      for (const unit of game.currentPlayer.units) {
+        unit.hasPlayed = false
+        game.renderer3d.changeUnitMaterial(unit, 'color')
+      }
+      // Set the next player
+      let playerId = game.currentPlayer.id
+      playerId++
+      if (playerId === game.players.length) {
+        playerId = 0
+      }
+      game.currentPlayer = game.players[playerId]
+      console.log(`It's player ${game.currentPlayer.name}'s turn`)
+    }
+
+    game.unitsToMove = game.currentPlayer.units // TODO: array deep copy???
+    game.focusedUnit = game.unitsToMove[0] 
+    game.focusUnit(game.focusedUnit)
+  } 
+
   // GET UNITS HEXES
   game.getUnitsHexes = () => {
     const unitsHexes = []
@@ -83,32 +114,63 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   
   // FOCUS UNIT
   // Give focus (camera and cursor) either to the given unit, or next or previous
-  game.focusUnit = (param) => {
+  game.focusUnit = (param = 'next') => {
+    // Prevents focusing during move or passive mode
+    if (game.mode !== 'select') {
+      console.log(`Focus can only be used in "select" mode!`)
+      return
+    }
     // Compute the unit to be focused
     if (typeof param === 'string') {
-      const player = game.players[game.currentPlayerId]
-      let unitIndex = player.units.indexOf(game.focusedUnit)
-
-      if (param === 'previous') {
-        unitIndex--
-        if (unitIndex < 0) {
-          unitIndex += player.units.length
-        }
-      } else if (param === 'next') {
-        unitIndex++
-        if (unitIndex === player.units.length) {
-          unitIndex = 0
+      // Get the list of movable units' ids
+      const unitsRemainingIds = []
+      for (const unit of game.currentPlayer.units) {
+        if (!unit.hasPlayed) {
+          unitsRemainingIds.push(unit.id)
         }
       }
-      game.focusedUnit = player.units[unitIndex]
+      // Abort if no available unit
+      if (unitsRemainingIds.length === 0) {
+        return
+      }
+
+      let focusedUnitId = 0
+      
+      // Get the current focused unit id, or take the first unit id
+      if (game.focusedUnit !== undefined) {
+        focusedUnitId = game.focusedUnit.id
+      }
+
+      // Find the next/previous unit that still can play
+      const idIncrement = param === 'previous' ? -1 : 1
+      let found = false
+      while (!found) {
+        focusedUnitId += idIncrement
+        if (focusedUnitId < 0) {
+          focusedUnitId += game.currentPlayer.units.length
+        }
+        if (focusedUnitId === game.currentPlayer.units.length) {
+          focusedUnitId = 0
+        }
+        if (!game.currentPlayer.units[focusedUnitId].hasPlayed) {
+          found = true
+        }
+      }
+      game.focusedUnit = game.currentPlayer.units[focusedUnitId]
+
     } else {
-      game.focusedUnit = param
+      // We passed a unit as param
+      if (param.hasPlayed) {
+        return
+      } else {
+        game.focusedUnit = param
+      }
     }
     // Actually give focus to the unit
     const hex = game.focusedUnit.hex
     game.ui.cursor = hex
     game.ui.cursorBackup = hex
-    game.updateRenderers(['players', 'highlights'])
+    game.updateRenderers(['highlights'])
     game.renderer3d.updateCameraPosition(hex)
     console.log(`Focus on unit ${game.focusedUnit.name}`)
   }
@@ -119,24 +181,39 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     for (const player of game.players) {
       for (const unit of player.units) {
         if (HEXLIB.hexEqual(game.ui.cursor, unit.hex)) {
+          // The player has selected a unit
           isSomethingSelected = true
-          game.mode = 'move'
-          game.selectedUnit = unit
-          // Backup cursor in case of cancel
-          game.ui.cursorBackup = game.ui.cursor
-          // Highlight the whole movement zone
-          console.log(`Unit selected: ${unit.name} `)
-          
-          game.ui.moveZone = game.getMoveZone(unit)
-          if (game.ui.moveZone.length === 0) {
-            console.log('Nowhere to go, the unit is blocked!')
-            game.cancelMove()
-          }
 
-          game.updateRenderers(['highlights'])
+          if (player === game.currentPlayer) {
+            // The player selected one of its own units
+            if (unit.hasPlayed) {
+              console.log(`Unit ${unit.name} has already played!`)
+              return
+            }
+            // The unit can move
+            game.mode = 'move'
+            game.selectedUnit = unit
+            // Backup cursor in case of cancel
+            game.ui.cursorBackup = game.ui.cursor
+            // Highlight the whole movement zone
+            console.log(`Unit selected: ${unit.name} `)
+            
+            game.ui.moveZone = game.getMoveZone(unit)
+            if (game.ui.moveZone.length === 0) {
+              console.log('Nowhere to go, the unit is blocked!')
+              game.cancelMove()
+            }
+            game.updateRenderers(['highlights'])
+
+          } else {
+            // The player selected one of another player's unit
+            // TODO: info mode (ala Fire Emblem)
+            console.log(`TODO: display infos about ${player.name}'s ${unit.name}`)
+          }
         }
       }
     }
+    // Empty selection
     if (!isSomethingSelected) {
       console.log('Nothing to select here!')
       // TODO: open game menu (ala Fire Emblem!)
@@ -146,13 +223,33 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // SELECT DESTINATION
   game.selectDestination = () => {
     // Avoid the user to move cursor or do other actions during movement
+    const path = game.ui.cursorPath // Use the cursor path as movement path
+
+    // Reset the UI
     game.mode = 'passive'
     game.ui.moveZone = []
-    const path = game.ui.cursorPath
-    path.shift()
     game.ui.cursorPath = []
     game.updateRenderers(['highlights'])
+    
+    // Make the unit travel the path
+    path.shift() // Remove the first element (that is unit cell)
+    // TODO: promises / async await for the code below
     game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
+    // Mark the unit as having played
+    game.selectedUnit.hasPlayed = true
+
+    // Automatic end of turn (ala Fire Emblem)
+    const nUnitsRemaining = game.currentPlayer.units.filter(
+      unit => !unit.hasPlayed
+    ).length
+
+    if (nUnitsRemaining === 0) {
+      // No more unit to play with
+      console.log(`${game.currentPlayer.name}'s turn is over`)
+      game.changeCurrentPlayer()
+    } else {
+      console.log(`Still ${nUnitsRemaining} units to play`)
+    }
   }
 
   // DO ACTION
@@ -366,15 +463,11 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.renderer3d.createUnits()
 
       game.ui.moveZone = []
-
-      game.currentPlayerId = 0
-      game.unitsToMove = game.players[game.currentPlayerId].units
-      game.focusedUnit = game.unitsToMove[0] 
-      game.focusUnit(game.focusedUnit)
-
       game.mode = 'select'
       game.selectedUnit = undefined
 
+      // It's first player's turn
+      game.changeCurrentPlayer(0)
 
       console.log(`Game generated in ${nTry} tries`)
       

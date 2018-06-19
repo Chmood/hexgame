@@ -8,6 +8,7 @@
 
 ## Improvements
 
+* Find a real Random Number Generator
 * Fullscreen mode
 * Makes diagonal cursor moves (2 arrow keys at the same time)
 * Moving cursor with arrow keys should adapt to camera beta rotation

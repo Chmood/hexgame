@@ -1,3 +1,4 @@
+import ShadeBlend from '../vendor/shadeblend'
 import Unit from './unit'
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -10,6 +11,7 @@ const Player = (config) => {
   player.id = config.id
   player.name = config.name
   player.color = config.color
+  // player.colorDesaturated = ShadeBlend(0.5, player.color, '#888888')
 
   // UNITS
   player.units = []
