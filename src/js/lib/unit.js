@@ -16,7 +16,6 @@ const Unit = (config) => {
       name: `${config.type}-${config.id}`
     }
   )
-  console.log(unit)
 
   unit.moveToHex = (hex, mapTopped, mapParity) => {
     unit.hex = hex

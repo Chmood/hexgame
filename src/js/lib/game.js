@@ -63,6 +63,8 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
         } else if (keys['x']) {           game.doAction()
         } else if (keys['c']) {           game.cancelAction()
+        } else if (keys['v']) {           game.focusUnit('previous')
+        } else if (keys['b']) {           game.focusUnit('next')
         }
       }
     }
@@ -77,6 +79,38 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       }
     }
     return unitsHexes
+  }
+  
+  // FOCUS UNIT
+  // Give focus (camera and cursor) either to the given unit, or next or previous
+  game.focusUnit = (param) => {
+    // Compute the unit to be focused
+    if (typeof param === 'string') {
+      const player = game.players[game.currentPlayerId]
+      let unitIndex = player.units.indexOf(game.focusedUnit)
+
+      if (param === 'previous') {
+        unitIndex--
+        if (unitIndex < 0) {
+          unitIndex += player.units.length
+        }
+      } else if (param === 'next') {
+        unitIndex++
+        if (unitIndex === player.units.length) {
+          unitIndex = 0
+        }
+      }
+      game.focusedUnit = player.units[unitIndex]
+    } else {
+      game.focusedUnit = param
+    }
+    // Actually give focus to the unit
+    const hex = game.focusedUnit.hex
+    game.ui.cursor = hex
+    game.ui.cursorBackup = hex
+    game.updateRenderers(['players', 'highlights'])
+    game.renderer3d.updateCameraPosition(hex)
+    console.log(`Focus on unit ${game.focusedUnit.name}`)
   }
 
   // SELECT UNIT
@@ -304,8 +338,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.map.randomizeSeed()
     }
 
-    let line,
-        success = false,
+    let success = false,
         nTry = 0,
         nTryLeft = 100
 
@@ -332,18 +365,17 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.renderer3d.createTiles()
       game.renderer3d.createUnits()
 
-      const startingHex = game.players[0].units[0].hex // Place the cursor on first player's first unit
-      game.ui.cursor = startingHex
-      game.ui.cursorBackup = startingHex
-      game.renderer3d.updateCameraPosition(startingHex)
-
       game.ui.moveZone = []
 
       game.currentPlayerId = 0
+      game.unitsToMove = game.players[game.currentPlayerId].units
+      game.focusedUnit = game.unitsToMove[0] 
+      game.focusUnit(game.focusedUnit)
+
       game.mode = 'select'
       game.selectedUnit = undefined
 
-      game.updateRenderers(['players', 'highlights'])
+
       console.log(`Game generated in ${nTry} tries`)
       
     } else {
