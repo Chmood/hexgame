@@ -12,10 +12,11 @@ const config = {
 
   context: path.resolve(__dirname, 'src'),
 
-  entry: {
-    // removing 'src' directory from entry point(s), since 'context' is taking care of that
-    app: './app.js'
-  },
+  // entry: {
+  //   // removing 'src' directory from entry point(s), since 'context' is taking care of that
+  //   app: './app.js'
+  // },
+  entry: ['babel-polyfill', './app.js'],
 
   output: {
     filename: '[name].bundle.js',
