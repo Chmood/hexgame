@@ -221,7 +221,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   }
 
   // SELECT DESTINATION
-  game.selectDestination = () => {
+  game.selectDestination = async function() {
     // Avoid the user to move cursor or do other actions during movement
     const path = game.ui.cursorPath // Use the cursor path as movement path
 
@@ -232,11 +232,12 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     game.updateRenderers(['highlights'])
     
     // Make the unit travel the path
-    path.shift() // Remove the first element (that is unit cell)
-    // TODO: promises / async await for the code below
-    game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
+    path.shift() // Remove the first element (that is unit/starting cell)
+
+    await game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
     // Mark the unit as having played
     game.selectedUnit.hasPlayed = true
+    game.mode = 'select'
 
     // Automatic end of turn (ala Fire Emblem)
     const nUnitsRemaining = game.currentPlayer.units.filter(

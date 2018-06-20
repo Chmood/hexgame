@@ -894,13 +894,12 @@ const Renderer3d = (game, canvas) => {
 
     unit.mesh.animations = [animationPlayerRotation]
 
-    renderer.scene.beginAnimation(
+    return renderer.scene.beginAnimation(
       unit.mesh, // Target
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      speed, // Speed ratio
-      callback
+      speed // Speed ratio
     )
   }
 
@@ -952,38 +951,50 @@ const Renderer3d = (game, canvas) => {
 
     unit.mesh.animations = [animationPlayerPosition, animationPlayerRotation]
 
-    renderer.scene.beginAnimation(
+    return renderer.scene.beginAnimation(
       unit.mesh, // Target
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      3, // Speed ratio
-      callback
+      3 // Speed ratio
     )
   }
 
-  // MOVE UNIT ON PATH
-  // Rotate a unit then move it to an adjacent tile, repeatedly
-  renderer.moveUnitOnPath = (unit, path) => {
-    if (path.length === 0) {
-      // The path is over
-      renderer.changeUnitMaterial(unit, 'colorDesaturated')
-      game.mode = 'select'
-      console.log(`Unit moved: ${unit.name}`)
-      return
-    }
-    const step = path[0] // Get the first step
-    path.shift() // Remove the first step from the path
-    unit.mesh.animations = []
-    // Make the camera follow the moving unit
-    renderer.updateCameraPosition(step)
+  renderer.moveUnitOnePathStep = (unit, path) => {
+    return new Promise(async (resolve) => {
 
-    renderer.rotateUnit(unit, step, () => {
-      renderer.moveUnit(unit, step, () => {
-        // Update unit's position
-        unit.moveToHex(step, CONFIG.map.mapTopped, CONFIG.map.mapParity)
-        renderer.moveUnitOnPath(unit, path) // Recusivity!
-      })
+      // Get the first step and remove it from the path
+      const step = path.shift()
+      unit.mesh.animations = []
+      // Make the camera follow the moving unit
+      renderer.updateCameraPosition(step)
+  
+      // Rotate the unit in the right direction
+      const rotateUnit = renderer.rotateUnit(unit, step)
+      await rotateUnit.waitAsync()
+      // Move the unit to the adjacent tile
+      const moveUnit = renderer.moveUnit(unit, step)
+      await moveUnit.waitAsync()
+      // Update unit's position
+      unit.moveToHex(step, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+
+      resolve(path)
+    })
+  }
+
+  renderer.moveUnitOnPath = (unit, path) => {
+    return new Promise(async (resolve) => {
+
+      if (path.length === 0) {
+        // The path is over
+        renderer.changeUnitMaterial(unit, 'colorDesaturated')
+        console.log(`Unit moved: ${unit.name}`)
+        resolve()
+        return
+      }
+
+      const newPath = await renderer.moveUnitOnePathStep(unit, path)
+      resolve(renderer.moveUnitOnPath(unit, newPath))
     })
   }
 
