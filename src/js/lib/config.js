@@ -5,7 +5,7 @@ import HEXLIB from '../vendor/hexlib'
 
 const CONFIG = {
   map: {
-    mapSeed: undefined, // Computed later
+    seed: 'staticmapseed', // undefined for a random seed
     // mapSize: 						{ width: 29, height: 25 }, // Logical map size, in cells
     mapSize: { width: 25, height: 25 }, // Logical map size, in cells
     // mapTopped: Math.random() > 0.5 ? HEXLIB.FLAT : HEXLIB.POINTY, // HEXLIB.FLAT or HEXLIB.POINTY
@@ -107,13 +107,14 @@ const CONFIG = {
   },
 
   players: [
-    { id: 0, name: 'Foo111', isHuman: false, color: '#ff8000', colorDesaturated: '#c48444' },
+    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000', colorDesaturated: '#c48444' },
     { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080', colorDesaturated: '#c44484' },
     { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00', colorDesaturated: '#44c444' },
     { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff', colorDesaturated: '#4484c4' }
   ],
 
   game: {
+    seed: 'staticgameseed', // undefined for a random seed
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
     animationsSpeed: 1,
     // Units stats

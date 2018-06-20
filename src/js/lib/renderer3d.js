@@ -1099,13 +1099,12 @@ const Renderer3d = (game, canvas) => {
         renderer.debounce--
       }
   
-      const fps = Math.floor(renderer.engine.getFps())
+      // const fps = Math.floor(renderer.engine.getFps())
       // console.log(fps + ' FPS')
 
       if (CONFIG.render3d.cameraAutoRotate) {
         // Make the camera rotate around the island
-        renderer.cameraFree.alpha = renderer.tick
-        renderer.tick += 0.01
+        renderer.cameraFree.alpha += 0.01
       }
     })
   }
@@ -1144,6 +1143,7 @@ const Renderer3d = (game, canvas) => {
     renderer.imageTask = renderer.assetsManager.addImageTask('img5', img5)
     renderer.imageTask = renderer.assetsManager.addImageTask('img6', img6)
     renderer.assetsManager.onFinish = function (tasks) {
+      renderer.initUpdateLoop()
       renderer.startRenderLoop()
       // console.warn('ASSETS LOADED!', tasks)
     }
@@ -1188,8 +1188,7 @@ const Renderer3d = (game, canvas) => {
     // Post-process
     renderer.updatePosprocessPipeline()
 
-    // 'Time' tick
-    renderer.tick = 0
+    // Debounce counter
     renderer.debounce = 0
 
     // Freeze the active meshes
@@ -1213,8 +1212,6 @@ const Renderer3d = (game, canvas) => {
     //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }
     //   )
     // )
-
-    renderer.initUpdateLoop()
   }
   
   renderer.initRenderer()

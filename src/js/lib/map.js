@@ -1,3 +1,4 @@
+import seedrandom from 'seedrandom'
 import HEXLIB from '../vendor/hexlib.js'
 import PriorityQueue from './priority-queue.js'
 import noise from '../vendor/noise.js'
@@ -7,6 +8,9 @@ import noise from '../vendor/noise.js'
 
 export default Map = (config) => { // WTF is this syntax only working here?! (bottom export elsewhere)
   const map = {}
+
+  // RNG & seed
+  let mapSeed, RNG
 
   // ARRAY 2D
   // Create an empty 2D array with given width and height
@@ -37,13 +41,15 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // RANDOMIZE SEED
   // Random seed the noise generator
   map.randomizeSeed = () => {
-    map.setSeed(Math.random())
+    map.setSeed(RNG())
   }
 
   // SET SEED
   map.setSeed = (seed) => {
-    config.mapSeed = seed
-    noise.seed(config.mapSeed)
+    console.log(`Map seed set to "${seed}"`)
+    mapSeed = seed
+    RNG = seedrandom(mapSeed)
+    noise.seed(mapSeed)
   }
 
   // GET CELL FROM HEX
@@ -148,9 +154,9 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         ratio = 1 - ratio
         ratio = Math.pow(ratio, config.mapPostprocess.height.islandRedistributionPower)
         // Add random peaks to border area of the map (otherwise only 'deepsea')
-        if (ratio < 0.5) {
-          ratio += (Math.random() / 5)
-        }
+        // if (ratio < 0.5) {
+        //   ratio += (RNG() / 5)
+        // }
         map.data[x][y][type] *= ratio
       }
     }
@@ -289,7 +295,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
         if (config.mapNoise[type].stupidRandom) {
           // Stupid random value
-          value = Math.random()
+          value = RNG()
         } else {
           // Noise based value
           value = map.createNoise(type, x, y)

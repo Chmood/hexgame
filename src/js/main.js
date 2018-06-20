@@ -66,7 +66,6 @@ const Main = () => {
     // CREATE THE GAME
 
     main.game = Game(main.ctx, main.domUI.canvas3d, CONFIG, main)
-    main.game.map.randomizeSeed()
     main.game.generate()
     main.domUI.setGame(main.game)
 
@@ -79,6 +78,7 @@ const Main = () => {
     // 2D: Initial rendering
     main.game.renderer2d.render()
     // 3D: Start engine!
+    // Will be fired in renderer3d, when all assets finished loading
     // main.game.renderer3d.startRenderLoop()
   }
 

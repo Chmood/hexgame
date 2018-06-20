@@ -1,4 +1,5 @@
 import HEXLIB from '../vendor/hexlib'
+import seedrandom from 'seedrandom'
 
 import Map from './map'
 import Players from './players'
@@ -20,6 +21,10 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // UI OVERLAY
   game.ui = {}
+
+  // RNG seeds
+  let gameSeed = CONFIG.game.seed
+  const RNG = seedrandom(gameSeed)
 
   // UPDATE RENDERERS
   game.updateRenderers = (actions) => {
@@ -136,7 +141,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.focusUnit(unit)
       const moveZone = game.getMoveZone(unit)
       if (moveZone.length === 0) { continue }
-      const target = moveZone[Math.floor(Math.random() * moveZone.length)] 
+      const target = moveZone[Math.floor(RNG() * moveZone.length)] 
       const path = game.map.findPath(
         unit.hex, 
         target,
@@ -496,9 +501,11 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // GENERATE GAME
 
   // Generate a new map (with or without a fresh seed) and players
-  game.generate = (randomSeed = false) => {
-    if (randomSeed) {
+  game.generate = (randomMapSeed = false) => {
+    if (randomMapSeed) {
       game.map.randomizeSeed()
+    } else {
+      game.map.setSeed(CONFIG.map.seed)
     }
 
     let success = false,
