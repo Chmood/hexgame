@@ -4,14 +4,18 @@
 
 * Improve post-processing when camera switch (SSAO is fucked up)
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile
+* Improve Random Number Generator
 
 ## Improvements
 
 * Improve unit initial placement (all units must have a path to all other units)
-* Find a real Random Number Generator
-* Fullscreen mode
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Make all modules' methods (like module.method()) 'private' by default
+
+## New features
+
+* Let units attack each others
+* Fullscreen mode
 * Joypad support
 
 ## Ideas
