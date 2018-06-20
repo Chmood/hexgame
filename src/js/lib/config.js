@@ -77,7 +77,7 @@ const CONFIG = {
     cellSizeBase: undefined,	// base size of a cell in px // COMPUTED (on DOM ready)
     cellSizeRatio: 6 / 6,	// perspective cell height diminution ratio
     cellSize: undefined, // size of the cell // COMPUTED (on DOM ready)
-    displayTileText: true // debug tiles cost / height
+    displayTileText: false // debug tiles cost / height
   },
   render3d: {
     cellSize: 1,
@@ -105,7 +105,7 @@ const CONFIG = {
   },
 
   players: [
-    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000', colorDesaturated: '#c48444' },
+    { id: 0, name: 'Foo111', isHuman: false, color: '#ff8000', colorDesaturated: '#c48444' },
     { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080', colorDesaturated: '#c44484' },
     { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00', colorDesaturated: '#44c444' },
     { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff', colorDesaturated: '#4484c4' }

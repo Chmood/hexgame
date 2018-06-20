@@ -23,19 +23,21 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // UPDATE RENDERERS
   game.updateRenderers = (actions) => {
-    for (const action of actions) {
-
-      if (action === 'resize') {
-        game.renderer2d.init()
-        game.renderer3d.engine.resize()
-
-      } else if (action === 'highlights') {
-        game.renderer3d.updateHighlights()
-
-      } else if (action === 'players') {
-        game.renderer3d.deleteUnits()
-        game.renderer3d.createUnits()
-        game.renderer3d.addToOceanRenderList() // TODO: overkill? (only players needed)
+    if (actions) {
+      for (const action of actions) {
+  
+        if (action === 'resize') {
+          game.renderer2d.init()
+          game.renderer3d.engine.resize()
+  
+        } else if (action === 'highlights') {
+          game.renderer3d.updateHighlights()
+  
+        } else if (action === 'players') {
+          game.renderer3d.deleteUnits()
+          game.renderer3d.createUnits()
+          game.renderer3d.addToOceanRenderList() // TODO: overkill? (only players needed)
+        }
       }
     }
     game.renderer2d.render() // Always refresh 2d canvas
@@ -116,10 +118,37 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       console.log(`It's player ${game.currentPlayer.name}'s turn`)
     }
 
-    game.unitsToMove = game.currentPlayer.units // TODO: array deep copy???
+    game.unitsToMove = game.currentPlayer.units
     game.focusedUnit = game.unitsToMove[0] 
     game.focusUnit(game.focusedUnit)
+
+    // Is the next player a bot?
+    if (!game.currentPlayer.isHuman) {
+      console.log(`Player ${game.currentPlayer.name} is a bot`)
+      game.playBot()
+    }
   } 
+
+  // PLAY BOT
+  game.playBot = async () => {
+    for (const unit of game.currentPlayer.units) {
+      game.selectedUnit = unit
+      game.focusUnit(unit)
+      const moveZone = game.getMoveZone(unit)
+      if (moveZone.length === 0) { continue }
+      const target = moveZone[Math.floor(Math.random() * moveZone.length)] 
+      const path = game.map.findPath(
+        unit.hex, 
+        target,
+        true,
+        game.getUnitsHexes()
+      )
+
+      path.shift() // Remove the first element (that is unit/starting cell)
+      await game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
+    }
+    game.changeCurrentPlayer()
+  }
 
   // GET UNITS HEXES
   game.getUnitsHexes = () => {
@@ -492,6 +521,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     }
 
     if (success) {
+      console.log(`Game generated in ${nTry} tries`)
       console.log('MAP DATA', game.map.data)
 
       game.renderer3d.createTiles()
@@ -504,8 +534,6 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
       // It's first player's turn
       game.changeCurrentPlayer(0)
-
-      console.log(`Game generated in ${nTry} tries`)
       
     } else {
       console.error('Game generation has failed!')

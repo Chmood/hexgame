@@ -10,6 +10,7 @@ const Player = (config) => {
   // BASE
   player.id = config.id
   player.name = config.name
+  player.isHuman = config.isHuman
   player.color = config.color
   // player.colorDesaturated = ShadeBlend(0.5, player.color, '#888888')
 

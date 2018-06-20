@@ -992,6 +992,7 @@ const Renderer3d = (game, canvas) => {
       }
 
       const newPath = await renderer.moveUnitOnePathStep(unit, path)
+      game.updateRenderers() // Update 2D map
       resolve(renderer.moveUnitOnPath(unit, newPath))
     })
   }
