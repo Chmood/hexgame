@@ -341,29 +341,27 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
   // GET MOVE COST
   map.getMoveCost = (fromHeight, toHeight, toBiome) => {
-    let cost = 1,
-        heightCost = toHeight - fromHeight
+    // let cost = 1,
+    //     heightCost = toHeight - fromHeight
 
-    // Heightcost is positive when we move upward
+        // Heightcost is positive when we move upward
     // In case we're moving down, limit the negative cost (aka gain) by scaling down
-    if (heightCost < 0) {
-      heightCost /= 4
-    }
-    cost = 1 + heightCost
+    // if (heightCost < 0) {
+    //   heightCost /= 4
+    // }
+    // cost = 1 + heightCost
 
-    if (toBiome === 'shore') {
-      cost *= 2
+    // if (toBiome === 'shore') {
+    //   cost *= 2
+    // }
+    if (toBiome === 'forest' || toBiome === 'deepforest' ||toBiome === 'pineforest') {
+      return 2
+    } else if (toBiome === 'mountain' || toBiome === 'highmountain') {
+      return 3
+    } else if (toBiome === 'scorched' || toBiome === 'snow' || toBiome === 'ice') {
+      return 4
     }
-    if (toBiome === 'mountain' ||
-      toBiome === 'highmountain') {
-      cost *= 3
-    }
-    if (toBiome === 'scorched' ||
-      toBiome === 'snow' ||
-      toBiome === 'ice') {
-      cost *= 4
-    }
-    return cost
+    return 1
 }
 
   // MAP GRAPH
@@ -475,7 +473,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // From: 
   //	http://www.redblobgames.com/pathfinding/a-star/introduction.html
   //	http://www.redblobgames.com/pathfinding/a-star/implementation.html
-  map.findPath = (start, goal, earlyExit = true, blacklist) => {
+  map.findPath = (start, goal, earlyExit = true, blacklist, costLimit = 1000000) => {
 
     // if (!map.getCellFromHex(start).isInGraph) console.warn('A*: start hex is NOT in graph!')
     // if (!map.getCellFromHex(goal).isInGraph) console.warn('A*: goal hex is NOT in graph!')
@@ -543,9 +541,15 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
               // cost from start to this neighbor
               newCost =
                 map.getFromHex(costSoFar, currentHex) // sum of the current cost...
-                + nextCost, // ...plus the cost of the neighbor move
+                + nextCost // ...plus the cost of the neighbor move
+
+        // Skip this location if its cost exceed cost limit
+        if (newCost > costLimit) {
+          continue
+        }
+
               // List of the already visited hexes
-              comeSoFarHexes = map.getIndexHexes(costSoFar),
+        const comeSoFarHexes = map.getIndexHexes(costSoFar),
               // Eventual current best cost for this neigbor
               costSoFarNext = map.getFromHex(costSoFar, next)
 
