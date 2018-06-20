@@ -80,6 +80,7 @@ const CONFIG = {
     displayTileText: false // debug tiles cost / height
   },
   render3d: {
+    // Terrain
     cellSize: 1,
     cellStepHeight: 0.5,
     randomTileSizeFactor: 0.15,
@@ -88,6 +89,7 @@ const CONFIG = {
     randomTileRotationFactor: 1, // 0 : flat / 1 : sloppy / 2 : chaos
     shinyIce: true,
     transparentIce: false,
+    // Environement
     worldSize: 4096, // Used for skybox and ocean
     showAxis: false,
     // UI mods
@@ -113,6 +115,7 @@ const CONFIG = {
 
   game: {
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
+    animationsSpeed: 1,
     // Units stats
     units: {
       tank: {

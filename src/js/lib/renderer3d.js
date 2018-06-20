@@ -898,7 +898,7 @@ const Renderer3d = (game, canvas) => {
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      speed // Speed ratio
+      speed * CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
@@ -955,7 +955,7 @@ const Renderer3d = (game, canvas) => {
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      3 // Speed ratio
+      3 * CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
