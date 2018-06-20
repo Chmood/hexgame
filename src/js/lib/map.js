@@ -533,7 +533,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
           console.error('map.findPath(): neighbor NOT in graph!', neighbors[n])
         }
         // Skip this location if blacklisted
-        if (blacklist && HEXLIB.hexIndexOf(blacklist, neighbors[n])) {
+        if (blacklist && HEXLIB.hexIndexOf(blacklist, neighbors[n]) !== -1) {
           continue
         }
 
@@ -551,7 +551,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
         // We can visit a location multiple times, with different costs
         if (
-          !HEXLIB.hexIndexOf(comeSoFarHexes, next) || // if neigbor not already visited...
+          HEXLIB.hexIndexOf(comeSoFarHexes, next) === -1 || // if neigbor not already visited...
           newCost < costSoFarNext // ...or neighbor cost is better than the eventual best previous path
         ) {
           // Replace or push the new best cost

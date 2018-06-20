@@ -27,14 +27,13 @@ HEXLIB.hexSub = (h1, h2) => ({x: h1.x - h2.x, y: h1.y - h2.y, z: h1.z - h2.z})
 HEXLIB.hexMultiply = (h, k) => ({x: h.x * k, y: h.y * k, z: h.z * k})
 HEXLIB.hexEqual = (h1, h2) => h1.x === h2.x && h1.y === h2.y ? true : false
 HEXLIB.hexIndexOf = (hs, h) => {
-	let isIn = false
 	for (let i = 0; i < hs.length; i++) {
 		if (HEXLIB.hexEqual(hs[i], h)) {
-			isIn = true
+			return i
 		}
 	}
 
-	return isIn
+	return -1
 }
 
 // LENGTH & DISTANCE
