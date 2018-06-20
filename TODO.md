@@ -13,6 +13,8 @@
 * Makes diagonal cursor moves (2 arrow keys at the same time)
 * Moving cursor with arrow keys should adapt to camera beta rotation
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
+* Make all modules' methods (like module.method()) 'private' by default
+* Joypad support
 
 ## Ideas
 

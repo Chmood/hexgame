@@ -988,7 +988,6 @@ const Renderer3d = (game, canvas) => {
       if (path.length === 0) {
         // The path is over
         renderer.changeUnitMaterial(unit, 'colorDesaturated')
-        console.log(`Unit moved: ${unit.name}`)
         resolve()
         return
       }

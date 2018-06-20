@@ -27,7 +27,7 @@ const DomUI = () => {
   dom.setElements = () => {
     dom.selectPosprocess.value = CONFIG.render3d.postprocess
     dom.checkboxBetterOcean.checked = CONFIG.render3d.betterOcean
-    // dom.checkboxCameraAutoRotate.checked = CONFIG.render3d.cameraAutoRotate
+    dom.checkboxCameraAutoRotate.checked = CONFIG.render3d.cameraAutoRotate
   }
 
   // SET EVENT LISTENERS

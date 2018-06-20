@@ -1,5 +1,6 @@
 # hexgame
-Hexagonal fun and 3D procedural terrain
+
+Hexagonal fun and 3D procedural terrain. This is a work-in-progress game, freely inspired by [Advance Wars](https://en.wikipedia.org/wiki/Advance_Wars) and [Fire Emblem series](https://en.wikipedia.org/wiki/Fire_Emblem).
 
 Live demo: [https://chmood.github.io/hexgame/](https://chmood.github.io/hexgame/)
 
@@ -10,7 +11,7 @@ Live demo: [https://chmood.github.io/hexgame/](https://chmood.github.io/hexgame/
 * Multiple biomes, depending on both elevation and moisture
 * Island mode
 * A-star pathfinding
-* [BabylonJS](https://www.babylonjs.com/) 3D rendering
+* [BabylonJS](https://www.babylonjs.com/) 3D rendering + 2D canvas minimap
 * Webpack ES6 modules bundling and building
 
 ## Credits

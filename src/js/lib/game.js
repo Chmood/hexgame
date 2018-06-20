@@ -238,6 +238,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     // Mark the unit as having played
     game.selectedUnit.hasPlayed = true
     game.mode = 'select'
+    console.log(`Unit moved: ${game.selectedUnit.name}`)
 
     // Automatic end of turn (ala Fire Emblem)
     const nUnitsRemaining = game.currentPlayer.units.filter(
@@ -249,7 +250,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       console.log(`${game.currentPlayer.name}'s turn is over`)
       game.changeCurrentPlayer()
     } else {
-      console.log(`Still ${nUnitsRemaining} units to play`)
+      console.log(`Still ${nUnitsRemaining} unit(s) to play`)
     }
   }
 
