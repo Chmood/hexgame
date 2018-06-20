@@ -53,18 +53,28 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     // Only catch key events if the standard camera is active
     if (game.renderer3d.scene.activeCamera === game.renderer3d.camera) {
       if (game.renderer3d.debounce === 0) {
-        if        (keys['ArrowRight']) {  game.cursorMove('right')
+               if (keys['ArrowRight'] && 
+                   keys['ArrowUp']) {     game.cursorMove('right-up')
+        } else if (keys['ArrowRight'] && 
+                   keys['ArrowDown']) {   game.cursorMove('right-down')
+        } else if (keys['ArrowLeft'] && 
+                   keys['ArrowUp']) {     game.cursorMove('left-up')
+        } else if (keys['ArrowLeft'] && 
+                   keys['ArrowDown']) {   game.cursorMove('left-down')
+        } else if (keys['ArrowRight']) {  game.cursorMove('right')
         } else if (keys['ArrowLeft']) {   game.cursorMove('left')
         } else if (keys['ArrowUp']) {     game.cursorMove('up')
         } else if (keys['ArrowDown']) {   game.cursorMove('down')
-        } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
-        } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
-        } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
-        } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
+          
         } else if (keys['x']) {           game.doAction()
         } else if (keys['c']) {           game.cancelAction()
         } else if (keys['v']) {           game.focusUnit('previous')
         } else if (keys['b']) {           game.focusUnit('next')
+
+        } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
+        } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
+        } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
+        } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
         }
       }
     }
@@ -290,10 +300,21 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     const cursorOffset = HEXLIB.hex2Offset(hex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
     let directionIndex
 
+    //  FLAT         POINTY
+    //
+    //    5           5  0
+    // 4     0      4      1
+    // 3     1        3  2
+    //    2
+console.log(direction)
     if (CONFIG.map.mapTopped === HEXLIB.FLAT) {
       // FLAT map
       if (direction === 'up') { directionIndex = 5 }
       else if (direction === 'down') { directionIndex = 2 }
+      else if (direction === 'left-up') { directionIndex = 4 }
+      else if (direction === 'left-down') { directionIndex = 3 }
+      else if (direction === 'right-up') { directionIndex = 0 }
+      else if (direction === 'right-down') { directionIndex = 1 }
       else if (
         cursorOffset.col % 2 === 0 && CONFIG.map.mapParity === HEXLIB.ODD ||
         cursorOffset.col % 2 !== 0 && CONFIG.map.mapParity === HEXLIB.EVEN
@@ -308,6 +329,10 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       // POINTY map
       if (direction === 'left') { directionIndex = 4 }
       else if (direction === 'right') { directionIndex = 1 }
+      else if (direction === 'left-up') { directionIndex = 5 }
+      else if (direction === 'left-down') { directionIndex = 3 }
+      else if (direction === 'right-up') { directionIndex = 0 }
+      else if (direction === 'right-down') { directionIndex = 1 }
       else if (
         cursorOffset.row % 2 === 0 && CONFIG.map.mapParity === HEXLIB.ODD ||
         cursorOffset.row % 2 !== 0 && CONFIG.map.mapParity === HEXLIB.EVEN
