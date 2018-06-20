@@ -139,7 +139,9 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     for (const unit of game.currentPlayer.units) {
       game.selectedUnit = unit
       game.focusUnit(unit)
-      const moveZone = game.getMoveZone(unit)
+      const zones = game.getMoveZones(unit),
+            moveZone = zones.move,
+            attackZone = zones.attack
       if (moveZone.length === 0) { continue }
       const target = moveZone[Math.floor(RNG() * moveZone.length)] 
       const path = game.map.findPath(
@@ -156,13 +158,25 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   }
 
   // GET UNITS HEXES
-  game.getUnitsHexes = () => {
+  // Return an array of all/friends/ennemies units hexes
+  game.getUnitsHexes = (group) => {
     const unitsHexes = []
-    for (const player of game.players) {
-      for (const unit of player.units) {
+    if (!group || group === 'ennemies') {
+      for (const player of game.players) {
+        if (group === 'ennemies') {
+          if (player === game.currentPlayer) {
+            continue
+          }
+        }
+        for (const unit of player.units) {
+          unitsHexes.push(unit.hex)
+        }
+      }
+    } else if (group === 'friends') {
+      for (const unit of game.currentPlayer.units) {
         unitsHexes.push(unit.hex)
       }
-    }
+  }
     return unitsHexes
   }
   
@@ -247,7 +261,9 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
             // Highlight the whole movement zone
             console.log(`Unit selected: ${unit.name} `)
             
-            game.ui.moveZone = game.getMoveZone(unit)
+            const zones = game.getMoveZones(unit)
+            game.ui.moveZone = zones.move
+            game.ui.attackZone = zones.attack
             if (game.ui.moveZone.length === 0) {
               console.log('Nowhere to go, the unit is blocked!')
               game.cancelMove()
@@ -278,6 +294,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     // Reset the UI
     game.mode = 'passive'
     game.ui.moveZone = []
+    game.ui.attackZone = []
     game.ui.cursorPath = []
     game.updateRenderers(['highlights'])
     
@@ -319,6 +336,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     game.ui.cursor = game.ui.cursorBackup
     game.ui.cursorPath = []
     game.ui.moveZone = []
+    game.ui.attackZone = []
     game.updateRenderers(['highlights'])
     // game.updateCursor(game.ui.cursor)
     game.renderer3d.updateCameraPosition(game.ui.cursor)
@@ -447,7 +465,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   }
 
   // CURSOR LINE
-  game.getCursorLine = (cursor, target, unit) => {
+  game.getCursorLine = (cursor, target) => {
     if (game.map.getCellFromHex(cursor) && game.map.getCellFromHex(cursor).isInGraph) {
       const cursorLine = game.map.findPath(
         target, 
@@ -463,31 +481,68 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // GET MOVE ZONE
   // Grab all the tiles with a cost lower than the player movement value
-  game.getMoveZone = (unit) => {
+  game.getMoveZones = (unit) => {
     // TODO: 
-    // * add a movement cost parameter / Dijkstra mode
-    // * make findPath return an array of cells in that range
+    // * make findPath return an array of cells in that range???
+    // * use a second graph for attacking, with uniform move costs of 1???
     
+    const moveZone = [],
+          attackZone = [],
+          friendsHexes = game.getUnitsHexes('friends')
+
+    // MOVE ZONE
     // Scan the whole graph to compute cost of each tile
     // We call map.findPath() without the goal parameter
+    // We also pass a blacklist as last parameter
     game.map.findPath(
       unit.hex, 
       undefined, // no goal
       undefined, // no early exit
-      game.getUnitsHexes() // blacklist
-    )
-    game.renderer2d.render() // Draw numbers on 2D map
+      game.getUnitsHexes(), // blacklist
+      unit.movement // cost higher limit
+    )  
+    game.updateRenderers() // Draw numbers on 2D map
 
-    const moveZone = []
     for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
       for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-        const tile = game.map.data[x][y]
-        if (tile.cost <= unit.movement) {
-          moveZone.push(tile.hex)
+        const cell = game.map.data[x][y]
+
+        if (cell.cost <= unit.movement) {
+          moveZone.push(cell.hex)
         }
       }
     }
-    return moveZone
+    // ATTACK ZONES
+    // Ugly code omg!
+    for (const moveHex of moveZone) {
+
+      game.map.findPath(
+        moveHex,
+        undefined, // no goal
+        undefined, // no early exit
+        undefined, // blacklist
+        unit.attackRangeMax // cost higher limit
+      )
+  
+      for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+        for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+          const cell = game.map.data[x][y]
+  
+          // Is the cell in the attack range?
+          if (cell.cost <= unit.attackRangeMax) {
+            // Unit can't attack its own friends
+            if (HEXLIB.hexIndexOf(friendsHexes, cell.hex) === -1) {
+              attackZone.push(cell.hex)
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      move: moveZone,
+      attack: attackZone
+    }
   }
 
   // RESIZE GAME
@@ -535,6 +590,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.renderer3d.createUnits()
 
       game.ui.moveZone = []
+      game.ui.attackZone = []
       game.mode = 'select'
       game.selectedUnit = undefined
       game.cameraDirection = 0

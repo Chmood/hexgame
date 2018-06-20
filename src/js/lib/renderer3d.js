@@ -1018,16 +1018,20 @@ const Renderer3d = (game, canvas) => {
       renderer.highlightMeshes[n] = []
     }
     
+    // Attack zone
+    for (const hex of game.ui.attackZone) {
+      renderer.hightlightTile(hex, BABYLON.Color3.Red(), 0)
+    }
     // Move zone
     for (const hex of game.ui.moveZone) {
-      renderer.hightlightTile(hex, BABYLON.Color3.White(), 0)
+      renderer.hightlightTile(hex, BABYLON.Color3.White(), 1)
     }
     // Path line
-    renderer.highlightLine(game.ui.line, BABYLON.Color3.Red(), 1)
+    renderer.highlightLine(game.ui.line, BABYLON.Color3.Red(), 2)
     // Cursor line
-    renderer.highlightLine(game.ui.cursorPath, BABYLON.Color3.Blue(), 1)
+    renderer.highlightLine(game.ui.cursorPath, BABYLON.Color3.Blue(), 2)
     // Cursor tile
-    renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue(), 1)
+    renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue(), 2)
 
     // Add selected meshes to highlight layer
     for (let n = 0; n < renderer.highlightMeshes.length; n++) {
@@ -1167,7 +1171,7 @@ const Renderer3d = (game, canvas) => {
     renderer.shadowGenerator.usePoissonSampling = true
 
     // Highlight layers
-    const nHightlighLayers = 2
+    const nHightlighLayers = 3
     renderer.highlightLayer = []
     renderer.highlightMeshes = []
     for (let n = 0; n < nHightlighLayers; n++) {

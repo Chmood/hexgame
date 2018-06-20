@@ -52,7 +52,7 @@ const CONFIG = {
       sea: { color: '#0000aa' }, // 1
       shore: { color: '#0011ff' }, // 2
 
-      whitebeach: { color: '#ffff88' }, // 3
+      whitebeach: { color: '#ffffcc' }, // 3
       beach: { color: '#eeee44' }, // 3
       swamp: { color: '#666600' }, // 3
 
@@ -77,7 +77,7 @@ const CONFIG = {
     cellSizeBase: undefined,	// base size of a cell in px // COMPUTED (on DOM ready)
     cellSizeRatio: 6 / 6,	// perspective cell height diminution ratio
     cellSize: undefined, // size of the cell // COMPUTED (on DOM ready)
-    displayTileText: false // debug tiles cost / height
+    displayTileText: true // debug tiles cost / height
   },
   render3d: {
     // Terrain
@@ -132,7 +132,7 @@ const CONFIG = {
         luck: 6, // http://fireemblem.wikia.com/wiki/Luck
         defense: 6, // http://fireemblem.wikia.com/wiki/Defense_(stat)
         resistance: 3, // http://fireemblem.wikia.com/wiki/Resistance
-        movement: 8, // http://fireemblem.wikia.com/wiki/Movement
+        movement: 6, // http://fireemblem.wikia.com/wiki/Movement
 
         attackRangeMin: 1,
         attackRangeMax: 2,
