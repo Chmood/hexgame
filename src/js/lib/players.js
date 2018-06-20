@@ -5,7 +5,7 @@ import Player from './player'
 ////////////////////////////////////////////////////////////////////////////////
 // PLAYERS
 
-const Players = (PLAYERS, map) => {
+const Players = (PLAYERS, map, RNG) => {
   const players = []
 
   const startingZoneRatio = CONFIG.game.playerStartingZoneRatio,
@@ -14,11 +14,11 @@ const Players = (PLAYERS, map) => {
   // SET UNIT RANDOM POSITION
   const setUnitRandomPosition = (unit, playerId) => {
     let isValidPosition = false
-    while (!isValidPosition) {
 
+    while (!isValidPosition) {
       let col, row
-      const randomCol = Math.random(),
-        randomRow = Math.random(),
+      const randomCol = RNG(),
+        randomRow = RNG(),
         colStart = Math.floor(CONFIG.map.mapSize.width * randomCol / startingZoneRatio),
         rowStart = Math.floor(CONFIG.map.mapSize.height * randomRow / startingZoneRatio),
         colEnd = Math.floor(CONFIG.map.mapSize.width * (1 - randomCol / startingZoneRatio)),
@@ -53,7 +53,17 @@ const Players = (PLAYERS, map) => {
         }
       }
 
-      isValidPosition = isValidBiome && isFreeHex
+      // Check if the unit can move to ALL other units 
+      let isConnectedToOthers = true
+      for (const otherHex of occupiedhexes) {
+        const path = map.findPath(unit.hex, otherHex)
+        if (path === undefined) {
+          isConnectedToOthers = false
+          break
+        }
+      }
+
+      isValidPosition = isValidBiome && isFreeHex && isConnectedToOthers
     }
     occupiedhexes.push(unit.hex)
   }
@@ -66,7 +76,7 @@ const Players = (PLAYERS, map) => {
       name: PLAYERS[playerId].name,
       isHuman: PLAYERS[playerId].isHuman,
       color: PLAYERS[playerId].color
-    }, map, 2)
+    })
 
     for (const unit of player.units) {
       setUnitRandomPosition(unit, playerId)

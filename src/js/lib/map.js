@@ -154,9 +154,9 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         ratio = 1 - ratio
         ratio = Math.pow(ratio, config.mapPostprocess.height.islandRedistributionPower)
         // Add random peaks to border area of the map (otherwise only 'deepsea')
-        // if (ratio < 0.5) {
-        //   ratio += (RNG() / 5)
-        // }
+        if (ratio < 0.5) {
+          ratio += (RNG() / 5)
+        }
         map.data[x][y][type] *= ratio
       }
     }

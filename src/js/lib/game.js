@@ -522,7 +522,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       // MAP
       game.map.generate()
       // PLAYERS
-      game.players = Players(CONFIG.players, game.map)
+      game.players = Players(CONFIG.players, game.map, RNG)
 
       success = true
     }
