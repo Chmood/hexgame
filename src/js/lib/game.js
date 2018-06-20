@@ -20,10 +20,6 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
   // UI OVERLAY
   game.ui = {}
-  // game.ui.cursor = HEXLIB.hex(-1, -1) // out of bound cursor
-  // game.ui.cursorBackup = game.ui.cursor
-  // game.ui.cursorPath = []
-  // game.ui.moveZone = []
 
   // UPDATE RENDERERS
   game.updateRenderers = (actions) => {
@@ -43,6 +39,18 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       }
     }
     game.renderer2d.render() // Always refresh 2d canvas
+  }
+
+  // HELPER FUNCTIONS
+  const clampValueInRange = (value, max, min = 0) => {
+    if (value < min) { return min }
+    if (value >= max) { return max }
+    return value
+  }
+  const cycleValueInRange = (value, max, min = 0) => {
+    if (value < min) { return value + (max - min) }
+    if (value >= max) { return value - (max - min) }
+    return value
   }
 
   ////////////////////////////////////////
@@ -74,7 +82,11 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
         } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
         } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
+                                          game.cameraDirection--
+                                          game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
         } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
+                                          game.cameraDirection++
+                                          game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
         }
       }
     }
@@ -99,9 +111,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       // Set the next player
       let playerId = game.currentPlayer.id
       playerId++
-      if (playerId === game.players.length) {
-        playerId = 0
-      }
+      playerId = cycleValueInRange(playerId, game.players.length)
       game.currentPlayer = game.players[playerId]
       console.log(`It's player ${game.currentPlayer.name}'s turn`)
     }
@@ -156,12 +166,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       let found = false
       while (!found) {
         focusedUnitId += idIncrement
-        if (focusedUnitId < 0) {
-          focusedUnitId += game.currentPlayer.units.length
-        }
-        if (focusedUnitId === game.currentPlayer.units.length) {
-          focusedUnitId = 0
-        }
+        focusedUnitId = cycleValueInRange(focusedUnitId, game.currentPlayer.units.length)
         if (!game.currentPlayer.units[focusedUnitId].hasPlayed) {
           found = true
         }
@@ -212,6 +217,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
             if (game.ui.moveZone.length === 0) {
               console.log('Nowhere to go, the unit is blocked!')
               game.cancelMove()
+              // TODO: allow the unit to validate move "in place"
             }
             game.updateRenderers(['highlights'])
 
@@ -300,13 +306,14 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     const cursorOffset = HEXLIB.hex2Offset(hex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
     let directionIndex
 
+    // DIRECTIONS:
     //  FLAT         POINTY
     //
     //    5           5  0
     // 4     0      4      1
     // 3     1        3  2
     //    2
-console.log(direction)
+
     if (CONFIG.map.mapTopped === HEXLIB.FLAT) {
       // FLAT map
       if (direction === 'up') { directionIndex = 5 }
@@ -344,6 +351,9 @@ console.log(direction)
         else if (direction === 'down') { directionIndex = 3 }
       }
     }
+    // Take camera orientation into account
+    directionIndex = cycleValueInRange(directionIndex - game.cameraDirection, 6)
+
     return directionIndex
   }
 
@@ -421,7 +431,7 @@ console.log(direction)
   // Grab all the tiles with a cost lower than the player movement value
   game.getMoveZone = (unit) => {
     // TODO: 
-    // * add a movement parameter / Dijkstra mode
+    // * add a movement cost parameter / Dijkstra mode
     // * make findPath return an array of cells in that range
     
     // Scan the whole graph to compute cost of each tile
@@ -479,19 +489,18 @@ console.log(direction)
       game.players = Players(CONFIG.players, game.map)
 
       success = true
-      // Try to draw a path between the two first players
-      // line = game.map.findPath(game.players[0].hex, game.players[1].hex)
     }
 
     if (success) {
       console.log('MAP DATA', game.map.data)
-      // game.ui.line = line
+
       game.renderer3d.createTiles()
       game.renderer3d.createUnits()
 
       game.ui.moveZone = []
       game.mode = 'select'
       game.selectedUnit = undefined
+      game.cameraDirection = 0
 
       // It's first player's turn
       game.changeCurrentPlayer(0)

@@ -218,7 +218,7 @@ const Renderer3d = (game, canvas) => {
   renderer.updateCameraAlpha = (direction) => {
     renderer.debounce = CONFIG.render3d.debounceKeyboardTime
 
-    const alphaStep = Math.PI * 2 / 6
+    const alphaStep = Math.PI * 2 / 6 // 60°
     let delta = 0
     if (direction === 'clockwise') {
       delta = alphaStep
@@ -227,7 +227,7 @@ const Renderer3d = (game, canvas) => {
     }
 
     // Lock rotation on sixth of circle
-    // Needed when 2 animations overlapses
+    // Needed when 2 animations overlap
     let newAlpha = renderer.camera.alpha + delta
     newAlpha = Math.round(newAlpha / alphaStep) * alphaStep
     // TODO: Keep alpha in the [0, 2*PI] range
@@ -257,7 +257,6 @@ const Renderer3d = (game, canvas) => {
       true, // Loop (according to ANIMATIONLOOPMODE)
       5 // Speed ratio
     )
-    console.log(renderer.camera.alpha / alphaStep)
   }
 
   // SWITCH ACTIVE CAMERA

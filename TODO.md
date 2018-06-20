@@ -7,7 +7,7 @@
 
 ## Improvements
 
-* Moving cursor with arrow keys should adapt to camera beta rotation
+* Improve unit initial placement (all units must have a path to all other units)
 * Find a real Random Number Generator
 * Fullscreen mode
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
