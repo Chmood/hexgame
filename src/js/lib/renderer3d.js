@@ -986,7 +986,6 @@ const Renderer3d = (game, canvas) => {
 
       if (path.length === 0) {
         // The path is over
-        renderer.changeUnitMaterial(unit, 'colorDesaturated')
         resolve()
         return
       }
@@ -995,6 +994,35 @@ const Renderer3d = (game, canvas) => {
       game.updateRenderers() // Update 2D map
       resolve(renderer.moveUnitOnPath(unit, newPath))
     })
+  }
+
+  // ATTACK UNIT
+  renderer.attackUnit = (unit, ennemyUnit) => {
+    // Attack animation
+    // TODO: tmp, do it better (buller mesh, explosion...)
+    const animationPlayerPosition = new BABYLON.Animation(
+      'unit.mesh',
+      'position', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationPlayerPosition.setKeys([
+      { frame: 0, value: unit.mesh.position }, 
+      { frame: 5, value: ennemyUnit.mesh.position },
+      { frame: 10, value: unit.mesh.position }
+    ])
+    setEasing(animationPlayerPosition)
+
+    unit.mesh.animations = [animationPlayerPosition]
+
+    return renderer.scene.beginAnimation(
+      unit.mesh, // Target
+      0, // Start frame
+      10, // End frame
+      false, // Loop (according to ANIMATIONLOOPMODE)
+      3 * CONFIG.game.animationsSpeed // Speed ratio
+    )
   }
 
   // CHANGE UNIT MATERIAL

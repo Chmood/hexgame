@@ -126,6 +126,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     game.unitsToMove = game.currentPlayer.units
     game.focusedUnit = game.unitsToMove[0] 
     game.focusUnit(game.focusedUnit)
+    game.mode = 'select'
 
     // Is the next player a bot?
     if (!game.currentPlayer.isHuman) {
@@ -302,22 +303,71 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     path.shift() // Remove the first element (that is unit/starting cell)
 
     await game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
+    console.log(`Unit moved: ${game.selectedUnit.name}`)
+
+    // Attack phase
+    game.selectAttack()
+  }
+
+  game.selectAttack = () => {
+    game.ui.attackZone = game.getAttackTargets(game.selectedUnit)
+    // Does the unit can attack any ennemy?
+    if (game.ui.attackZone.length === 0) {
+      game.endUnitTurn()
+      return
+    }
+
+    game.mode = 'attack'
+    // Target the first ennemy
+    game.selectedTargetId = 0
+    
+    // Move the cursor
+    game.updateCursor(game.ui.attackZone[0])
+    game.renderer3d.updateCameraPosition(game.ui.attackZone[0])
+    game.updateRenderers(['highlights'])
+    
+  }
+
+  // DO ATTACK
+  game.doAttack = async () => {
+    // Get the ennemy
+    const targetHex = game.ui.attackZone[game.selectedTargetId]
+    for (const player of game.players) {
+      if (player !== game.currentPlayer) {
+        // Loop on all ennemies
+        for (const ennemyUnit of player.units) {
+          if (HEXLIB.hexEqual(ennemyUnit.hex, targetHex)) {
+
+            // Do the attack
+            game.mode = 'passive'
+            console.log(`${game.currentPlayer.name}'s ${game.selectedUnit.name} attacks ${player.name}'s ${ennemyUnit.name}`)
+            await game.renderer3d.attackUnit(game.selectedUnit, ennemyUnit)
+            game.endUnitTurn()
+          }
+        }
+      }
+    }
+  }
+
+  // END UNIT TURN
+  game.endUnitTurn = () => {
     // Mark the unit as having played
     game.selectedUnit.hasPlayed = true
-    game.mode = 'select'
-    console.log(`Unit moved: ${game.selectedUnit.name}`)
+    game.renderer3d.changeUnitMaterial(game.selectedUnit, 'colorDesaturated')
 
     // Automatic end of turn (ala Fire Emblem)
     const nUnitsRemaining = game.currentPlayer.units.filter(
-      unit => !unit.hasPlayed
+      (unit) => !unit.hasPlayed
     ).length
 
     if (nUnitsRemaining === 0) {
       // No more unit to play with
       console.log(`${game.currentPlayer.name}'s turn is over`)
       game.changeCurrentPlayer()
+
     } else {
       console.log(`Still ${nUnitsRemaining} unit(s) to play`)
+      game.mode = 'select'
     }
   }
 
@@ -327,6 +377,8 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       game.selectUnit()
     } else if (game.mode === 'move') {
       game.selectDestination()
+    } else if (game.mode === 'attack') {
+      game.doAttack()
     }
   }
 
@@ -410,38 +462,49 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   }
 
   // MOVE CURSOR
+  // Select, move or attack modes
   game.cursorMove = (direction) => {
     game.renderer3d.debounce = CONFIG.render3d.debounceKeyboardTime
 
-    if (game.mode !== 'select' && game.mode !== 'move') {
-      return
-    }
-    const directionIndex = game.getDirectionIndex(direction, game.ui.cursor)
-
-    if (directionIndex !== undefined) {
-      const hex = HEXLIB.hexNeighbors(game.ui.cursor)[directionIndex]
-      if (game.map.isHexOnMap(hex)) {
-        // In move mode, cursor can only move on valid tiles (aka move zone)
-        if (game.mode === 'move') {
-          let isValidMove = false
-          
-          for(const validHex of game.ui.moveZone) {
-            if (HEXLIB.hexEqual(hex, validHex)) {
-              isValidMove = true
-              break
+    if (game.mode === 'select' || game.mode === 'move') {
+      const directionIndex = game.getDirectionIndex(direction, game.ui.cursor)
+  
+      if (directionIndex !== undefined) {
+        const hex = HEXLIB.hexNeighbors(game.ui.cursor)[directionIndex]
+        if (game.map.isHexOnMap(hex)) {
+          // In move mode, cursor can only move on valid tiles (aka move zone)
+          if (game.mode === 'move') {
+            let isValidMove = false
+            
+            for(const validHex of game.ui.moveZone) {
+              if (HEXLIB.hexEqual(hex, validHex)) {
+                isValidMove = true
+                break
+              }
+            }
+            if (!isValidMove) {
+              console.log('Invalid move!')
+              return
             }
           }
-          if (!isValidMove) {
-            console.log('Invalid move!')
-            return
-          }
+          // Move the cursor
+          game.updateCursor(hex)
+          game.renderer3d.updateCameraPosition(hex)
+  
+        } else {
+          console.log('Cannot go there, edge of the map reached!')
         }
-        // Move the cursor
-        game.updateCursor(hex)
-        game.renderer3d.updateCameraPosition(hex)
+      }
+    } else if (game.mode === 'attack') {
+      // Left and right cycle between targets
+      if (direction === 'left' || direction === 'right') {
+        const increment = direction === 'left' ? -1 : 1
+        game.selectedTargetId += increment
+        game.selectedTargetId = cycleValueInRange(game.selectedTargetId, game.ui.attackZone.length)
 
-      } else {
-        console.log('Cannot go there, edge of the map reached!')
+        game.updateCursor(game.ui.attackZone[game.selectedTargetId])
+        game.renderer3d.updateCameraPosition(game.ui.attackZone[game.selectedTargetId])
+        game.updateRenderers(['highlights'])
       }
     }
   }
@@ -543,6 +606,28 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
       move: moveZone,
       attack: attackZone
     }
+  }
+
+  // GET ATTACK TARGETS
+  game.getAttackTargets = (unit) => {
+    const attackTargets = []
+
+    game.map.findPath(
+      unit.hex,
+      undefined, // no goal
+      undefined, // no early exit
+      undefined, // blacklist
+      unit.attackRangeMax // cost higher limit
+    )
+
+    for (const ennemyHex of game.getUnitsHexes('ennemies')) {
+      const ennemyCell = game.map.getCellFromHex(ennemyHex)
+      // Is the nnemy in the attack range?
+      if (ennemyCell.cost <= unit.attackRangeMax) {
+        attackTargets.push(ennemyHex)
+      }
+    }
+    return attackTargets
   }
 
   // RESIZE GAME
