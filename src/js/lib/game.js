@@ -139,10 +139,13 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   game.playBot = async () => {
     for (const unit of game.currentPlayer.units) {
       game.selectedUnit = unit
+      game.mode = 'select'
       game.focusUnit(unit)
       const zones = game.getMoveZones(unit),
             moveZone = zones.move,
             attackZone = zones.attack
+
+      // RANDOM MOVE
       if (moveZone.length === 0) { continue }
       const target = moveZone[Math.floor(RNG() * moveZone.length)] 
       const path = game.map.findPath(
@@ -151,10 +154,21 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
         true,
         game.getUnitsHexes()
       )
-
       path.shift() // Remove the first element (that is unit/starting cell)
       await game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
+
+      // ATTACK
+      game.ui.attackZone = game.getAttackTargets(game.selectedUnit)
+      // Does the unit can attack any ennemy?
+      if (game.ui.attackZone.length !== 0) {
+        game.selectedTargetId = Math.floor(RNG() * game.ui.attackZone.length)
+        await game.doAttack()
+      }
+  
+      // End of turn
       // game.endUnitTurn()
+      game.selectedUnit.hasPlayed = true
+      game.renderer3d.changeUnitMaterial(game.selectedUnit, 'colorDesaturated') // WTF?
     }
     game.changeCurrentPlayer()
   }
@@ -326,7 +340,6 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     game.updateCursor(game.ui.attackZone[0])
     game.renderer3d.updateCameraPosition(game.ui.attackZone[0])
     game.updateRenderers(['highlights'])
-    
   }
 
   // DO ATTACK
@@ -357,7 +370,8 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
               console.log(`${damage} damage done to ${ennemyUnit.name}, ${ennemyUnit.health} HP left`)
             } else {
               // Destroy ennemy
-              console.log(`${damage} damage done to ${ennemyUnit.name}, unit destroyed!`)
+              console.warn(`${damage} damage done to ${ennemyUnit.name}, unit destroyed!`)
+
               const destroyAnimation = game.renderer3d.destroyUnit(ennemyUnit)
               await destroyAnimation.waitAsync()
 
@@ -365,16 +379,32 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
               const ennemyUnitId = ennemy.units.indexOf(ennemyUnit)
               ennemy.units.splice(ennemyUnitId, 1)
 
+              let outstring = ''
+              for (const p of game.players) {
+                outstring += `${p.name}: ${p.units.length} | `
+              }
+              console.warn(outstring)
+
               // Does the ennemy has unit left?
               if (ennemy.units.length === 0) {
-                console.log(`${ennemy.name} has lost, no more unit left!!!`)
-                const ennemyId = players.indexOf(ennemy)
-                ennemy.units.splice(ennemyId, 1)
+                console.warn(`${ennemy.name} has lost, no more unit left!!!`)
+
+                // Remove the ennemy player
+                const ennemyId = game.players.indexOf(ennemy)
+                game.players.splice(ennemyId, 1)
+
+                // Do we have a winner?
+                if (game.players.length === 1) {
+                  // END GAME
+                  console.log(`Player ${game.players[0]} has won the game!!!`)
+                }
               }
             }
 
             game.ui.attackZone = []
-            game.endUnitTurn()
+            if (player.isHuman) {
+              game.endUnitTurn()
+            }
             break
           }
         }
