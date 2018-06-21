@@ -4,7 +4,7 @@
 
 * play bot function is broken
 * Improve post-processing when camera switch (SSAO is fucked up)
-* Tanks are floating above the ground, and their rotation doesn't follow the underneath tile
+* Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too)
 
 ## Improvements
 

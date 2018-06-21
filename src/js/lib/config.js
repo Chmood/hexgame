@@ -94,9 +94,16 @@ const CONFIG = {
     showAxis: false,
     // UI mods
     betterOcean: false,
-    postprocess: 'multi', // 'ssao', 'multi' or 'none'
+    postprocess: 'none', // 'ssao', 'multi' or 'none'
     cameraAutoRotate: false,
     debounceKeyboardTime: 8, // In locksteppeded frames
+    healthbars: {
+      width: 1 / 20, // Relative to cellsize (one HP width)
+      height: 1 / 5, // Relative to cellsize
+      heightAbove: 2, // Relative to cellsize (vertical distance from unit)
+      colorBack: '#cc4444',
+      colorFront: '#44cc44'
+    },
     camera: {
       distanceRatio: 1, // Size of the map / camera distance (radius)
       distanceRatioMin: 0.1,
@@ -107,7 +114,7 @@ const CONFIG = {
   },
 
   players: [
-    { id: 0, name: 'Foo111', isHuman: false, color: '#ff8000', colorDesaturated: '#c48444' },
+    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000', colorDesaturated: '#c48444' },
     { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080', colorDesaturated: '#c44484' },
     { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00', colorDesaturated: '#44c444' },
     { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff', colorDesaturated: '#4484c4' }
@@ -116,7 +123,7 @@ const CONFIG = {
   game: {
     seed: 'staticgameseed', // undefined for a random seed
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
-    animationsSpeed: 3,
+    animationsSpeed: 1.5,
     // Units stats
     units: {
       tank: {

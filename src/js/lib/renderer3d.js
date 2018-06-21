@@ -268,44 +268,73 @@ const Renderer3d = (game, canvas) => {
     }
   }
 
+  // CREATE MATERIAL
+  renderer.createSimpleMaterial = (name, color, specularity = false, emissive = false, alpha = 1) => {
+    const material = new BABYLON.StandardMaterial(name)
+    if (!emissive) {
+      material.diffuseColor = new BABYLON.Color3.FromHexString(color)
+    } else {
+      // Emmissive
+      console.log(name)
+      material.emissiveColor = new BABYLON.Color3.FromHexString(color)
+      material.diffuseColor = new BABYLON.Color3.Black()
+    }
+
+    if (!specularity) {
+      material.specularColor = new BABYLON.Color3.Black()
+    } else {
+      material.specularColor = new BABYLON.Color3.White()
+    }
+
+    material.alpha = alpha
+    material.freeze()
+
+    return material
+  }
+
   // CREATE MATERIALS
   renderer.createMaterials = () => {
     const materials = {}
 
-    // Terrain materials
+    // TERRAINS
     for (const [name, value] of Object.entries(CONFIG.map.terrain)) {
-      materials[name] = new BABYLON.StandardMaterial(name, renderer.scene)
-      materials[name].diffuseColor = new BABYLON.Color3.FromHexString(value.color)
-      materials[name].specularColor = new BABYLON.Color3.Black()
-      materials[name].freeze()
+      if (name !== 'ice') {
+        materials[name] = renderer.createSimpleMaterial(name, value.color)
+      } else {
+        materials['ice'] = renderer.createSimpleMaterial(
+          'ice', 
+          value.color, 
+          CONFIG.render3d.shinyIce, 
+          false, 
+          CONFIG.render3d.transparentIce ? 0.9 : 1
+        )
+      }
     }
 
-    // Let ice shine (aka specular reflections)!
-    if (CONFIG.render3d.shinyIce) {
-      materials['ice'].specularColor = new BABYLON.Color3.White()
-    }
-    // Let ice see through (aka alpha opacity)!
-    if (CONFIG.render3d.transparentIce) {
-      materials['ice'].alpha = 0.9
-    }
-
-    // Player materials
+    // PLAYERS
     materials.players = {}
     for (let [n, player] of Object.entries(CONFIG.players)) {
       materials.players[n] = [] // [0] is base color, [1] is desaturated color
-      materials.players[n][0] = new BABYLON.StandardMaterial(`player-${n}`, renderer.scene)
-      materials.players[n][0].diffuseColor = new BABYLON.Color3.FromHexString(player.color)
-      materials.players[n][0].specularColor = new BABYLON.Color3.Black()
-      materials.players[n][0].freeze()
-      materials.players[n][1] = new BABYLON.StandardMaterial(`player-${n}-desaturated`, renderer.scene)
-      materials.players[n][1].diffuseColor = new BABYLON.Color3.FromHexString(player.colorDesaturated)
-      materials.players[n][1].specularColor = new BABYLON.Color3.Black()
-      materials.players[n][1].freeze()
+      materials.players[n][0] = renderer.createSimpleMaterial(`player-${n}`, player.color)
+      materials.players[n][1] = renderer.createSimpleMaterial(`player-${n}`, player.colorDesaturated)
     }
 
-    materials.unitNeutral = new BABYLON.StandardMaterial(`unit-black`, renderer.scene)
-    materials.unitNeutral.diffuseColor = new BABYLON.Color3.FromHexString('#aaaaaa')
-    materials.unitNeutral.freeze()
+    // Unit neutral parts (not colored)
+    materials['unit-neutral'] = renderer.createSimpleMaterial('unit-neutral', '#aaaaaa', true)
+
+    // Health bars materials
+    materials['healthbarBack'] = renderer.createSimpleMaterial(
+      'healthbarBack', 
+      CONFIG.render3d.healthbars.colorBack, 
+      false,
+      true // emmissive
+    )
+    materials['healthbarFront'] = renderer.createSimpleMaterial(
+      'healthbarFront', 
+      CONFIG.render3d.healthbars.colorFront, 
+      false,
+      true // emmissive
+    )
 
     return materials
   }
@@ -734,7 +763,7 @@ const Renderer3d = (game, canvas) => {
     for (const part of parts) {
       // Create box mesh
       const p = BABYLON.MeshBuilder.CreateBox(
-        `player-${idPlayer}-${name}-${idUnit}-base`, 
+        `player-${idPlayer}-${name}-${idUnit}-${part.name}`, 
         {
           height: baseSize * part.size.height, // height
           width: baseSize * part.size.length, // length
@@ -755,11 +784,22 @@ const Renderer3d = (game, canvas) => {
       renderer.shadowGenerator.getShadowMap().renderList.push(p)
       p.receiveShadows = true
 
-      if (part.dontAdd === undefined) {
-        meshes.push(p)
+      if (part.dontColorize !== undefined) {
+        p.dontColorize = part.dontColorize // Risky: add property to BABYLON.mesh
       }
+      meshes[part.name] = p
     }
     return meshes
+  }
+
+  // UPDATE HEALTH BAR
+  renderer.updateHealthbar = (unit) => {
+    const healthbarUnitWidth = CONFIG.render3d.cellSize * CONFIG.render3d.healthbars.width,
+          healthbarFrontWidth = unit.health * healthbarUnitWidth,
+          healthbarBackWidth = unit.maxHealth * healthbarUnitWidth
+
+    unit.meshes.healthbarFront.scaling.x = unit.health / unit.maxHealth
+    unit.meshes.healthbarFront.position.x = -(healthbarBackWidth - healthbarFrontWidth) / 2
   }
 
   // CREATE UNIT
@@ -770,57 +810,93 @@ const Renderer3d = (game, canvas) => {
           cell = map[unit.hexOffset.col][unit.hexOffset.row],
           cellHeight = cell.height,
           tile = cell.tile
-                
-      unit.mesh = BABYLON.MeshBuilder.CreateBox(
-      `unit-${idPlayer}`, {height: 0.01, width: 0.01, depth: 0.01}
+    
+    unit.meshes = [] // All the parts
+
+    // PARENT MESH
+    unit.mesh = BABYLON.MeshBuilder.CreateBox(
+      `unit-${idUnit}`, {height: 0.01, width: 0.01, depth: 0.01}
     )
 
-    // POSITION
+    // Position
     unit.mesh.position = new BABYLON.Vector3(
       position.y,
       cellHeight * CONFIG.render3d.cellStepHeight,
       position.x
     )
-
-    // ROTATION
+    // Rotation
     // Same rotation as the underneath tile
     unit.mesh.rotation = tile.rotation
 
+    // HEALTH BAR
+    const healthbarWidth = unit.maxHealth * cellSize * CONFIG.render3d.healthbars.width
+
+    // Back of the bar
+    unit.meshes.healthbarBack = BABYLON.MeshBuilder.CreatePlane(
+      `unit-${idUnit}-healthbar-back`, 
+      { width: healthbarWidth, height: cellSize * CONFIG.render3d.healthbars.height })
+    unit.meshes.healthbarFront = BABYLON.MeshBuilder.CreatePlane(
+      `unit-${idUnit}-healthbar-front`, 
+      { width: healthbarWidth, height: cellSize * CONFIG.render3d.healthbars.height })
+
+    // Bars position 
+    unit.meshes.healthbarBack.position = new BABYLON.Vector3(
+      0, CONFIG.render3d.healthbars.heightAbove * cellSize, 0
+    )
+    unit.meshes.healthbarFront.position = new BABYLON.Vector3(
+      0, 0, -0.01 // Just a bit in front of the back of the bar
+    )
+
+    // Bars parenting
+    unit.meshes.healthbarBack.parent = unit.mesh
+    unit.meshes.healthbarFront.parent = unit.meshes.healthbarBack
+
+    // Bars materials
+    unit.meshes.healthbarBack.material = renderer.materials['healthbarBack']
+    unit.meshes.healthbarFront.material = renderer.materials['healthbarFront']
+
+    // Billboard mode (always face the camera)
+    unit.meshes.healthbarBack.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL
+
+    renderer.updateHealthbar(unit)
+
     ////////////////////////////////////////
     // PARTS MESHES
-    unit.meshes = renderer.createMultipartUnit('tank', idPlayer, idUnit, unit.mesh, cellSize, [
-      {
-        name: 'base',
-        size: {height: 1/6, length: 3/4, width: 1/2},
-        position: {x: 0, y: 1/4, z: 0},
-        material: renderer.materials.unitNeutral,
-        dontAdd: true
-      },
-      {
-        name: 'trackLeft',
-        size: {height: 1/3, length: 1, width: 1/4},
-        position: {x: 0, y: 1/4, z: 1/3},
-        material: renderer.materials.players[idPlayer][0]
-      },
-      {
-        name: 'trackRight',
-        size: {height: 1/3, length: 1, width: 1/4},
-        position: {x: 0, y: 1/4, z: -1/3},
-        material: renderer.materials.players[idPlayer][0]
-      },
-      {
-        name: 'body',
-        size: {height: 1/4, length: 1/4, width: 1/4},
-        position: {x: 0, y: 1/2, z: 0},
-        material: renderer.materials.players[idPlayer][0]
-      },
-      {
-        name: 'cannon',
-        size: {height: 1/16, length: 1/2, width: 1/16},
-        position: {x: -1/4, y: 1/2, z: 0},
-        material: renderer.materials.players[idPlayer][0]
-      }
-    ])
+    unit.meshes.push(
+      ...renderer.createMultipartUnit('tank', idPlayer, idUnit, unit.mesh, cellSize, [
+        {
+          name: 'base',
+          size: {height: 1/6, length: 3/4, width: 1/2},
+          position: {x: 0, y: 1/4, z: 0},
+          material: renderer.materials.unitNeutral,
+          dontColorize: true
+        },
+        {
+          name: 'trackLeft',
+          size: {height: 1/3, length: 1, width: 1/4},
+          position: {x: 0, y: 1/4, z: 1/3},
+          material: renderer.materials.players[idPlayer][0]
+        },
+        {
+          name: 'trackRight',
+          size: {height: 1/3, length: 1, width: 1/4},
+          position: {x: 0, y: 1/4, z: -1/3},
+          material: renderer.materials.players[idPlayer][0]
+        },
+        {
+          name: 'body',
+          size: {height: 1/4, length: 1/4, width: 1/4},
+          position: {x: 0, y: 1/2, z: 0},
+          material: renderer.materials.players[idPlayer][0]
+        },
+        {
+          name: 'cannon',
+          size: {height: 1/16, length: 1/2, width: 1/16},
+          position: {x: -1/4, y: 1/2, z: 0},
+          material: renderer.materials.players[idPlayer][0]
+        }
+      ])
+    )
   }
 
   // CREATE UNITS
@@ -1071,7 +1147,9 @@ const Renderer3d = (game, canvas) => {
   renderer.changeUnitMaterial = (unit, color) => {
     const materialIndex = color === 'colorDesaturated' ? 1 : 0
     for (const mesh of unit.meshes) {
-      mesh.material = renderer.materials.players[unit.playerId][materialIndex]
+      if (!mesh.dontColorize) {
+        mesh.material = renderer.materials.players[unit.playerId][materialIndex]
+      }
     }
   }
 
@@ -1144,6 +1222,7 @@ const Renderer3d = (game, canvas) => {
 
   ////////////////////////////////////////
   // PLOT CURSOR
+  // Mouse position plotting
   renderer.plotCursor = () => {
     // We try to pick an object
   	const pick = renderer.scene.pick(renderer.scene.pointerX, renderer.scene.pointerY)

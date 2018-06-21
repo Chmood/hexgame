@@ -350,6 +350,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
             // Compute damage
             const damage = playerUnit.strength - ennemyUnit.defense
             ennemyUnit.health -= damage
+            game.renderer3d.updateHealthbar(ennemyUnit)
 
             // Is the ennemy dead?
             if (ennemyUnit.health > 0) {
