@@ -107,7 +107,7 @@ const CONFIG = {
   },
 
   players: [
-    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000', colorDesaturated: '#c48444' },
+    { id: 0, name: 'Foo111', isHuman: false, color: '#ff8000', colorDesaturated: '#c48444' },
     { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080', colorDesaturated: '#c44484' },
     { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00', colorDesaturated: '#44c444' },
     { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff', colorDesaturated: '#4484c4' }
@@ -116,7 +116,7 @@ const CONFIG = {
   game: {
     seed: 'staticgameseed', // undefined for a random seed
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
-    animationsSpeed: 1,
+    animationsSpeed: 3,
     // Units stats
     units: {
       tank: {
@@ -125,12 +125,12 @@ const CONFIG = {
 
         // See: http://fireemblem.wikia.com/wiki/Category:Stats
         maxHealth: 20, // http://fireemblem.wikia.com/wiki/HP
-        strength: 7, // http://fireemblem.wikia.com/wiki/Strength
+        strength: 10, // http://fireemblem.wikia.com/wiki/Strength
         magic: 5, // http://fireemblem.wikia.com/wiki/Magic_(stat)
         skill: 7, // http://fireemblem.wikia.com/wiki/Skill_(stat)
         speed: 8, // http://fireemblem.wikia.com/wiki/Speed_(stat)
         luck: 6, // http://fireemblem.wikia.com/wiki/Luck
-        defense: 6, // http://fireemblem.wikia.com/wiki/Defense_(stat)
+        defense: 5, // http://fireemblem.wikia.com/wiki/Defense_(stat)
         resistance: 3, // http://fireemblem.wikia.com/wiki/Resistance
         movement: 6, // http://fireemblem.wikia.com/wiki/Movement
 

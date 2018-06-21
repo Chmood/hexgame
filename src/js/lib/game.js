@@ -154,6 +154,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
 
       path.shift() // Remove the first element (that is unit/starting cell)
       await game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
+      // game.endUnitTurn()
     }
     game.changeCurrentPlayer()
   }
@@ -332,17 +333,48 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   game.doAttack = async () => {
     // Get the ennemy
     const targetHex = game.ui.attackZone[game.selectedTargetId]
-    for (const player of game.players) {
-      if (player !== game.currentPlayer) {
+    for (const ennemy of game.players) {
+      if (ennemy !== game.currentPlayer) {
         // Loop on all ennemies
-        for (const ennemyUnit of player.units) {
+        for (const ennemyUnit of ennemy.units) {
           if (HEXLIB.hexEqual(ennemyUnit.hex, targetHex)) {
 
+            const player = game.currentPlayer,
+                  playerUnit = game.selectedUnit
             // Do the attack
             game.mode = 'passive'
-            console.log(`${game.currentPlayer.name}'s ${game.selectedUnit.name} attacks ${player.name}'s ${ennemyUnit.name}`)
-            await game.renderer3d.attackUnit(game.selectedUnit, ennemyUnit)
+            console.log(`${player.name}'s ${playerUnit.name} attacks ${ennemy.name}'s ${ennemyUnit.name}`)
+            const attackAnimation = game.renderer3d.attackUnit(playerUnit, ennemyUnit)
+            await attackAnimation.waitAsync()
+
+            // Compute damage
+            const damage = playerUnit.strength - ennemyUnit.defense
+            ennemyUnit.health -= damage
+
+            // Is the ennemy dead?
+            if (ennemyUnit.health > 0) {
+              console.log(`${damage} damage done to ${ennemyUnit.name}, ${ennemyUnit.health} HP left`)
+            } else {
+              // Destroy ennemy
+              console.log(`${damage} damage done to ${ennemyUnit.name}, unit destroyed!`)
+              const destroyAnimation = game.renderer3d.destroyUnit(ennemyUnit)
+              await destroyAnimation.waitAsync()
+
+              game.renderer3d.deleteUnit(ennemyUnit) // TODO: move to renderer3d???
+              const ennemyUnitId = ennemy.units.indexOf(ennemyUnit)
+              ennemy.units.splice(ennemyUnitId, 1)
+
+              // Does the ennemy has unit left?
+              if (ennemy.units.length === 0) {
+                console.log(`${ennemy.name} has lost, no more unit left!!!`)
+                const ennemyId = players.indexOf(ennemy)
+                ennemy.units.splice(ennemyId, 1)
+              }
+            }
+
+            game.ui.attackZone = []
             game.endUnitTurn()
+            break
           }
         }
       }
@@ -368,6 +400,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
     } else {
       console.log(`Still ${nUnitsRemaining} unit(s) to play`)
       game.mode = 'select'
+      game.focusUnit('next')
     }
   }
 

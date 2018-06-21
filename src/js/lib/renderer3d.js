@@ -832,15 +832,25 @@ const Renderer3d = (game, canvas) => {
     }
   }
 
+  // DELETE UNIT
+  renderer.deleteUnit = (unit) => {
+    if (unit.mesh) {
+      unit.mesh.dispose()
+    }
+    if (unit.meshes) {
+      for (const mesh of unit.meshes) {
+        mesh.dispose()
+      }
+    }
+  }
+
   // DELETE UNITS
   renderer.deleteUnits = () => {
     if (game.players) {
       for (const player of game.players) {
         if (player.units) {
           for (const unit of player.units) {
-            if (unit.mesh) {
-              unit.mesh.dispose()
-            }
+            renderer.deleteUnit(unit)
           }
         }
       }
@@ -1022,6 +1032,38 @@ const Renderer3d = (game, canvas) => {
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
       3 * CONFIG.game.animationsSpeed // Speed ratio
+    )
+  }
+
+  // DESTROY UNIT
+  renderer.destroyUnit = (unit) => {
+    // Attack animation
+    // TODO: tmp, do it better (buller mesh, explosion...)
+    const animationPlayerPosition = new BABYLON.Animation(
+      'unit.mesh',
+      'position', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationPlayerPosition.setKeys([
+      { frame: 0, value: unit.mesh.position }, 
+      { frame: 10, value: new BABYLON.Vector3( // end value
+        unit.mesh.position.x, // Axis inversion!
+        unit.mesh.position.y - 1, // TODO: Magic value!
+        unit.mesh.position.z // Axis inversion!
+      )}
+    ])
+    setEasing(animationPlayerPosition)
+
+    unit.mesh.animations = [animationPlayerPosition]
+
+    return renderer.scene.beginAnimation(
+      unit.mesh, // Target
+      0, // Start frame
+      10, // End frame
+      false, // Loop (according to ANIMATIONLOOPMODE)
+      0.5 * CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
