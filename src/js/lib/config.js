@@ -128,7 +128,7 @@ const CONFIG = {
     units: {
       tank: {
         class: 'Tank',
-        startLevel: 1, // starting level
+        level: 1,
 
         // See: http://fireemblem.wikia.com/wiki/Category:Stats
         maxHealth: 20, // http://fireemblem.wikia.com/wiki/HP
@@ -139,26 +139,27 @@ const CONFIG = {
         luck: 6, // http://fireemblem.wikia.com/wiki/Luck
         defense: 5, // http://fireemblem.wikia.com/wiki/Defense_(stat)
         resistance: 3, // http://fireemblem.wikia.com/wiki/Resistance
-        movement: 6, // http://fireemblem.wikia.com/wiki/Movement
+        movement: 4, // http://fireemblem.wikia.com/wiki/Movement
+
+        attackRangeMin: 1, // Not used by now
+        attackRangeMax: 2,
+      },
+      jeep: {
+        class: 'Jeep',
+        level: 1,
+
+        maxHealth: 10,
+        strength: 8,
+        magic: 5,
+        skill: 7,
+        speed: 8,
+        luck: 6,
+        defense: 4,
+        resistance: 3,
+        movement: 6,
 
         attackRangeMin: 1,
         attackRangeMax: 2,
-
-        // Computed
-        // See: http://fireemblem.wikia.com/wiki/Battle_Formulas
-        // attackSpeed,
-        // repeatedAttack,
-        // hitRate,
-        // avoid,
-        // accuracy,
-        // attackPower,
-        // defensePowerPhysical,
-        // defensePowerMagical,
-        // damage,
-        // criticalDamage,
-        // criticalRate,
-        // criticalEvade,
-        // criticalChance
       }
     }
   }

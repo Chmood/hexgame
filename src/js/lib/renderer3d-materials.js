@@ -39,7 +39,8 @@ const Materials = () => {
     }
 
     // Unit neutral parts (not colored)
-    materials['unit-neutral'] = createSimpleMaterial('unit-neutral', '#aaaaaa', true)
+    materials['unitGrey'] = createSimpleMaterial('unit-neutral', '#aaaaaa', true)
+    materials['unitBlack'] = createSimpleMaterial('unit-neutral', '#333333')
 
     // Health bars materials
     materials['healthbarBack'] = createSimpleMaterial(

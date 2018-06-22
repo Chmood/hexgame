@@ -4,6 +4,22 @@ import CONFIG from './config.js'
 ////////////////////////////////////////////////////////////////////////////////
 // UNIT
 
+// Computed stats
+// See: http://fireemblem.wikia.com/wiki/Battle_Formulas
+// attackSpeed,
+// repeatedAttack,
+// hitRate,
+// avoid,
+// accuracy,
+// attackPower,
+// defensePowerPhysical,
+// defensePowerMagical,
+// damage,
+// criticalDamage,
+// criticalRate,
+// criticalEvade,
+// criticalChance
+
 const Unit = (config) => {
   const unit = Object.assign(
     {},

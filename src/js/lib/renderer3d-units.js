@@ -26,8 +26,6 @@ const Units = (game, map, camera) => {
       healthbar.position.x = finalPositionX
       return
     }
-    console.warn('scaling', healthbar.scaling.x, finalScalingX)
-    console.warn('position', healthbar.position.x, finalPositionX)
 
     // Scaling animation
     const animationHealthbarScaling = new BABYLON.Animation(
@@ -132,39 +130,14 @@ const Units = (game, map, camera) => {
     ////////////////////////////////////////
     // PARTS MESHES
     unit.meshes.push(
-      ...createMultipartUnit('tank', idPlayer, idUnit, unit.mesh, cellSize, [
-        {
-          name: 'base',
-          size: {height: 1/6, length: 3/4, width: 1/2},
-          position: {x: 0, y: 1/4, z: 0},
-          material: materials.unitNeutral,
-          dontColorize: true
-        },
-        {
-          name: 'trackLeft',
-          size: {height: 1/3, length: 1, width: 1/4},
-          position: {x: 0, y: 1/4, z: 1/3},
-          material: materials.players[idPlayer][0]
-        },
-        {
-          name: 'trackRight',
-          size: {height: 1/3, length: 1, width: 1/4},
-          position: {x: 0, y: 1/4, z: -1/3},
-          material: materials.players[idPlayer][0]
-        },
-        {
-          name: 'body',
-          size: {height: 1/4, length: 1/4, width: 1/4},
-          position: {x: 0, y: 1/2, z: 0},
-          material: materials.players[idPlayer][0]
-        },
-        {
-          name: 'cannon',
-          size: {height: 1/16, length: 1/2, width: 1/16},
-          position: {x: -1/4, y: 1/2, z: 0},
-          material: materials.players[idPlayer][0]
-        }
-      ])
+      ...createMultipartUnit(
+        unit.name, 
+        idPlayer, 
+        idUnit, 
+        unit.mesh, 
+        cellSize, 
+        getUnitParts(unit.type, idPlayer)
+      )
     )
   }
 
@@ -291,6 +264,87 @@ const Units = (game, map, camera) => {
   ////////////////////////////////////////
   // PRIVATE
   let scene, layout, materials, shadowGenerator
+
+  const getUnitParts = (type, idPlayer) => {
+    if (type === 'tank') {
+      return [
+        {
+          name: 'base',
+          size: {height: 1/6, length: 3/4, width: 1/2},
+          position: {x: 0, y: 1/4, z: 0},
+          material: materials['unitGrey'],
+          dontColorize: true
+        },
+        {
+          name: 'trackLeft',
+          size: {height: 1/3, length: 1, width: 1/4},
+          position: {x: 0, y: 1/4, z: 1/3},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'trackRight',
+          size: {height: 1/3, length: 1, width: 1/4},
+          position: {x: 0, y: 1/4, z: -1/3},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'body',
+          size: {height: 1/4, length: 1/4, width: 1/4},
+          position: {x: 0, y: 1/2, z: 0},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'cannon',
+          size: {height: 1/16, length: 1/2, width: 1/16},
+          position: {x: -1/4, y: 1/2, z: 0},
+          material: materials.players[idPlayer][0]
+        }
+      ]
+    } else if (type == 'jeep') {
+      return [
+        {
+          name: 'base',
+          size: {height: 1/6, length: 6/8, width: 1/2},
+          position: {x: 0, y: 3/8, z: 0},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'cabin',
+          size: {height: 1/6, length: 4/8, width: 1/2},
+          position: {x: 1/8, y: 4/8, z: 0},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'wheelLeftFront',
+          size: {height: 1/4, length: 1/4, width: 1/8},
+          position: {x: -1/4, y: 1/4, z: 1/4},
+          material: materials['unitBlack'],
+          dontColorize: true
+        },
+        {
+          name: 'wheelRightFront',
+          size: {height: 1/4, length: 1/4, width: 1/8},
+          position: {x: -1/4, y: 1/4, z: -1/4},
+          material: materials['unitBlack'],
+          dontColorize: true
+        },
+        {
+          name: 'wheelLeftBack',
+          size: {height: 1/4, length: 1/4, width: 1/8},
+          position: {x: 1/4, y: 1/4, z: 1/4},
+          material: materials['unitBlack'],
+          dontColorize: true
+        },
+        {
+          name: 'wheelRightBack',
+          size: {height: 1/4, length: 1/4, width: 1/8},
+          position: {x: 1/4, y: 1/4, z: -1/4},
+          material: materials['unitBlack'],
+          dontColorize: true
+        }
+      ]
+    }
+  }
 
   // SET EASING
   // Easing 'standard' function

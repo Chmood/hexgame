@@ -20,7 +20,7 @@ const Player = (config) => {
     const unit = Unit({
       id: n,
       playerId: player.id,
-      type: 'tank',
+      type: Math.random() > 0.5 ? 'tank' : 'jeep',
       color: player.color
     })
 

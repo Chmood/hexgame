@@ -8,7 +8,6 @@
 
 ## Improvements
 
-* Second type of unit (Jeep?)
 * In-game menu
 * Player can cancel a move while targetting (ala Fire Emblem)
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
