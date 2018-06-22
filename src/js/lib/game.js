@@ -66,7 +66,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // ON KEY CHANGE
   game.onKeyDown = (keys) => {
     // Only catch key events if the standard camera is active
-    if (game.renderer3d.scene.activeCamera === game.renderer3d.camera) {
+    if (game.renderer3d.activeCamera === 'camera') {
       if (game.renderer3d.debounce === 0) {
                if (keys['ArrowRight'] && 
                    keys['ArrowUp']) {     game.cursorMove('right-up')

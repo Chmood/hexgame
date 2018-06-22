@@ -2,6 +2,8 @@ import BABYLON from 'babylonjs'
 import HEXLIB from '../vendor/hexlib.js'
 import CONFIG from './config.js'
 
+import Camera from './renderer3d-camera'
+
 // image import (for Webpack loading & bundling as dependencies)
 import waterbump from "../../img/waterbump.png"
 // 'useless' imports are because of BabylonJS skybox structure
@@ -22,13 +24,39 @@ waterMaterial(BABYLON)
 
 const Renderer3d = (game, canvas) => {
   const renderer = {},
-        map = game.map.data
+        map = game.map.data,
+        camera = Camera(canvas) // From external module
+
+  let layout
+
+  // CAMERA MODULE
+  // Public methods (can be called from outside this module)
+
+  // Wrappers
+  renderer.updateCameraPosition = (hex) => {
+    const position = HEXLIB.hex2Pixel(layout, hex),
+          cell = game.map.getCellFromHex(hex)
+
+    camera.updateCameraPosition(cell, position)
+  }
+  renderer.switchActiveCamera = () => {
+    if (renderer.activeCamera === 'camera') {
+      renderer.activeCamera = 'cameraFree'
+    } else {
+      renderer.activeCamera = 'camera'
+    }
+    camera.switchActiveCamera()
+  }
+  // Aliases
+  renderer.updateCameraZoom = camera.updateCameraZoom
+  renderer.updateCameraAlpha = camera.updateCameraAlpha
+
 
   ////////////////////////////////////////
   // BASE
 
   // CREATE LAYOUT
-  renderer.createLayout = () => {
+  const createLayout = () => {
     return HEXLIB.layout(
       CONFIG.map.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
       {
@@ -43,229 +71,6 @@ const Renderer3d = (game, canvas) => {
         y: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.height * Math.sqrt(3) / 2
       }
     )
-  }
-
-  // CREATE CAMERA
-  renderer.createCamera = () => {
-    // Add a camera to the scene and attach it to the canvas
-    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
-
-    const camera = new BABYLON.ArcRotateCamera(
-      'Camera',
-      0, // alpha angle
-      CONFIG.render3d.camera.beta, // beta angle
-      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
-      new BABYLON.Vector3( // target
-        0,
-        // focus height is one stepsize above water level
-        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
-        0
-      ),
-      renderer.scene
-    )
-    // Attach control from canvas to the camera (pan, tilt...)
-    // camera.attachControl(canvas, true)
-    // Constrain camera rotation & zooming
-    camera.lowerBetaLimit = 0
-    camera.upperBetaLimit = Math.PI / 2
-    // camera.lowerAlphaLimit = 0
-    // camera.upperAlphaLimit = 0
-    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
-    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
-
-    return camera
-  }
-
-  // CREATE CAMERA FREE
-  renderer.createCameraFree = () => {
-    // Add a camera to the scene and attach it to the canvas
-    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
-
-    const camera = new BABYLON.ArcRotateCamera(
-      'Camera',
-      0, // alpha angle
-      CONFIG.render3d.camera.beta, // beta angle
-      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
-      new BABYLON.Vector3( // target
-        0,
-        // focus height is one stepsize above water level
-        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
-        0
-      ),
-      renderer.scene
-    )
-    // Attach control from canvas to the camera (pan, tilt...)
-    camera.attachControl(canvas, true)
-    // Constrain camera rotation & zooming
-    camera.lowerBetaLimit = 0
-    camera.upperBetaLimit = Math.PI / 2
-    // camera.lowerAlphaLimit = 0
-    // camera.upperAlphaLimit = 0
-    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
-    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
-
-    return camera
-  }
-
-  // UPDATE CAMERA POSITION
-  // Makes the camera look at the given hex
-  renderer.updateCameraPosition = (hex) => {
-    const position = HEXLIB.hex2Pixel(renderer.layout, hex), // center of tile top
-          tileData = game.map.getCellFromHex(hex),
-          height = tileData.height * CONFIG.render3d.cellStepHeight
-
-    const animationCamera = new BABYLON.Animation(
-      'moveCamera', 
-      'target', 
-      10, 
-      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
-    animationCamera.enableBlending = true;
-    animationCamera.blendingSpeed = 0.1;
-
-    const easingFunction = new BABYLON.SineEase()
-    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
-    animationCamera.setEasingFunction(easingFunction)
-
-    const nextTarget = new BABYLON.Vector3( // end value
-      position.y, // Axis inversion!
-      height, 
-      position.x // Axis inversion!
-    )
-    animationCamera.setKeys([
-      { frame: 0, value: renderer.camera.target },
-      { frame: 10, value: nextTarget }
-    ])
-    
-    // The animation trick here is that changing the camera target ALSO changes
-    // its alpha and beta angles. So we have to animate those too, in order to
-    // keep them on the same constant value
-
-    const animationCameraAlpha = new BABYLON.Animation(
-      'moveCameraAlpha', 
-      'alpha', 
-      10, 
-      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
-    animationCameraAlpha.setKeys([
-      { frame: 0, value: renderer.camera.alpha }, 
-      { frame: 10, value: renderer.camera.alpha }
-    ])
-          
-    const animationCameraBeta = new BABYLON.Animation(
-      'moveCameraBeta', 
-      'beta', 
-      10, 
-      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
-    animationCameraBeta.setKeys([
-      { frame: 0, value: CONFIG.render3d.camera.beta }, 
-      { frame: 10, value: CONFIG.render3d.camera.beta }
-    ])
-          
-    renderer.camera.animations = [animationCamera, animationCameraAlpha, animationCameraBeta]
-    renderer.scene.beginAnimation(
-      renderer.camera, // Target
-      0, // Start frame
-      10, // End frame
-      true, // Loop (according to ANIMATIONLOOPMODE)
-      5 // Speed ratio
-    )
-  }
-
-  // UPDATE CAMERA ZOOM
-  renderer.updateCameraZoom = (direction) => {
-    renderer.debounce = CONFIG.render3d.debounceKeyboardTime
-
-    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
-    let delta = 0;
-    if (direction === 'in') {
-      delta = -ratioBaseSize * CONFIG.render3d.camera.distanceRatioStep
-    } else if (direction === 'out') {
-      delta = ratioBaseSize * CONFIG.render3d.camera.distanceRatioStep
-    }
-
-    const animationCameraRadius = new BABYLON.Animation(
-      'zoomCameraRadius', 
-      'radius', 
-      10, 
-      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
-    animationCameraRadius.setKeys([
-      { frame: 0, value: renderer.camera.radius }, 
-      { frame: 10, value: renderer.camera.radius + delta }
-    ])
-
-    const easingFunction = new BABYLON.SineEase()
-    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
-    animationCameraRadius.setEasingFunction(easingFunction)
-
-    renderer.camera.animations = [animationCameraRadius]
-    renderer.scene.beginAnimation(
-      renderer.camera, // Target
-      0, // Start frame
-      10, // End frame
-      true, // Loop (according to ANIMATIONLOOPMODE)
-      5 // Speed ratio
-    )
-  }
-
-  // UPDATE CAMERA ALPHA
-  renderer.updateCameraAlpha = (direction) => {
-    renderer.debounce = CONFIG.render3d.debounceKeyboardTime
-
-    const alphaStep = Math.PI * 2 / 6 // 60°
-    let delta = 0
-    if (direction === 'clockwise') {
-      delta = alphaStep
-    } else if (direction === 'counterclockwise') {
-      delta = -alphaStep
-    }
-
-    // Lock rotation on sixth of circle
-    // Needed when 2 animations overlap
-    let newAlpha = renderer.camera.alpha + delta
-    newAlpha = Math.round(newAlpha / alphaStep) * alphaStep
-    // TODO: Keep alpha in the [0, 2*PI] range
-    // newAlpha = (newAlpha % (2 * Math.PI)) * (2 * Math.PI)
-
-    const animationCameraAlpha = new BABYLON.Animation(
-      'rotateCameraAlpha', 
-      'alpha', 
-      10, 
-      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
-    animationCameraAlpha.setKeys([
-      { frame: 0, value: renderer.camera.alpha }, 
-      { frame: 10, value: newAlpha }
-    ])
-
-    const easingFunction = new BABYLON.SineEase()
-    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
-    animationCameraAlpha.setEasingFunction(easingFunction)
-
-    renderer.camera.animations = [animationCameraAlpha]
-    renderer.scene.beginAnimation(
-      renderer.camera, // Target
-      0, // Start frame
-      10, // End frame
-      true, // Loop (according to ANIMATIONLOOPMODE)
-      5 // Speed ratio
-    )
-  }
-
-  // SWITCH ACTIVE CAMERA
-  renderer.switchActiveCamera = () => {
-    if (renderer.scene.activeCamera === renderer.camera) {
-      renderer.scene.activeCamera = renderer.cameraFree
-    } else {
-      renderer.scene.activeCamera = renderer.camera
-    }
   }
 
   // CREATE MATERIAL
@@ -370,7 +175,7 @@ const Renderer3d = (game, canvas) => {
         //   }, 
         //   renderer.scene, 
         //   1.0, 
-        //   renderer.camera
+        //   camera.camera
         // )
     
         renderer.ssao = new BABYLON.SSAORenderingPipeline(
@@ -380,7 +185,7 @@ const Renderer3d = (game, canvas) => {
             ssaoRatio: 1,
             combineRatio: 1.0
           },
-          [renderer.camera, renderer.cameraFree]
+          [camera.camera, camera.cameraFree]
         )
 
       } else if (CONFIG.render3d.postprocess === 'multi') {
@@ -395,7 +200,7 @@ const Renderer3d = (game, canvas) => {
           "default-pipeline", // The name of the pipeline
           true, // Do you want HDR textures ?
           renderer.scene, // The scene instance
-          [renderer.camera, renderer.cameraFree] // The list of cameras to be attached to
+          [camera.camera, camera.cameraFree] // The list of cameras to be attached to
         )
         // Base
         renderer.pipeline.samples = 4
@@ -610,8 +415,8 @@ const Renderer3d = (game, canvas) => {
 
   // GET HEXAPRISM VERTEX DATA
   renderer.getHexaprismVertexData = (hex, topHeight, bottomHeight = 0, topScaling = 1, bottomScaling = 1) => {
-    const cornersTop = HEXLIB.hexCorners(renderer.layout, hex, CONFIG.render3d.cellSize * topScaling),
-          cornersBottom = HEXLIB.hexCorners(renderer.layout, hex, CONFIG.render3d.cellSize * bottomScaling)
+    const cornersTop = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * topScaling),
+          cornersBottom = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * bottomScaling)
           // cornersBottom = cornersTop // Same size
 
     const getRandomDisp = () => (Math.random() - CONFIG.render3d.randomTileSizeOffset) * 2 * CONFIG.render3d.randomTileSizeFactor
@@ -695,7 +500,7 @@ const Renderer3d = (game, canvas) => {
             CONFIG.map.mapTopped,
             CONFIG.map.mapParity
           ),
-          position = HEXLIB.hex2Pixel(renderer.layout, hex), // center of tile top
+          position = HEXLIB.hex2Pixel(layout, hex), // center of tile top
           tile = new BABYLON.Mesh(`tile-${x}-${y}`, renderer.scene),
           height = cell.height
 
@@ -805,7 +610,7 @@ const Renderer3d = (game, canvas) => {
   // CREATE UNIT
   renderer.createUnit = (unit, idPlayer, idUnit) => {
     const hex = unit.hex,
-          position = HEXLIB.hex2Pixel(renderer.layout, hex), // center of tile top
+          position = HEXLIB.hex2Pixel(layout, hex), // center of tile top
           cellSize = CONFIG.render3d.cellSize,
           cell = map[unit.hexOffset.col][unit.hexOffset.row],
           cellHeight = cell.height,
@@ -944,7 +749,7 @@ const Renderer3d = (game, canvas) => {
   // Rotate a unit on itself, facing one the 6 directions
   // TODO: cleanup!
   renderer.rotateUnit = (unit, step, callback) => {
-    const position = HEXLIB.hex2Pixel(renderer.layout, step),
+    const position = HEXLIB.hex2Pixel(layout, step),
           stepData = game.map.getCellFromHex(step),
           height = stepData.height * CONFIG.render3d.cellStepHeight,
           nextPosition = new BABYLON.Vector3( // end value
@@ -992,7 +797,7 @@ const Renderer3d = (game, canvas) => {
   // Move a unit to an adjacent tile
   // TODO: the rotation part seems fuxed up!?
   renderer.moveUnit = (unit, step, callback) => {
-    const position = HEXLIB.hex2Pixel(renderer.layout, step),
+    const position = HEXLIB.hex2Pixel(layout, step),
           stepData = game.map.getCellFromHex(step),
           height = stepData.height * CONFIG.render3d.cellStepHeight,
           nextPosition = new BABYLON.Vector3( // end value
@@ -1257,7 +1062,7 @@ const Renderer3d = (game, canvas) => {
 
       if (CONFIG.render3d.cameraAutoRotate) {
         // Make the camera rotate around the island
-        renderer.cameraFree.alpha += 0.01
+        camera.cameraFree.alpha += 0.01
       }
     })
   }
@@ -1273,101 +1078,101 @@ const Renderer3d = (game, canvas) => {
 
   // INIT RENDERER
   // Creates all the Babylon magic!
-  renderer.initRenderer = () => {
-    // Base
-    renderer.layout = renderer.createLayout()
-    renderer.engine = new BABYLON.Engine(canvas, true, {
-      deterministicLockstep: true,
-      lockstepMaxSteps: 4
-    })
-    renderer.scene = new BABYLON.Scene(renderer.engine)
-    renderer.camera = renderer.createCamera()
-    renderer.cameraFree = renderer.createCameraFree()
-    renderer.scene.activeCamera = renderer.camera
-
-    // Asset manager
-    // TODO: figure out how this thing works
-    // See: https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
-    renderer.assetsManager = new BABYLON.AssetsManager(renderer.scene)
-    renderer.imageTask = renderer.assetsManager.addImageTask('img1', img1)
-    renderer.imageTask = renderer.assetsManager.addImageTask('img2', img2)
-    renderer.imageTask = renderer.assetsManager.addImageTask('img3', img3)
-    renderer.imageTask = renderer.assetsManager.addImageTask('img4', img4)
-    renderer.imageTask = renderer.assetsManager.addImageTask('img5', img5)
-    renderer.imageTask = renderer.assetsManager.addImageTask('img6', img6)
-    renderer.assetsManager.onFinish = function (tasks) {
-      renderer.initUpdateLoop()
-      renderer.startRenderLoop()
-      // console.warn('ASSETS LOADED!', tasks)
-    }
     
-    renderer.assetsManager.load()
+  // Base
+  layout = createLayout()
 
-    // Lights
-    renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
-    renderer.hemiLight.intensity = 0.4
-    renderer.hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
-	  renderer.hemiLight.specular = new BABYLON.Color3(1, 1, 1)
-	  renderer.hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
-    
-    renderer.directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
-    renderer.directionalLight.intensity = 0.85
-    renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
-	  
-    // Shadow
-    renderer.shadowGenerator = new BABYLON.ShadowGenerator(4096, renderer.directionalLight)
-    // renderer.shadowGenerator.useBlurExponentialShadowMap = true;
-    renderer.shadowGenerator.usePoissonSampling = true
+  renderer.engine = new BABYLON.Engine(canvas, true, {
+    deterministicLockstep: true,
+    lockstepMaxSteps: 4
+  })
+  renderer.scene = new BABYLON.Scene(renderer.engine)
 
-    // Highlight layers
-    const nHightlighLayers = 3
-    renderer.highlightLayer = []
-    renderer.highlightMeshes = []
-    for (let n = 0; n < nHightlighLayers; n++) {
-      renderer.highlightLayer[n] = renderer.createHighlightLayer(`highlightLayer${n}`, renderer.scene)
-      renderer.highlightMeshes[n] = []
-    }
+  // Camera
+  camera.init(renderer.scene, layout)
+  renderer.scene.activeCamera = camera.camera
+  renderer.activeCamera = 'camera'
 
-    // Materials
-    renderer.materials = renderer.createMaterials()
-
-    // Meshes
-    renderer.skybox = renderer.createSkybox()
-    renderer.updateOcean()
-    if (CONFIG.render3d.showAxis) {
-      renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
-    }
-
-    // Post-process
-    renderer.updatePosprocessPipeline()
-
-    // Debounce counter
-    renderer.debounce = 0
-
-    // Freeze the active meshes
-    // TODO: seems too agressive, maybe use it with mesh.alwaysSelectAsActiveMesh = true
-    // renderer.scene.freezeActiveMeshes()
-
-    // // ACTION MANAGER
-    // // Clean way to capture keyboard event, but requires the canvas to have focus
-    // renderer.keys = {} //object for multiple key presses
-    // renderer.scene.actionManager = new BABYLON.ActionManager(renderer.scene)
-   
-    // renderer.scene.actionManager.registerAction(
-    //   new BABYLON.ExecuteCodeAction(
-    //     BABYLON.ActionManager.OnKeyDownTrigger, 
-    //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }
-    //   )
-    // )
-    // renderer.scene.actionManager.registerAction(
-    //   new BABYLON.ExecuteCodeAction(
-    //     BABYLON.ActionManager.OnKeyUpTrigger,
-    //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }
-    //   )
-    // )
+  // Asset manager
+  // TODO: figure out how this thing works
+  // See: https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+  renderer.assetsManager = new BABYLON.AssetsManager(renderer.scene)
+  renderer.imageTask = renderer.assetsManager.addImageTask('img1', img1)
+  renderer.imageTask = renderer.assetsManager.addImageTask('img2', img2)
+  renderer.imageTask = renderer.assetsManager.addImageTask('img3', img3)
+  renderer.imageTask = renderer.assetsManager.addImageTask('img4', img4)
+  renderer.imageTask = renderer.assetsManager.addImageTask('img5', img5)
+  renderer.imageTask = renderer.assetsManager.addImageTask('img6', img6)
+  renderer.assetsManager.onFinish = function (tasks) {
+    renderer.initUpdateLoop()
+    renderer.startRenderLoop()
+    // console.warn('ASSETS LOADED!', tasks)
   }
   
-  renderer.initRenderer()
+  renderer.assetsManager.load()
+
+  // Lights
+  renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
+  renderer.hemiLight.intensity = 0.4
+  renderer.hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
+  renderer.hemiLight.specular = new BABYLON.Color3(1, 1, 1)
+  renderer.hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
+  
+  renderer.directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
+  renderer.directionalLight.intensity = 0.85
+  renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
+  
+  // Shadow
+  renderer.shadowGenerator = new BABYLON.ShadowGenerator(4096, renderer.directionalLight)
+  // renderer.shadowGenerator.useBlurExponentialShadowMap = true;
+  renderer.shadowGenerator.usePoissonSampling = true
+
+  // Highlight layers
+  const nHightlighLayers = 3
+  renderer.highlightLayer = []
+  renderer.highlightMeshes = []
+  for (let n = 0; n < nHightlighLayers; n++) {
+    renderer.highlightLayer[n] = renderer.createHighlightLayer(`highlightLayer${n}`, renderer.scene)
+    renderer.highlightMeshes[n] = []
+  }
+
+  // Materials
+  renderer.materials = renderer.createMaterials()
+
+  // Meshes
+  renderer.skybox = renderer.createSkybox()
+  renderer.updateOcean()
+  if (CONFIG.render3d.showAxis) {
+    renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
+  }
+
+  // Post-process
+  renderer.updatePosprocessPipeline()
+
+  // Debounce counter
+  renderer.debounce = 0
+
+  // Freeze the active meshes
+  // TODO: seems too agressive, maybe use it with mesh.alwaysSelectAsActiveMesh = true
+  // renderer.scene.freezeActiveMeshes()
+
+  // // ACTION MANAGER
+  // // Clean way to capture keyboard event, but requires the canvas to have focus
+  // renderer.keys = {} //object for multiple key presses
+  // renderer.scene.actionManager = new BABYLON.ActionManager(renderer.scene)
+  
+  // renderer.scene.actionManager.registerAction(
+  //   new BABYLON.ExecuteCodeAction(
+  //     BABYLON.ActionManager.OnKeyDownTrigger, 
+  //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }
+  //   )
+  // )
+  // renderer.scene.actionManager.registerAction(
+  //   new BABYLON.ExecuteCodeAction(
+  //     BABYLON.ActionManager.OnKeyUpTrigger,
+  //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }
+  //   )
+  // )
 
   return renderer
 }
