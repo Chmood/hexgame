@@ -13,13 +13,62 @@ const Units = (game, map, camera) => {
   // PUBLIC
 
   // UPDATE HEALTH BAR
-  renderer.updateHealthbar = (unit) => {
-    const healthbarUnitWidth = CONFIG.render3d.cellSize * CONFIG.render3d.healthbars.width,
-          healthbarFrontWidth = unit.health * healthbarUnitWidth,
-          healthbarBackWidth = unit.maxHealth * healthbarUnitWidth
+  renderer.updateHealthbar = (unit, noAnimationMode = false) => {
+    const healthbarBaseWidth = CONFIG.render3d.cellSize * CONFIG.render3d.healthbars.width,
+          healthbarFrontWidth = unit.health * healthbarBaseWidth,
+          healthbarBackWidth = unit.maxHealth * healthbarBaseWidth,
+          healthbar = unit.meshes.healthbarFront, // shortcut
+          finalScalingX = unit.health / unit.maxHealth,
+          finalPositionX = -(healthbarBackWidth - healthbarFrontWidth) / 2 
 
-    unit.meshes.healthbarFront.scaling.x = unit.health / unit.maxHealth
-    unit.meshes.healthbarFront.position.x = -(healthbarBackWidth - healthbarFrontWidth) / 2
+    if (noAnimationMode) {
+      healthbar.scaling.x = finalScalingX
+      healthbar.position.x = finalPositionX
+      return
+    }
+    console.warn('scaling', healthbar.scaling.x, finalScalingX)
+    console.warn('position', healthbar.position.x, finalPositionX)
+
+    // Scaling animation
+    const animationHealthbarScaling = new BABYLON.Animation(
+      'animationHealthbarScalingX', // Animation name
+      'scaling.x', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationHealthbarScaling.setKeys([
+      { frame: 0, value: healthbar.scaling.x }, 
+      { frame: 10, value: finalScalingX }
+    ])
+    setEasing(animationHealthbarScaling)
+
+    // Position animation
+    const animationHealthbarPosition = new BABYLON.Animation(
+      'animationHealthbarPositionX', // Animation name
+      'position.x', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_FLOAT, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationHealthbarPosition.setKeys([
+      { frame: 0, value: healthbar.position.x }, 
+      { frame: 10, value: finalPositionX}
+    ])
+    setEasing(animationHealthbarPosition)
+
+    healthbar.animations = [
+      animationHealthbarScaling, 
+      animationHealthbarPosition
+    ]
+
+    return scene.beginAnimation(
+      healthbar, // Target
+      0, // Start frame
+      10, // End frame
+      false, // Loop (according to ANIMATIONLOOPMODE)
+      1 * CONFIG.game.animationsSpeed // Speed ratio
+    )
   }
 
   // CREATE UNIT
@@ -78,7 +127,7 @@ const Units = (game, map, camera) => {
     // Billboard mode (always face the camera)
     unit.meshes.healthbarBack.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL
 
-    renderer.updateHealthbar(unit)
+    renderer.updateHealthbar(unit, true) // Set healthbar without animation
 
     ////////////////////////////////////////
     // PARTS MESHES

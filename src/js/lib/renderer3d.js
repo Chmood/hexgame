@@ -193,7 +193,6 @@ const Renderer3d = (game, canvas) => {
 
   renderer.assetsManager.onProgress = function(remainingCount, totalCount, lastFinishedTask) {
     renderer.engine.loadingUIText = `Loading ${lastFinishedTask.url}: ${totalCount - remainingCount}/${totalCount} items`
-    console.log(lastFinishedTask)
   }
   renderer.assetsManager.onFinish = function (tasks) {
     renderer.initUpdateLoop()
