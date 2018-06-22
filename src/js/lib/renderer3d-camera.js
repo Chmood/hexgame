@@ -1,10 +1,11 @@
 import BABYLON from 'babylonjs'
+import HEXLIB from '../vendor/hexlib.js'
 import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D CAMERA
 
-const Camera = (canvas) => {
+const Camera = (canvas, game) => {
   
   const renderer = {}
 
@@ -15,8 +16,10 @@ const Camera = (canvas) => {
 
   // UPDATE CAMERA POSITION
   // Makes the camera look at the given hex
-  renderer.updateCameraPosition = (cell, position) => {
-    const height = cell.height * CONFIG.render3d.cellStepHeight
+  renderer.updateCameraPosition = (hex) => {
+    const position = HEXLIB.hex2Pixel(layout, hex),
+          cell = game.map.getCellFromHex(hex),
+          height = cell.height * CONFIG.render3d.cellStepHeight
 
     const animationCamera = new BABYLON.Animation(
       'moveCamera', 
@@ -240,7 +243,6 @@ const Camera = (canvas) => {
 
   ////////////////////////////////////////
   // INIT
-  // Will be firead later (when layout and scene will be ready)
   renderer.init = (rendererScene, rendererLayout) => {
     scene = rendererScene
     layout = rendererLayout
