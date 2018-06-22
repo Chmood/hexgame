@@ -15,12 +15,12 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // GAME MAP
   game.map = Map(CONFIG.map)
 
+  // UI OVERLAY
+  game.ui = {}
+
   // GAME RENDERERS
   game.renderer2d = Renderer2d(game, ctx)
   game.renderer3d = Renderer3d(game, canvas3d)
-
-  // UI OVERLAY
-  game.ui = {}
 
   // RNG seeds
   let gameSeed = CONFIG.game.seed

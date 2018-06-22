@@ -94,7 +94,7 @@ const CONFIG = {
     showAxis: false,
     // UI mods
     betterOcean: false,
-    postprocess: 'ssao', // 'ssao', 'multi' or 'none'
+    postprocess: 'multi', // 'ssao', 'multi' or 'none'
     cameraAutoRotate: false,
     debounceKeyboardTime: 8, // In locksteppeded frames
     healthbars: {

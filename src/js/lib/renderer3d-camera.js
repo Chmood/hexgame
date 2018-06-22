@@ -8,73 +8,10 @@ const Camera = (canvas) => {
   
   const renderer = {}
 
-  let scene, layout
-
-  // Public properties
+  ////////////////////////////////////////
+  // PUBLIC
   renderer.camera = undefined
   renderer.cameraFree = undefined
-
-  // CREATE CAMERA
-  const createCamera = () => {
-    // Add a camera to the scene and attach it to the canvas
-    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
-
-    const camera = new BABYLON.ArcRotateCamera(
-      'Camera',
-      0, // alpha angle
-      CONFIG.render3d.camera.beta, // beta angle
-      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
-      new BABYLON.Vector3( // target
-        0,
-        // focus height is one stepsize above water level
-        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
-        0
-      ),
-      scene
-    )
-    // Attach control from canvas to the camera (pan, tilt...)
-    // camera.attachControl(canvas, true)
-    // Constrain camera rotation & zooming
-    camera.lowerBetaLimit = 0
-    camera.upperBetaLimit = Math.PI / 2
-    // camera.lowerAlphaLimit = 0
-    // camera.upperAlphaLimit = 0
-    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
-    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
-
-    return camera
-  }
-
-  // CREATE CAMERA FREE
-  const createCameraFree = () => {
-    // Add a camera to the scene and attach it to the canvas
-    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
-
-    const camera = new BABYLON.ArcRotateCamera(
-      'Camera',
-      0, // alpha angle
-      CONFIG.render3d.camera.beta, // beta angle
-      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
-      new BABYLON.Vector3( // target
-        0,
-        // focus height is one stepsize above water level
-        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
-        0
-      ),
-      scene
-    )
-    // Attach control from canvas to the camera (pan, tilt...)
-    camera.attachControl(canvas, true)
-    // Constrain camera rotation & zooming
-    camera.lowerBetaLimit = 0
-    camera.upperBetaLimit = Math.PI / 2
-    // camera.lowerAlphaLimit = 0
-    // camera.upperAlphaLimit = 0
-    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
-    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
-
-    return camera
-  }
 
   // UPDATE CAMERA POSITION
   // Makes the camera look at the given hex
@@ -233,6 +170,72 @@ const Camera = (canvas) => {
     } else {
       scene.activeCamera = renderer.camera
     }
+  }
+
+  ////////////////////////////////////////
+  // PRIVATE
+  let scene, layout
+
+  // CREATE CAMERA
+  const createCamera = () => {
+    // Add a camera to the scene and attach it to the canvas
+    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
+
+    const camera = new BABYLON.ArcRotateCamera(
+      'Camera',
+      0, // alpha angle
+      CONFIG.render3d.camera.beta, // beta angle
+      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
+      new BABYLON.Vector3( // target
+        0,
+        // focus height is one stepsize above water level
+        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
+        0
+      ),
+      scene
+    )
+    // Attach control from canvas to the camera (pan, tilt...)
+    // camera.attachControl(canvas, true)
+    // Constrain camera rotation & zooming
+    camera.lowerBetaLimit = 0
+    camera.upperBetaLimit = Math.PI / 2
+    // camera.lowerAlphaLimit = 0
+    // camera.upperAlphaLimit = 0
+    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
+    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
+
+    return camera
+  }
+
+  // CREATE CAMERA FREE
+  const createCameraFree = () => {
+    // Add a camera to the scene and attach it to the canvas
+    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
+
+    const camera = new BABYLON.ArcRotateCamera(
+      'Camera',
+      0, // alpha angle
+      CONFIG.render3d.camera.beta, // beta angle
+      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
+      new BABYLON.Vector3( // target
+        0,
+        // focus height is one stepsize above water level
+        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
+        0
+      ),
+      scene
+    )
+    // Attach control from canvas to the camera (pan, tilt...)
+    camera.attachControl(canvas, true)
+    // Constrain camera rotation & zooming
+    camera.lowerBetaLimit = 0
+    camera.upperBetaLimit = Math.PI / 2
+    // camera.lowerAlphaLimit = 0
+    // camera.upperAlphaLimit = 0
+    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
+    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
+
+    return camera
   }
 
   ////////////////////////////////////////

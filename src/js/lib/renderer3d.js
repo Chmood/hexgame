@@ -3,6 +3,7 @@ import HEXLIB from '../vendor/hexlib.js'
 import CONFIG from './config.js'
 
 import Camera from './renderer3d-camera'
+import Highlight from './renderer3d-highlight'
 
 // image import (for Webpack loading & bundling as dependencies)
 import waterbump from "../../img/waterbump.png"
@@ -25,13 +26,13 @@ waterMaterial(BABYLON)
 const Renderer3d = (game, canvas) => {
   const renderer = {},
         map = game.map.data,
-        camera = Camera(canvas) // From external module
+        // External modules
+        camera = Camera(canvas),
+        highlight = Highlight()
 
   let layout
 
   // CAMERA MODULE
-  // Public methods (can be called from outside this module)
-
   // Wrappers
   renderer.updateCameraPosition = (hex) => {
     const position = HEXLIB.hex2Pixel(layout, hex),
@@ -51,6 +52,9 @@ const Renderer3d = (game, canvas) => {
   renderer.updateCameraZoom = camera.updateCameraZoom
   renderer.updateCameraAlpha = camera.updateCameraAlpha
 
+  // HIGHLIGHT MODULE
+  // Aliases
+  renderer.updateHighlights = highlight.updateHighlights
 
   ////////////////////////////////////////
   // BASE
@@ -142,14 +146,6 @@ const Renderer3d = (game, canvas) => {
     )
 
     return materials
-  }
-
-  // CREATE HIGHLIGHT LAYER
-  renderer.createHighlightLayer = (id, scene) => {
-    // Add the highlight layer
-    const highlightLayer = new BABYLON.HighlightLayer(id, scene)
-    highlightLayer.outerGlow = false
-    return highlightLayer
   }
 
   // UPDATE POSTPROCESS PIPELINE
@@ -959,73 +955,6 @@ const Renderer3d = (game, canvas) => {
   }
 
   ////////////////////////////////////////
-  // HIGHLIGHTS
-
-  // UPDATE HIGHLIGHTS
-  renderer.updateHighlights = () => {
-    // Clear all highlights
-    for (let n = 0; n < renderer.highlightMeshes.length; n++) {
-      for (const mesh of renderer.highlightMeshes[n]) {
-        renderer.highlightLayer[n].removeMesh(mesh.mesh)
-      }
-      renderer.highlightMeshes[n] = []
-    }
-    
-    // Attack zone
-    for (const hex of game.ui.attackZone) {
-      renderer.hightlightTile(hex, BABYLON.Color3.Red(), 0)
-    }
-    // Move zone
-    for (const hex of game.ui.moveZone) {
-      renderer.hightlightTile(hex, BABYLON.Color3.White(), 1)
-    }
-    // Path line
-    renderer.highlightLine(game.ui.line, BABYLON.Color3.Red(), 2)
-    // Cursor line
-    renderer.highlightLine(game.ui.cursorPath, BABYLON.Color3.Blue(), 2)
-    // Cursor tile
-    renderer.hightlightTile(game.ui.cursor, BABYLON.Color3.Blue(), 2)
-
-    // Add selected meshes to highlight layer
-    for (let n = 0; n < renderer.highlightMeshes.length; n++) {
-      for (let mesh of renderer.highlightMeshes[n]) {
-        renderer.highlightLayer[n].addMesh(mesh.mesh, mesh.color)
-      }
-    }
-  }
-
-  // HIGHTLIGHT TILE
-  renderer.hightlightTile = (hex, color = BABYLON.Color3.White(), n = 0) => {
-    const offset = HEXLIB.hex2Offset(
-            hex, 
-            CONFIG.map.mapTopped, 
-            CONFIG.map.mapParity
-          )
-
-    // Sanitize inputs
-    if (offset.col !== undefined && offset.row !== undefined && 
-        offset.col >= 0 && offset.row >= 0 &&
-        offset.col < CONFIG.map.mapSize.width && offset.row < CONFIG.map.mapSize.height
-      ) {
-      // Add to layer
-      renderer.highlightMeshes[n].push({
-        mesh: map[offset.col][offset.row].tile,
-        color: color
-      })
-    }
-  }
-
-  // HIGHLIGHT LINE
-  renderer.highlightLine = (line, color, n = 0) => {
-    // Draw line tiles
-    if (line) {
-      for (let i = 0; i < line.length; i++) {
-        renderer.hightlightTile(line[i], color, n)
-      }
-    }
-  }
-
-  ////////////////////////////////////////
   // PLOT CURSOR
   // Mouse position plotting
   renderer.plotCursor = () => {
@@ -1128,13 +1057,8 @@ const Renderer3d = (game, canvas) => {
   renderer.shadowGenerator.usePoissonSampling = true
 
   // Highlight layers
-  const nHightlighLayers = 3
-  renderer.highlightLayer = []
-  renderer.highlightMeshes = []
-  for (let n = 0; n < nHightlighLayers; n++) {
-    renderer.highlightLayer[n] = renderer.createHighlightLayer(`highlightLayer${n}`, renderer.scene)
-    renderer.highlightMeshes[n] = []
-  }
+  // Last parameter is the number of highlight layers
+  highlight.init(renderer.scene, game.ui, map, 3)
 
   // Materials
   renderer.materials = renderer.createMaterials()
