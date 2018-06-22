@@ -223,7 +223,6 @@ const Environement = () => {
 
   ////////////////////////////////////////
   // INIT
-
   renderer.init = (rendererScene, rendererMaterials, gamePlayers, gameMap) => {
     scene = rendererScene
     materials = rendererMaterials

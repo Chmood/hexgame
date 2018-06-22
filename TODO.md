@@ -16,7 +16,7 @@
 * Move the keyboard debounce from renderer3d into game
 * Get the Asset Manager thing up to work
 * Make all modules' methods (like module.method()) 'private' by default
-* Stop mutating the CONFIG object!
+* Stop mutating the CONFIG object! (postprocess + environement)
 
 ## New features
 

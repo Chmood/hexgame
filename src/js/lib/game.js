@@ -9,7 +9,7 @@ import Renderer3d from './renderer3d'
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
 
-const Game = (ctx, canvas3d, CONFIG, main) => {
+const Game = (ctx2d, canvas3d, CONFIG, main) => {
   const game = {}
 
   // GAME MAP
@@ -21,13 +21,13 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // PLAYERS
   game.players = []
 
-  // GAME RENDERERS
-  game.renderer2d = Renderer2d(game, ctx)
-  game.renderer3d = Renderer3d(game, canvas3d)
-
   // RNG seeds
   let gameSeed = CONFIG.game.seed
   const RNG = seedrandom(gameSeed)
+
+  // GAME RENDERERS
+  game.renderer2d = Renderer2d(game, ctx2d)
+  game.renderer3d = Renderer3d(game, canvas3d)
 
   // UPDATE RENDERERS
   game.updateRenderers = (actions) => {
@@ -103,6 +103,7 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   }
 
   // CHANGE CURRENT PLAYER
+  // TODO: broken when deleting players!
   game.changeCurrentPlayer = (playerId) => {
     if (game.currentPlayer === undefined) {
       // First call

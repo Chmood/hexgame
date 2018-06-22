@@ -46,8 +46,10 @@ const DomUI = () => {
     // dom.canvas2d.addEventListener('mousemove', (e) => {
     //   game.updateCursor(game.renderer2d.plotCursor(e))
     // })
-    // dom.canvas3d.addEventListener('mousemove', () => { 
-    //   game.updateCursor(game.renderer3d.plotCursor())
+    // dom.canvas3d.addEventListener('mousemove', () => {
+    //   if (game.renderer3d.activeCamera === 'cameraFree') {
+    //     game.updateCursor(game.renderer3d.plotCursor())
+    //   }
     // }) 
 
     // // Click on canvases

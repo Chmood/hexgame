@@ -93,7 +93,6 @@ const Highlight = () => {
 
   ////////////////////////////////////////
   // INIT
-  // Will be firead later (when scene will be ready)
   renderer.init = (rendererScene, gameUI, gameMap, nHightlighLayers) => {
     scene = rendererScene
     ui = gameUI

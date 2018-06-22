@@ -112,7 +112,6 @@ const Postprocess = () => {
 
   ////////////////////////////////////////
   // INIT
-  // Will be firead later (when scene will be ready)
   renderer.init = (rendererScene, rendererCamera, rendererCameraFree) => {
     scene = rendererScene
     camera = rendererCamera

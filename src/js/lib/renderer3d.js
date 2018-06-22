@@ -62,7 +62,7 @@ const Renderer3d = (game, canvas) => {
   renderer.deleteTiles = tiles.deleteTiles
   // Units
   renderer.createUnits = units.createUnits
-  renderer.createUnit = units.createUnit
+  // renderer.createUnit = units.createUnit // Not used by now
   renderer.deleteUnits = units.deleteUnits
   renderer.deleteUnit = units.deleteUnit
   renderer.moveUnitOnPath = units.moveUnitOnPath

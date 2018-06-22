@@ -12,41 +12,6 @@ const Units = (game, map, camera) => {
   ////////////////////////////////////////
   // PUBLIC
 
-  // CREATE MULTIPART UNIT
-  renderer.createMultipartUnit = (name, idPlayer, idUnit, parentMesh, baseSize, parts) => {
-    const meshes = []
-    for (const part of parts) {
-      // Create box mesh
-      const p = BABYLON.MeshBuilder.CreateBox(
-        `player-${idPlayer}-${name}-${idUnit}-${part.name}`, 
-        {
-          height: baseSize * part.size.height, // height
-          width: baseSize * part.size.length, // length
-          depth: baseSize * part.size.width // width
-        }
-      )
-      // Position
-      p.position = new BABYLON.Vector3(
-        baseSize * part.position.x,
-        baseSize * part.position.y,
-        baseSize * part.position.z
-      )
-      // Parenting
-      p.parent = parentMesh
-      // Material
-      p.material = part.material
-      // Shadows
-      shadowGenerator.getShadowMap().renderList.push(p)
-      p.receiveShadows = true
-
-      if (part.dontColorize !== undefined) {
-        p.dontColorize = part.dontColorize // Risky: add property to BABYLON.mesh
-      }
-      meshes[part.name] = p
-    }
-    return meshes
-  }
-
   // UPDATE HEALTH BAR
   renderer.updateHealthbar = (unit) => {
     const healthbarUnitWidth = CONFIG.render3d.cellSize * CONFIG.render3d.healthbars.width,
@@ -118,7 +83,7 @@ const Units = (game, map, camera) => {
     ////////////////////////////////////////
     // PARTS MESHES
     unit.meshes.push(
-      ...renderer.createMultipartUnit('tank', idPlayer, idUnit, unit.mesh, cellSize, [
+      ...createMultipartUnit('tank', idPlayer, idUnit, unit.mesh, cellSize, [
         {
           name: 'base',
           size: {height: 1/6, length: 3/4, width: 1/2},
@@ -188,140 +153,6 @@ const Units = (game, map, camera) => {
     }
   }
 
-  // Easing 'standard' function
-  const setEasing = (animation) => {
-    const easingFunction = new BABYLON.SineEase()
-    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
-    animation.setEasingFunction(easingFunction)
-  }
-
-  // ROTATE UNIT
-  // Rotate a unit on itself, facing one the 6 directions
-  // TODO: cleanup!
-  renderer.rotateUnit = (unit, step) => {
-    const position = HEXLIB.hex2Pixel(layout, step),
-          stepData = game.map.getCellFromHex(step),
-          height = stepData.height * CONFIG.render3d.cellStepHeight,
-          nextPosition = new BABYLON.Vector3( // end value
-            position.y, // Axis inversion!
-            height, 
-            position.x // Axis inversion!
-          )
-
-    // Get the direction of the move
-    const targetAngle = nextPosition.subtract(unit.mesh.position)
-    const hypothenuse = CONFIG.render3d.cellSize * Math.sqrt(3) * 1.000001 // Avoid NaN
-    let angle = Math.acos(-targetAngle.x / hypothenuse)
-    if (targetAngle.z < 0) {
-      angle *= -1
-    }
-    const deltaAngle = angle - unit.mesh.rotation.y + 0.00001
-    const speed = 2 * Math.PI / Math.abs(deltaAngle)
-
-    // ANIMATE ROTATION
-    const animationPlayerRotation = new BABYLON.Animation(
-      'unit.mesh',
-      'rotation', 
-      10, 
-      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
-    animationPlayerRotation.setKeys([
-      { frame: 0, value: unit.mesh.rotation },
-      { frame: 10, value: new BABYLON.Vector3(0, angle, 0) }
-    ])
-    setEasing(animationPlayerRotation)
-
-    unit.mesh.animations = [animationPlayerRotation]
-
-    return scene.beginAnimation(
-      unit.mesh, // Target
-      0, // Start frame
-      10, // End frame
-      false, // Loop (according to ANIMATIONLOOPMODE)
-      speed * CONFIG.game.animationsSpeed // Speed ratio
-    )
-  }
-
-  // MOVE UNIT
-  // Move a unit to an adjacent tile
-  // TODO: the rotation part seems fuxed up!?
-  renderer.moveUnit = (unit, step) => {
-    const position = HEXLIB.hex2Pixel(layout, step),
-          stepData = game.map.getCellFromHex(step),
-          height = stepData.height * CONFIG.render3d.cellStepHeight,
-          nextPosition = new BABYLON.Vector3( // end value
-            position.y, // Axis inversion!
-            height, 
-            position.x // Axis inversion!
-          ),
-          nextRotation = stepData.tile.rotation
-
-    // POSITION
-    const animationPlayerPosition = new BABYLON.Animation(
-      'unit.mesh',
-      'position', 
-      10, 
-      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
-    animationPlayerPosition.setKeys([
-      { frame: 0, value: unit.mesh.position }, 
-      { frame: 10, value: nextPosition }
-    ])
-    setEasing(animationPlayerPosition)
-
-    // ROTATION
-    const animationPlayerRotation = new BABYLON.Animation(
-      'unit.mesh',
-      'rotation', 
-      10, 
-      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
-    animationPlayerRotation.setKeys([
-      { frame: 0, value: unit.mesh.rotation }, 
-      { frame: 10, value: new BABYLON.Vector3(
-        nextRotation.x,
-        unit.mesh.rotation.y,
-        nextRotation.y
-      )}
-    ])
-    setEasing(animationPlayerPosition)
-
-    unit.mesh.animations = [animationPlayerPosition, animationPlayerRotation]
-
-    return scene.beginAnimation(
-      unit.mesh, // Target
-      0, // Start frame
-      10, // End frame
-      false, // Loop (according to ANIMATIONLOOPMODE)
-      3 * CONFIG.game.animationsSpeed // Speed ratio
-    )
-  }
-
-  renderer.moveUnitOnePathStep = (unit, path) => {
-    return new Promise(async (resolve) => {
-
-      // Get the first step and remove it from the path
-      const step = path.shift()
-      unit.mesh.animations = []
-      // Make the camera follow the moving unit
-      camera.updateCameraPosition(step)
-  
-      // Rotate the unit in the right direction
-      const rotateUnit = renderer.rotateUnit(unit, step)
-      await rotateUnit.waitAsync()
-      // Move the unit to the adjacent tile
-      const moveUnit = renderer.moveUnit(unit, step)
-      await moveUnit.waitAsync()
-      // Update unit's position
-      unit.moveToHex(step, CONFIG.map.mapTopped, CONFIG.map.mapParity)
-
-      resolve(path)
-    })
-  }
-
   renderer.moveUnitOnPath = (unit, path) => {
     return new Promise(async (resolve) => {
 
@@ -331,7 +162,7 @@ const Units = (game, map, camera) => {
         return
       }
 
-      const newPath = await renderer.moveUnitOnePathStep(unit, path)
+      const newPath = await moveUnitOnePathStep(unit, path)
       game.updateRenderers() // Update 2D map
       resolve(renderer.moveUnitOnPath(unit, newPath))
     })
@@ -412,6 +243,178 @@ const Units = (game, map, camera) => {
   // PRIVATE
   let scene, layout, materials, shadowGenerator
 
+  // SET EASING
+  // Easing 'standard' function
+  const setEasing = (animation) => {
+    const easingFunction = new BABYLON.SineEase()
+    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT)
+    animation.setEasingFunction(easingFunction)
+  }
+
+  // CREATE MULTIPART UNIT
+  const createMultipartUnit = (name, idPlayer, idUnit, parentMesh, baseSize, parts) => {
+    const meshes = []
+    for (const part of parts) {
+      // Create box mesh
+      const p = BABYLON.MeshBuilder.CreateBox(
+        `player-${idPlayer}-${name}-${idUnit}-${part.name}`, 
+        {
+          height: baseSize * part.size.height, // height
+          width: baseSize * part.size.length, // length
+          depth: baseSize * part.size.width // width
+        }
+      )
+      // Position
+      p.position = new BABYLON.Vector3(
+        baseSize * part.position.x,
+        baseSize * part.position.y,
+        baseSize * part.position.z
+      )
+      // Parenting
+      p.parent = parentMesh
+      // Material
+      p.material = part.material
+      // Shadows
+      shadowGenerator.getShadowMap().renderList.push(p)
+      p.receiveShadows = true
+
+      if (part.dontColorize !== undefined) {
+        p.dontColorize = part.dontColorize // Risky: add property to BABYLON.mesh
+      }
+      meshes[part.name] = p
+    }
+    return meshes
+  }
+
+  // ROTATE UNIT
+  // Rotate a unit on itself, facing one the 6 directions
+  // TODO: cleanup!
+  const rotateUnit = (unit, step) => {
+    const position = HEXLIB.hex2Pixel(layout, step),
+          stepData = game.map.getCellFromHex(step),
+          height = stepData.height * CONFIG.render3d.cellStepHeight,
+          nextPosition = new BABYLON.Vector3( // end value
+            position.y, // Axis inversion!
+            height, 
+            position.x // Axis inversion!
+          )
+
+    // Get the direction of the move
+    const targetAngle = nextPosition.subtract(unit.mesh.position)
+    const hypothenuse = CONFIG.render3d.cellSize * Math.sqrt(3) * 1.000001 // Avoid NaN
+    let angle = Math.acos(-targetAngle.x / hypothenuse)
+    if (targetAngle.z < 0) {
+      angle *= -1
+    }
+    const deltaAngle = angle - unit.mesh.rotation.y + 0.00001
+    const speed = 2 * Math.PI / Math.abs(deltaAngle)
+
+    // ANIMATE ROTATION
+    const animationPlayerRotation = new BABYLON.Animation(
+      'unit.mesh',
+      'rotation', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationPlayerRotation.setKeys([
+      { frame: 0, value: unit.mesh.rotation },
+      { frame: 10, value: new BABYLON.Vector3(0, angle, 0) }
+    ])
+    setEasing(animationPlayerRotation)
+
+    unit.mesh.animations = [animationPlayerRotation]
+
+    return scene.beginAnimation(
+      unit.mesh, // Target
+      0, // Start frame
+      10, // End frame
+      false, // Loop (according to ANIMATIONLOOPMODE)
+      speed * CONFIG.game.animationsSpeed // Speed ratio
+    )
+  }
+
+  // MOVE UNIT
+  // Move a unit to an adjacent tile
+  // TODO: the rotation part seems fuxed up!?
+  const moveUnit = (unit, step) => {
+    const position = HEXLIB.hex2Pixel(layout, step),
+          stepData = game.map.getCellFromHex(step),
+          height = stepData.height * CONFIG.render3d.cellStepHeight,
+          nextPosition = new BABYLON.Vector3( // end value
+            position.y, // Axis inversion!
+            height, 
+            position.x // Axis inversion!
+          ),
+          nextRotation = stepData.tile.rotation
+
+    // POSITION
+    const animationPlayerPosition = new BABYLON.Animation(
+      'unit.mesh',
+      'position', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationPlayerPosition.setKeys([
+      { frame: 0, value: unit.mesh.position }, 
+      { frame: 10, value: nextPosition }
+    ])
+    setEasing(animationPlayerPosition)
+
+    // ROTATION
+    const animationPlayerRotation = new BABYLON.Animation(
+      'unit.mesh',
+      'rotation', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationPlayerRotation.setKeys([
+      { frame: 0, value: unit.mesh.rotation }, 
+      { frame: 10, value: new BABYLON.Vector3(
+        nextRotation.x,
+        unit.mesh.rotation.y,
+        nextRotation.y
+      )}
+    ])
+    setEasing(animationPlayerPosition)
+
+    unit.mesh.animations = [animationPlayerPosition, animationPlayerRotation]
+
+    return scene.beginAnimation(
+      unit.mesh, // Target
+      0, // Start frame
+      10, // End frame
+      false, // Loop (according to ANIMATIONLOOPMODE)
+      3 * CONFIG.game.animationsSpeed // Speed ratio
+    )
+  }
+
+  const moveUnitOnePathStep = (unit, path) => {
+    return new Promise(async (resolve) => {
+
+      // Get the first step and remove it from the path
+      const step = path.shift()
+      unit.mesh.animations = []
+      // Make the camera follow the moving unit
+      camera.updateCameraPosition(step)
+  
+      // Rotate the unit in the right direction
+      const rotateUnitAnimation = rotateUnit(unit, step)
+      await rotateUnitAnimation.waitAsync()
+      // Move the unit to the adjacent tile
+      const moveUnitAnimation = moveUnit(unit, step)
+      await moveUnitAnimation.waitAsync()
+      // Update unit's position
+      unit.moveToHex(step, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+
+      resolve(path)
+    })
+  }
+
+  ////////////////////////////////////////
+  // INIT
   renderer.init = (rendererScene, rendererLayout, rendererMaterials, environementShadowGenerator) => {
     scene = rendererScene
     layout = rendererLayout
