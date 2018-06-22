@@ -116,6 +116,8 @@ const Postprocess = () => {
     scene = rendererScene
     camera = rendererCamera
     cameraFree = rendererCameraFree
+
+    renderer.updatePosprocessPipeline()
   }
 
   return renderer

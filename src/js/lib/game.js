@@ -39,7 +39,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   
         if (action === 'resize') {
           game.renderer2d.init()
-          game.renderer3d.engine.resize()
+          game.renderer3d.resizeEngine()
   
         } else if (action === 'highlights') {
           game.renderer3d.updateHighlights()
@@ -72,7 +72,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   // ON KEY CHANGE
   game.onKeyDown = (keys) => {
     // Only catch key events if the standard camera is active
-    if (game.renderer3d.activeCamera === 'camera') {
+    if (game.renderer3d.getActiveCamera() === 'camera') {
       if (game.debounce === 0) {
                if (keys['ArrowRight'] && 
                    keys['ArrowUp']) {     game.cursorMove('right-up')

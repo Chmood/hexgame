@@ -1,6 +1,6 @@
 import seedrandom from 'seedrandom'
 import HEXLIB from '../vendor/hexlib.js'
-import PriorityQueue from './priority-queue.js'
+import PriorityQueue from '../vendor/priority-queue'
 import noise from '../vendor/noise.js'
 
 ////////////////////////////////////////////////////////////////////////////////

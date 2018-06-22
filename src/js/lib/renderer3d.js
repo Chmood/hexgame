@@ -21,8 +21,7 @@ import img6 from "../../img/TropicalSunnyDay_pz.jpg"
 // RENDERER 3D
 
 const Renderer3d = (game, canvas) => {
-  const renderer = {},
-        map = game.map.data,
+  const map = game.map.data,
         // External modules
         camera = Camera(canvas, game), // game is overkill, map is enough
         highlight = Highlight(),
@@ -31,97 +30,104 @@ const Renderer3d = (game, canvas) => {
         environement = Environement(),
         tiles = Tiles(map),
         units = Units(game, map, camera) // game is overkill, players is enough?
+        
+  const renderer = {
 
-  ////////////////////////////////////////
-  // MODULES PUBLIC METHODS
-  // Those functions can be called from outside the renderer
+    ////////////////////////////////////////
+    // MODULES PUBLIC METHODS
+    // Those functions can be called from outside the renderer (game, dom-ui...)
 
-  // Camera
-  renderer.updateCameraPosition = camera.updateCameraPosition
-  renderer.switchActiveCamera = () => {
-    if (renderer.activeCamera === 'camera') {
-      renderer.activeCamera = 'cameraFree'
-    } else {
-      renderer.activeCamera = 'camera'
-    }
-    camera.switchActiveCamera()
-  }
-  renderer.updateCameraZoom = camera.updateCameraZoom
-  renderer.updateCameraAlpha = camera.updateCameraAlpha
-  // Highlight
-  renderer.updateHighlights = highlight.updateHighlights
-  // Postprocess
-  renderer.updatePosprocessPipeline = postprocess.updatePosprocessPipeline
-  // Environement
-  renderer.updateOcean = environement.updateOcean
-  renderer.addToOceanRenderList = environement.addToOceanRenderList
-  // Tiles
-  renderer.createTiles = tiles.createTiles
-  renderer.deleteTiles = tiles.deleteTiles
-  // Units
-  renderer.createUnits = units.createUnits
-  // renderer.createUnit = units.createUnit // Not used by now
-  renderer.deleteUnits = units.deleteUnits
-  renderer.deleteUnit = units.deleteUnit
-  renderer.moveUnitOnPath = units.moveUnitOnPath
-  renderer.attackUnit = units.attackUnit
-  renderer.destroyUnit = units.destroyUnit
-  renderer.updateHealthbar = units.updateHealthbar
-  renderer.changeUnitMaterial = units.changeUnitMaterial
-
-  ////////////////////////////////////////
-  // PUBLIC
-
-  // PLOT CURSOR
-  // Mouse position plotting
-  renderer.plotCursor = () => {
-    // We try to pick an object
-  	const pick = renderer.scene.pick(renderer.scene.pointerX, renderer.scene.pointerY)
-  	if (pick.hit) {
-      if (pick.pickedMesh) {
-        const idFragments = pick.pickedMesh.id.split('-'),
-              x = parseInt(idFragments[1]),
-              y = parseInt(idFragments[2]),
-              cursorOffset = HEXLIB.hexOffset(x, y),
-              cursorHex = HEXLIB.offset2Hex(cursorOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
-        return cursorHex
-      }
-  	}
-  }
-
-  // INIT UPDATE LOOP
-  // Lockstepped function that run before render
-  renderer.initUpdateLoop = () => {
-    renderer.scene.onBeforeStepObservable.add((scene) => {
-      // console.log('Performing game logic, BEFORE animations and physics for stepId: ' + scene.getStepId());
-
-      // Cheap debounce
-      if (game.debounce > 0) {
-        game.debounce--
-      }
+    // Camera
+    updateCameraPosition: camera.updateCameraPosition,
+    switchActiveCamera: camera.switchActiveCamera,
+    getActiveCamera: camera.getActiveCamera,
+    updateCameraZoom: camera.updateCameraZoom,
+    updateCameraAlpha: camera.updateCameraAlpha,
   
-      // const fps = Math.floor(renderer.engine.getFps())
-      // console.log(fps + ' FPS')
+    // Highlight
+    updateHighlights: highlight.updateHighlights,
+  
+    // Postprocess
+    updatePosprocessPipeline: postprocess.updatePosprocessPipeline,
+  
+    // Environement
+    updateOcean: environement.updateOcean,
+    addToOceanRenderList: environement.addToOceanRenderList,
+  
+    // Tiles
+    createTiles: tiles.createTiles,
+    deleteTiles: tiles.deleteTiles,
+  
+    // Units
+    createUnits: units.createUnits,
+    // createUnit: units.createUnit, // Not used by now
+    deleteUnits: units.deleteUnits,
+    deleteUnit: units.deleteUnit,
+    moveUnitOnPath: units.moveUnitOnPath,
+    attackUnit: units.attackUnit,
+    destroyUnit: units.destroyUnit,
+    updateHealthbar: units.updateHealthbar,
+    changeUnitMaterial: units.changeUnitMaterial,
 
-      if (CONFIG.render3d.cameraAutoRotate) {
-        // Make the camera rotate around the island
-        camera.cameraFree.alpha += 0.01
+    ////////////////////////////////////////
+    // RENDERER PUBLIC METHODS
+  
+    // RESIZE ENGINE
+    resizeEngine() {
+      engine.resize()
+    },
+  
+    // PLOT CURSOR
+    // Mouse position plotting
+    plotCursor() {
+      // We try to pick an object
+      const pick = scene.pick(scene.pointerX, scene.pointerY)
+      if (pick.hit) {
+        if (pick.pickedMesh) {
+          const idFragments = pick.pickedMesh.id.split('-'),
+                x = parseInt(idFragments[1]),
+                y = parseInt(idFragments[2]),
+                cursorOffset = HEXLIB.hexOffset(x, y),
+                cursorHex = HEXLIB.offset2Hex(cursorOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+          return cursorHex
+        }
       }
-    })
-  }
-
-  // START RENDER LOOP
-  // Will be fired later
-  renderer.startRenderLoop = () => {
-    // Register a render loop to repeatedly render the scene
-    renderer.engine.runRenderLoop(() => {
-      renderer.scene.render()
-    })
-  }
+    },
+  
+    // INIT UPDATE LOOP
+    // Lockstepped function that run before render
+    initUpdateLoop() {
+      scene.onBeforeStepObservable.add((scene) => {
+        // console.log('Performing game logic, BEFORE animations and physics for stepId: ' + scene.getStepId());
+  
+        // Cheap debounce
+        if (game.debounce > 0) {
+          game.debounce--
+        }
+    
+        // const fps = Math.floor(engine.getFps())
+        // console.log(fps + ' FPS')
+  
+        if (CONFIG.render3d.cameraAutoRotate) {
+          // Make the camera rotate around the island
+          camera.cameraFree.alpha += 0.01
+        }
+      })
+    },
+  
+    // START RENDER LOOP
+    // Will be fired later
+    startRenderLoop() {
+      // Register a render loop to repeatedly render the scene
+      engine.runRenderLoop(() => {
+        scene.render()
+      })
+    }
+  }  
 
   ////////////////////////////////////////
   // PRIVATE
-  let layout
+  let layout, engine, scene
 
   // CREATE LAYOUT
   const createLayout = () => {
@@ -145,44 +151,45 @@ const Renderer3d = (game, canvas) => {
   // INIT
   // Creates all the Babylon magic!
     
-  // Base
+  // BABYLON BASE
+  // Layout, engine and scene
   layout = createLayout()
 
-  renderer.engine = new BABYLON.Engine(canvas, true, {
+  engine = new BABYLON.Engine(canvas, true, {
     deterministicLockstep: true,
     lockstepMaxSteps: 4
   })
-  renderer.scene = new BABYLON.Scene(renderer.engine)
+
+  scene = new BABYLON.Scene(engine)
+
+  // INIT MODULES
 
   // Camera
-  camera.init(renderer.scene, layout)
-  renderer.scene.activeCamera = camera.camera
-  renderer.activeCamera = 'camera'
+  camera.init(scene, layout)
 
   // Highlight layers
   // Last parameter is the number of highlight layers
-  highlight.init(renderer.scene, game.ui, map, 3)
+  highlight.init(scene, game.ui, map, 3)
 
   // Materials
   renderer.materials = materials.createMaterials()
 
   // Environement
-  environement.init(renderer.scene, renderer.materials, game.players, map)
+  environement.init(scene, renderer.materials, game.players, map)
 
   // Post-process
-  postprocess.init(renderer.scene, camera.camera, camera.cameraFree)
-  postprocess.updatePosprocessPipeline()
+  postprocess.init(scene, camera.camera, camera.cameraFree)
 
   // Tiles
-  tiles.init(renderer.scene, layout, renderer.materials, environement.shadowGenerator)
+  tiles.init(scene, layout, renderer.materials, environement.shadowGenerator)
 
   // Units
-  units.init(renderer.scene, layout, renderer.materials, environement.shadowGenerator)
+  units.init(scene, layout, renderer.materials, environement.shadowGenerator)
 
   // Asset manager
   // TODO: figure out how this thing works with Webpack
   // See: https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
-  renderer.assetsManager = new BABYLON.AssetsManager(renderer.scene)
+  renderer.assetsManager = new BABYLON.AssetsManager(scene)
 
   const imageTask1 = renderer.assetsManager.addImageTask('img1', img1)
   const imageTask2 = renderer.assetsManager.addImageTask('img2', img2)
@@ -192,7 +199,7 @@ const Renderer3d = (game, canvas) => {
   const imageTask6 = renderer.assetsManager.addImageTask('img6', img6)
 
   renderer.assetsManager.onProgress = function(remainingCount, totalCount, lastFinishedTask) {
-    renderer.engine.loadingUIText = `Loading ${lastFinishedTask.url}: ${totalCount - remainingCount}/${totalCount} items`
+    engine.loadingUIText = `Loading ${lastFinishedTask.url}: ${totalCount - remainingCount}/${totalCount} items`
   }
   renderer.assetsManager.onFinish = function (tasks) {
     renderer.initUpdateLoop()
@@ -204,20 +211,20 @@ const Renderer3d = (game, canvas) => {
 
   // Freeze the active meshes
   // TODO: seems too agressive, maybe use it with mesh.alwaysSelectAsActiveMesh = true
-  // renderer.scene.freezeActiveMeshes()
+  // scene.freezeActiveMeshes()
 
   // // ACTION MANAGER
   // // Clean way to capture keyboard event, but requires the canvas to have focus
   // renderer.keys = {} //object for multiple key presses
-  // renderer.scene.actionManager = new BABYLON.ActionManager(renderer.scene)
+  // scene.actionManager = new BABYLON.ActionManager(scene)
   
-  // renderer.scene.actionManager.registerAction(
+  // scene.actionManager.registerAction(
   //   new BABYLON.ExecuteCodeAction(
   //     BABYLON.ActionManager.OnKeyDownTrigger, 
   //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }
   //   )
   // )
-  // renderer.scene.actionManager.registerAction(
+  // scene.actionManager.registerAction(
   //   new BABYLON.ExecuteCodeAction(
   //     BABYLON.ActionManager.OnKeyUpTrigger,
   //     (event) => { renderer.keys[event.sourceEvent.key] = event.sourceEvent.type === "keydown" }

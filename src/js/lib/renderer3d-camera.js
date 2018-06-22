@@ -166,18 +166,26 @@ const Camera = (canvas, game) => {
     )
   }
 
+  // GET ACTIVE CAMERA
+  renderer.getActiveCamera = () => {
+    return activeCamera
+  }
+
   // SWITCH ACTIVE CAMERA
   renderer.switchActiveCamera = () => {
     if (scene.activeCamera === renderer.camera) {
       scene.activeCamera = renderer.cameraFree
+      activeCamera = 'cameraFree'
+
     } else {
       scene.activeCamera = renderer.camera
+      activeCamera = 'camera'
     }
   }
 
   ////////////////////////////////////////
   // PRIVATE
-  let scene, layout
+  let scene, layout, activeCamera
 
   // CREATE CAMERA
   const createCamera = () => {
@@ -250,6 +258,10 @@ const Camera = (canvas, game) => {
     // Create game cameras
     renderer.camera = createCamera()
     renderer.cameraFree = createCameraFree()
+
+    // Set the active camera
+    scene.activeCamera = renderer.camera
+    activeCamera = 'camera'
   }
 
   return renderer

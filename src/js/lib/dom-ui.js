@@ -47,7 +47,7 @@ const DomUI = () => {
       game.updateCursor(game.renderer2d.plotCursor(e))
     })
     dom.canvas3d.addEventListener('mousemove', () => {
-      if (game.renderer3d.activeCamera === 'cameraFree') {
+      if (game.renderer3d.getActiveCamera() === 'cameraFree') {
         game.updateCursor(game.renderer3d.plotCursor())
       }
     }) 
