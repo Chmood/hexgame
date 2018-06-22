@@ -11,17 +11,15 @@ const Highlight = () => {
 
   ////////////////////////////////////////
   // PUBLIC
-  renderer.highlightLayer = []
-  renderer.highlightMeshes = []
 
   // UPDATE HIGHLIGHTS
   renderer.updateHighlights = () => {
     // Clear all highlights
-    for (let n = 0; n < renderer.highlightMeshes.length; n++) {
-      for (const mesh of renderer.highlightMeshes[n]) {
-        renderer.highlightLayer[n].removeMesh(mesh.mesh)
+    for (let n = 0; n < highlightMeshes.length; n++) {
+      for (const mesh of highlightMeshes[n]) {
+        highlightLayer[n].removeMesh(mesh.mesh)
       }
-      renderer.highlightMeshes[n] = []
+      highlightMeshes[n] = []
     }
     
     // Attack zone
@@ -40,9 +38,9 @@ const Highlight = () => {
     hightlightTile(ui.cursor, BABYLON.Color3.Blue(), 2)
 
     // Add selected meshes to highlight layer
-    for (let n = 0; n < renderer.highlightMeshes.length; n++) {
-      for (let mesh of renderer.highlightMeshes[n]) {
-        renderer.highlightLayer[n].addMesh(mesh.mesh, mesh.color)
+    for (let n = 0; n < highlightMeshes.length; n++) {
+      for (let mesh of highlightMeshes[n]) {
+        highlightLayer[n].addMesh(mesh.mesh, mesh.color)
       }
     }
   }
@@ -50,6 +48,9 @@ const Highlight = () => {
   ////////////////////////////////////////
   // PRIVATE
   let scene, ui, map
+
+  const highlightLayer = [],
+        highlightMeshes = []
 
   // HIGHTLIGHT TILE
   const hightlightTile = (hex, color = BABYLON.Color3.White(), n = 0) => {
@@ -65,7 +66,7 @@ const Highlight = () => {
         offset.col < CONFIG.map.mapSize.width && offset.row < CONFIG.map.mapSize.height
       ) {
       // Add to layer
-      renderer.highlightMeshes[n].push({
+      highlightMeshes[n].push({
         mesh: map[offset.col][offset.row].tile,
         color: color
       })
@@ -100,8 +101,8 @@ const Highlight = () => {
 
     // Create game highlights
     for (let n = 0; n < nHightlighLayers; n++) {
-      renderer.highlightLayer[n] = createHighlightLayer(`highlightLayer${n}`)
-      renderer.highlightMeshes[n] = []
+      highlightLayer[n] = createHighlightLayer(`highlightLayer${n}`)
+      highlightMeshes[n] = []
     }
   }
 
