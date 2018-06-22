@@ -68,7 +68,6 @@ const Materials = () => {
       material.diffuseColor = new BABYLON.Color3.FromHexString(color)
     } else {
       // Emmissive
-      console.log(name)
       material.emissiveColor = new BABYLON.Color3.FromHexString(color)
       material.diffuseColor = new BABYLON.Color3.Black()
     }

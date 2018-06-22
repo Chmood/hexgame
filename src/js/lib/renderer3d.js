@@ -6,21 +6,14 @@ import Camera from './renderer3d-camera'
 import Highlight from './renderer3d-highlight'
 import Materials from './renderer3d-materials'
 import Postprocess from './renderer3d-postprocess'
+import Environement from './renderer3d-environement'
 
-// image import (for Webpack loading & bundling as dependencies)
-import waterbump from "../../img/waterbump.png"
-// 'useless' imports are because of BabylonJS skybox structure
-// (no direct link to those images in the code below)
 import img1 from "../../img/TropicalSunnyDay_nx.jpg"
 import img2 from "../../img/TropicalSunnyDay_ny.jpg"
 import img3 from "../../img/TropicalSunnyDay_nz.jpg"
 import img4 from "../../img/TropicalSunnyDay_px.jpg"
 import img5 from "../../img/TropicalSunnyDay_py.jpg"
 import img6 from "../../img/TropicalSunnyDay_pz.jpg"
-
-import waterMaterial from '../vendor/water-material.js'
-// Launch BABYLON material plugin (ugly home-made wrapper function)
-waterMaterial(BABYLON)
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D
@@ -32,12 +25,15 @@ const Renderer3d = (game, canvas) => {
         camera = Camera(canvas),
         highlight = Highlight(),
         materials = Materials(),
-        postprocess = Postprocess()
+        postprocess = Postprocess(),
+        environement = Environement()
 
   let layout
 
-  // CAMERA MODULE
-  // Wrappers
+  ////////////////////////////////////////
+  // MODULES PUBLIC METHODS
+
+  // Camera
   renderer.updateCameraPosition = (hex) => {
     const position = HEXLIB.hex2Pixel(layout, hex),
           cell = game.map.getCellFromHex(hex)
@@ -52,17 +48,15 @@ const Renderer3d = (game, canvas) => {
     }
     camera.switchActiveCamera()
   }
-  // Aliases
   renderer.updateCameraZoom = camera.updateCameraZoom
   renderer.updateCameraAlpha = camera.updateCameraAlpha
-
-  // HIGHLIGHT MODULE
-  // Aliases
+  // Highlight
   renderer.updateHighlights = highlight.updateHighlights
-
-  // POSTPROCESS MODULE
-  // Aliases
+  // Postprocess
   renderer.updatePosprocessPipeline = postprocess.updatePosprocessPipeline
+  // Environement
+  renderer.updateOcean = environement.updateOcean
+  renderer.addToOceanRenderList = environement.addToOceanRenderList
 
   ////////////////////////////////////////
   // BASE
@@ -83,170 +77,6 @@ const Renderer3d = (game, canvas) => {
         y: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.height * Math.sqrt(3) / 2
       }
     )
-  }
-
-  ////////////////////////////////////////
-  // ENVIRONMENT
-  
-  // CREATE SKYBOX
-  renderer.createSkybox = () => {
-    const skybox = BABYLON.Mesh.CreateBox('skyBox', CONFIG.render3d.worldSize, renderer.scene)
-    const skyboxMaterial = new BABYLON.StandardMaterial('skyBox', renderer.scene)
-    skyboxMaterial.backFaceCulling = false
-    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture('./img/TropicalSunnyDay', renderer.scene)
-    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE
-    skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0)
-    skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0)
-    skyboxMaterial.disableLighting = true
-    skybox.material = skyboxMaterial
-    skybox.isPickable = false
-
-    skyboxMaterial.freeze()
-    skybox.freezeWorldMatrix()
-
-    return skybox
-  }
-
-  // UPDATE OCEAN
-  renderer.updateOcean = () => {
-    const worldSize = CONFIG.render3d.worldSize
-
-    // Ocean floor
-    if (!renderer.oceanFloor) {
-      renderer.oceanFloor = BABYLON.Mesh.CreateGround('oceanFloor', worldSize, worldSize, 16, renderer.scene, false)
-      renderer.oceanFloor.position = new BABYLON.Vector3(
-        0,
-        // - 20,
-        0,
-        0
-      )
-      // const floorMaterial = new BABYLON.StandardMaterial('oceanFloor', renderer.scene)
-      // floorMaterial.diffuseColor = new BABYLON.Color3(0,0,0.6)
-      renderer.oceanFloor.material = renderer.materials['deepsea']
-      renderer.oceanFloor.isPickable = false
-
-      renderer.oceanFloor.freezeWorldMatrix()
-    }
-
-    // Ocean surface
-    if (!renderer.ocean) {
-      renderer.ocean = BABYLON.Mesh.CreateGround('oceanSurface', worldSize, worldSize, 16, renderer.scene, false)
-      // Position tile mesh
-      renderer.ocean.position = new BABYLON.Vector3(
-        0,
-        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1),
-        0
-      )
-      renderer.ocean.isPickable = false
-
-      renderer.ocean.freezeWorldMatrix()
-    }
-    
-    // Water material
-    if (renderer.ocean.material) {
-      renderer.ocean.material.dispose()
-    }
-    let water
-    if (CONFIG.render3d.betterOcean) {
-      // Special water material
-      water = new BABYLON.WaterMaterial('water', renderer.scene, new BABYLON.Vector2(512, 512))
-      water.backFaceCulling = true
-      water.bumpTexture = new BABYLON.Texture(waterbump, renderer.scene)
-      water.windForce = 3
-      water.waveHeight = 0
-      water.bumpHeight = 0.25
-      water.windDirection = new BABYLON.Vector2(1, 1)
-      water.waterColor = new BABYLON.Color3(0.125, 0.6, 0.9)
-      water.colorBlendFactor = 0.25
-      water.freeze()
-    } else {
-      // Simple water material
-      water = new BABYLON.StandardMaterial('ocean', renderer.scene)
-      water.diffuseColor = new BABYLON.Color3(0.0, 0.0, 0.4)
-      // water.emissiveColor = new BABYLON.Color3(0.1,0.2,1)
-      water.alpha = 0.5
-      water.bumpTexture = new BABYLON.Texture(waterbump, renderer.scene)
-      water.freeze()
-    }
-
-    renderer.ocean.material = water
-  }
-
-  // ADD TO OCEAN RENDER LIST
-  // Add all the meshes that reflect into ocean, or are seen through it
-  renderer.addToOceanRenderList = () => {
-    if (CONFIG.render3d.betterOcean) {
-      renderer.ocean.material.addToRenderList(renderer.skybox)
-      renderer.ocean.material.addToRenderList(renderer.oceanFloor)
-      // renderer.ocean.material.addToRenderList(renderer.axis) // TODO
-      // Players
-      for (const player of game.players) {
-        for (const unit of player.units) {
-          renderer.ocean.material.addToRenderList(unit.mesh)
-        }
-      }
-      // Tiles
-      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-        for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-          renderer.ocean.material.addToRenderList(map[x][y].tile)
-        }
-      }
-    }
-  }
-
-  // SHOW WORLD AXIS
-  renderer.showWorldAxis = (size) => {
-    // From: https://doc.babylonjs.com/snippets/world_axes
-    const makeTextPlane = (text, color, size) => {
-      const dynamicTexture = new BABYLON.DynamicTexture('DynamicTexture', 50, renderer.scene, true)
-      dynamicTexture.hasAlpha = true
-      dynamicTexture.drawText(text, 5, 40, 'bold 36px Arial', color, 'transparent', true)
-      const plane = BABYLON.Mesh.CreatePlane('TextPlane', size, renderer.scene, true)
-      plane.material = new BABYLON.StandardMaterial('TextPlaneMaterial', renderer.scene)
-      plane.material.backFaceCulling = false
-      plane.material.specularColor = new BABYLON.Color3(0, 0, 0)
-      plane.material.diffuseTexture = dynamicTexture
-
-      plane.freezeWorldMatrix()
-      return plane
-    }
-
-    const axisX = BABYLON.Mesh.CreateLines('axisX', [
-      BABYLON.Vector3.Zero(),
-      new BABYLON.Vector3(size, 0, 0),
-      new BABYLON.Vector3(size * 0.95, 0.05 * size, 0),
-      new BABYLON.Vector3(size, 0, 0),
-      new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)
-    ], renderer.scene)
-    axisX.color = new BABYLON.Color3(1, 0, 0)
-    const xChar = makeTextPlane('X', 'red', size / 10)
-    xChar.position = new BABYLON.Vector3(0.9 * size, -0.05 * size, 0)
-
-    const axisY = BABYLON.Mesh.CreateLines('axisY', [
-      BABYLON.Vector3.Zero(),
-      new BABYLON.Vector3(0, size, 0),
-      new BABYLON.Vector3(-0.05 * size, size * 0.95, 0),
-      new BABYLON.Vector3(0, size, 0),
-      new BABYLON.Vector3(0.05 * size, size * 0.95, 0)
-    ], renderer.scene)
-    axisY.color = new BABYLON.Color3(0, 1, 0)
-    const yChar = makeTextPlane('Y', 'green', size / 10)
-    yChar.position = new BABYLON.Vector3(0, 0.9 * size, -0.05 * size)
-
-    const axisZ = BABYLON.Mesh.CreateLines('axisZ', [
-      BABYLON.Vector3.Zero(),
-      new BABYLON.Vector3(0, 0, size),
-      new BABYLON.Vector3(0, -0.05 * size, size * 0.95),
-      new BABYLON.Vector3(0, 0, size),
-      new BABYLON.Vector3(0, 0.05 * size, size * 0.95)
-    ], renderer.scene)
-    axisZ.color = new BABYLON.Color3(0, 0, 1)
-    const zChar = makeTextPlane('Z', 'blue', size / 10)
-    zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size)
-
-    axisX.freezeWorldMatrix()
-    axisY.freezeWorldMatrix()
-    axisZ.freezeWorldMatrix()
   }
 
   ////////////////////////////////////////
@@ -370,7 +200,7 @@ const Renderer3d = (game, canvas) => {
     // Give the tile mesh a material
     tile.material = renderer.materials[cell.biome]
     // Make and receive shadows
-    renderer.shadowGenerator.getShadowMap().renderList.push(tile)
+    environement.shadowGenerator.getShadowMap().renderList.push(tile)
     tile.receiveShadows = true;
 
     tile.freezeWorldMatrix()
@@ -425,7 +255,7 @@ const Renderer3d = (game, canvas) => {
       // Material
       p.material = part.material
       // Shadows
-      renderer.shadowGenerator.getShadowMap().renderList.push(p)
+      environement.shadowGenerator.getShadowMap().renderList.push(p)
       p.receiveShadows = true
 
       if (part.dontColorize !== undefined) {
@@ -865,6 +695,23 @@ const Renderer3d = (game, canvas) => {
   renderer.scene.activeCamera = camera.camera
   renderer.activeCamera = 'camera'
 
+  // Highlight layers
+  // Last parameter is the number of highlight layers
+  highlight.init(renderer.scene, game.ui, map, 3)
+
+  // Materials
+  renderer.materials = materials.createMaterials()
+
+  // Meshes
+  environement.init(renderer.scene, renderer.materials, game.players, map)
+
+  // Post-process
+  postprocess.init(renderer.scene, camera.camera, camera.cameraFree)
+  postprocess.updatePosprocessPipeline()
+
+  // Debounce counter
+  renderer.debounce = 0
+
   // Asset manager
   // TODO: figure out how this thing works
   // See: https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
@@ -880,45 +727,7 @@ const Renderer3d = (game, canvas) => {
     renderer.startRenderLoop()
     // console.warn('ASSETS LOADED!', tasks)
   }
-  
   renderer.assetsManager.load()
-
-  // Lights
-  renderer.hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
-  renderer.hemiLight.intensity = 0.4
-  renderer.hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
-  renderer.hemiLight.specular = new BABYLON.Color3(1, 1, 1)
-  renderer.hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
-  
-  renderer.directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
-  renderer.directionalLight.intensity = 0.85
-  renderer.directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
-  
-  // Shadow
-  renderer.shadowGenerator = new BABYLON.ShadowGenerator(4096, renderer.directionalLight)
-  // renderer.shadowGenerator.useBlurExponentialShadowMap = true;
-  renderer.shadowGenerator.usePoissonSampling = true
-
-  // Highlight layers
-  // Last parameter is the number of highlight layers
-  highlight.init(renderer.scene, game.ui, map, 3)
-
-  // Materials
-  renderer.materials = materials.createMaterials()
-
-  // Meshes
-  renderer.skybox = renderer.createSkybox()
-  renderer.updateOcean()
-  if (CONFIG.render3d.showAxis) {
-    renderer.showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
-  }
-
-  // Post-process
-  postprocess.init(renderer.scene, camera.camera, camera.cameraFree)
-  postprocess.updatePosprocessPipeline()
-
-  // Debounce counter
-  renderer.debounce = 0
 
   // Freeze the active meshes
   // TODO: seems too agressive, maybe use it with mesh.alwaysSelectAsActiveMesh = true

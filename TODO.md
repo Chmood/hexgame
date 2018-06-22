@@ -8,12 +8,13 @@
 
 ## Improvements
 
-* Make bot attack too (seek & destroy mode)
 * In-game menu
 * Player can cancel a move while targetting (ala Fire Emblem)
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 
+* Move the keyboard debounce from renderer3d into game
+* Get the Asset Manager thing up to work
 * Make all modules' methods (like module.method()) 'private' by default
 * Stop mutating the CONFIG object!
 

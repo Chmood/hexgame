@@ -18,6 +18,9 @@ const Game = (ctx, canvas3d, CONFIG, main) => {
   // UI OVERLAY
   game.ui = {}
 
+  // PLAYERS
+  game.players = []
+
   // GAME RENDERERS
   game.renderer2d = Renderer2d(game, ctx)
   game.renderer3d = Renderer3d(game, canvas3d)
