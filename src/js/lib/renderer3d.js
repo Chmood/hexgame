@@ -4,6 +4,7 @@ import CONFIG from './config.js'
 
 import Camera from './renderer3d-camera'
 import Highlight from './renderer3d-highlight'
+import Materials from './renderer3d-materials'
 
 // image import (for Webpack loading & bundling as dependencies)
 import waterbump from "../../img/waterbump.png"
@@ -28,7 +29,8 @@ const Renderer3d = (game, canvas) => {
         map = game.map.data,
         // External modules
         camera = Camera(canvas),
-        highlight = Highlight()
+        highlight = Highlight(),
+        materials = Materials()
 
   let layout
 
@@ -75,77 +77,6 @@ const Renderer3d = (game, canvas) => {
         y: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.height * Math.sqrt(3) / 2
       }
     )
-  }
-
-  // CREATE MATERIAL
-  renderer.createSimpleMaterial = (name, color, specularity = false, emissive = false, alpha = 1) => {
-    const material = new BABYLON.StandardMaterial(name)
-    if (!emissive) {
-      material.diffuseColor = new BABYLON.Color3.FromHexString(color)
-    } else {
-      // Emmissive
-      console.log(name)
-      material.emissiveColor = new BABYLON.Color3.FromHexString(color)
-      material.diffuseColor = new BABYLON.Color3.Black()
-    }
-
-    if (!specularity) {
-      material.specularColor = new BABYLON.Color3.Black()
-    } else {
-      material.specularColor = new BABYLON.Color3.White()
-    }
-
-    material.alpha = alpha
-    material.freeze()
-
-    return material
-  }
-
-  // CREATE MATERIALS
-  renderer.createMaterials = () => {
-    const materials = {}
-
-    // TERRAINS
-    for (const [name, value] of Object.entries(CONFIG.map.terrain)) {
-      if (name !== 'ice') {
-        materials[name] = renderer.createSimpleMaterial(name, value.color)
-      } else {
-        materials['ice'] = renderer.createSimpleMaterial(
-          'ice', 
-          value.color, 
-          CONFIG.render3d.shinyIce, 
-          false, 
-          CONFIG.render3d.transparentIce ? 0.9 : 1
-        )
-      }
-    }
-
-    // PLAYERS
-    materials.players = {}
-    for (let [n, player] of Object.entries(CONFIG.players)) {
-      materials.players[n] = [] // [0] is base color, [1] is desaturated color
-      materials.players[n][0] = renderer.createSimpleMaterial(`player-${n}`, player.color)
-      materials.players[n][1] = renderer.createSimpleMaterial(`player-${n}`, player.colorDesaturated)
-    }
-
-    // Unit neutral parts (not colored)
-    materials['unit-neutral'] = renderer.createSimpleMaterial('unit-neutral', '#aaaaaa', true)
-
-    // Health bars materials
-    materials['healthbarBack'] = renderer.createSimpleMaterial(
-      'healthbarBack', 
-      CONFIG.render3d.healthbars.colorBack, 
-      false,
-      true // emmissive
-    )
-    materials['healthbarFront'] = renderer.createSimpleMaterial(
-      'healthbarFront', 
-      CONFIG.render3d.healthbars.colorFront, 
-      false,
-      true // emmissive
-    )
-
-    return materials
   }
 
   // UPDATE POSTPROCESS PIPELINE
@@ -1061,7 +992,7 @@ const Renderer3d = (game, canvas) => {
   highlight.init(renderer.scene, game.ui, map, 3)
 
   // Materials
-  renderer.materials = renderer.createMaterials()
+  renderer.materials = materials.createMaterials()
 
   // Meshes
   renderer.skybox = renderer.createSkybox()
