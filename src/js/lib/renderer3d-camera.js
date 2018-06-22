@@ -85,7 +85,7 @@ const Camera = (canvas, game) => {
 
   // UPDATE CAMERA ZOOM
   renderer.updateCameraZoom = (direction) => {
-    renderer.debounce = CONFIG.render3d.debounceKeyboardTime
+    game.resetDebounce()
 
     const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
     let delta = 0;
@@ -123,7 +123,7 @@ const Camera = (canvas, game) => {
 
   // UPDATE CAMERA ALPHA
   renderer.updateCameraAlpha = (direction) => {
-    renderer.debounce = CONFIG.render3d.debounceKeyboardTime
+    game.resetDebounce()
 
     const alphaStep = Math.PI * 2 / 6 // 60°
     let delta = 0

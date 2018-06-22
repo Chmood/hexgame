@@ -30,9 +30,7 @@ const Renderer3d = (game, canvas) => {
         postprocess = Postprocess(),
         environement = Environement(),
         tiles = Tiles(map),
-        units = Units(game, map, camera) // game is overkill, players is enough
-
-  let layout
+        units = Units(game, map, camera) // game is overkill, players is enough?
 
   ////////////////////////////////////////
   // MODULES PUBLIC METHODS
@@ -72,27 +70,8 @@ const Renderer3d = (game, canvas) => {
   renderer.changeUnitMaterial = units.changeUnitMaterial
 
   ////////////////////////////////////////
-  // BASE
+  // PUBLIC
 
-  // CREATE LAYOUT
-  const createLayout = () => {
-    return HEXLIB.layout(
-      CONFIG.map.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
-      {
-        // cell size in px
-        x: CONFIG.render3d.cellSize,
-        y: CONFIG.render3d.cellSize
-      },
-      {
-        // Origin
-        // TODO: auto centering map
-        x: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.width * Math.sqrt(2) / 2,
-        y: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.height * Math.sqrt(3) / 2
-      }
-    )
-  }
-
-  ////////////////////////////////////////
   // PLOT CURSOR
   // Mouse position plotting
   renderer.plotCursor = () => {
@@ -110,9 +89,6 @@ const Renderer3d = (game, canvas) => {
   	}
   }
 
-  ////////////////////////////////////////
-  // INIT
-
   // INIT UPDATE LOOP
   // Lockstepped function that run before render
   renderer.initUpdateLoop = () => {
@@ -120,8 +96,8 @@ const Renderer3d = (game, canvas) => {
       // console.log('Performing game logic, BEFORE animations and physics for stepId: ' + scene.getStepId());
 
       // Cheap debounce
-      if (renderer.debounce > 0) {
-        renderer.debounce--
+      if (game.debounce > 0) {
+        game.debounce--
       }
   
       // const fps = Math.floor(renderer.engine.getFps())
@@ -143,7 +119,30 @@ const Renderer3d = (game, canvas) => {
     })
   }
 
-  // INIT RENDERER
+  ////////////////////////////////////////
+  // PRIVATE
+  let layout
+
+  // CREATE LAYOUT
+  const createLayout = () => {
+    return HEXLIB.layout(
+      CONFIG.map.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
+      {
+        // cell size in px
+        x: CONFIG.render3d.cellSize,
+        y: CONFIG.render3d.cellSize
+      },
+      {
+        // Origin
+        // TODO: auto centering map
+        x: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.width * Math.sqrt(2) / 2,
+        y: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.height * Math.sqrt(3) / 2
+      }
+    )
+  }
+
+  ////////////////////////////////////////
+  // INIT
   // Creates all the Babylon magic!
     
   // Base
@@ -180,24 +179,28 @@ const Renderer3d = (game, canvas) => {
   // Units
   units.init(renderer.scene, layout, renderer.materials, environement.shadowGenerator)
 
-  // Debounce counter
-  renderer.debounce = 0
-
   // Asset manager
-  // TODO: figure out how this thing works
+  // TODO: figure out how this thing works with Webpack
   // See: https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
   renderer.assetsManager = new BABYLON.AssetsManager(renderer.scene)
-  renderer.imageTask = renderer.assetsManager.addImageTask('img1', img1)
-  renderer.imageTask = renderer.assetsManager.addImageTask('img2', img2)
-  renderer.imageTask = renderer.assetsManager.addImageTask('img3', img3)
-  renderer.imageTask = renderer.assetsManager.addImageTask('img4', img4)
-  renderer.imageTask = renderer.assetsManager.addImageTask('img5', img5)
-  renderer.imageTask = renderer.assetsManager.addImageTask('img6', img6)
+
+  const imageTask1 = renderer.assetsManager.addImageTask('img1', img1)
+  const imageTask2 = renderer.assetsManager.addImageTask('img2', img2)
+  const imageTask3 = renderer.assetsManager.addImageTask('img3', img3)
+  const imageTask4 = renderer.assetsManager.addImageTask('img4', img4)
+  const imageTask5 = renderer.assetsManager.addImageTask('img5', img5)
+  const imageTask6 = renderer.assetsManager.addImageTask('img6', img6)
+
+  renderer.assetsManager.onProgress = function(remainingCount, totalCount, lastFinishedTask) {
+    renderer.engine.loadingUIText = `Loading ${lastFinishedTask.url}: ${totalCount - remainingCount}/${totalCount} items`
+    console.log(lastFinishedTask)
+  }
   renderer.assetsManager.onFinish = function (tasks) {
     renderer.initUpdateLoop()
     renderer.startRenderLoop()
     // console.warn('ASSETS LOADED!', tasks)
   }
+
   renderer.assetsManager.load()
 
   // Freeze the active meshes

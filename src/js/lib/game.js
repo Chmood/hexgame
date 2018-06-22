@@ -21,6 +21,9 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   // PLAYERS
   game.players = []
 
+  // DEBOUNCE
+  game.debounce = 0
+
   // RNG seeds
   let gameSeed = CONFIG.game.seed
   const RNG = seedrandom(gameSeed)
@@ -70,7 +73,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   game.onKeyDown = (keys) => {
     // Only catch key events if the standard camera is active
     if (game.renderer3d.activeCamera === 'camera') {
-      if (game.renderer3d.debounce === 0) {
+      if (game.debounce === 0) {
                if (keys['ArrowRight'] && 
                    keys['ArrowUp']) {     game.cursorMove('right-up')
         } else if (keys['ArrowRight'] && 
@@ -100,6 +103,11 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
         }
       }
     }
+  }
+
+  // RESET DEBOUNCE
+  game.resetDebounce = () => {
+    game.debounce = CONFIG.render3d.debounceKeyboardTime
   }
 
   // CHANGE CURRENT PLAYER
@@ -532,7 +540,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   // MOVE CURSOR
   // Select, move or attack modes
   game.cursorMove = (direction) => {
-    game.renderer3d.debounce = CONFIG.render3d.debounceKeyboardTime
+    game.resetDebounce()
 
     if (game.mode === 'select' || game.mode === 'move') {
       const directionIndex = game.getDirectionIndex(direction, game.ui.cursor)

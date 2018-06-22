@@ -42,20 +42,21 @@ const DomUI = () => {
       delete keys[event.key]
     })
 
-    // // Mouse move over canvases
-    // dom.canvas2d.addEventListener('mousemove', (e) => {
-    //   game.updateCursor(game.renderer2d.plotCursor(e))
-    // })
-    // dom.canvas3d.addEventListener('mousemove', () => {
-    //   if (game.renderer3d.activeCamera === 'cameraFree') {
-    //     game.updateCursor(game.renderer3d.plotCursor())
-    //   }
-    // }) 
+    // Mouse move over canvases
+    dom.canvas2d.addEventListener('mousemove', (e) => {
+      game.updateCursor(game.renderer2d.plotCursor(e))
+    })
+    dom.canvas3d.addEventListener('mousemove', () => {
+      if (game.renderer3d.activeCamera === 'cameraFree') {
+        game.updateCursor(game.renderer3d.plotCursor())
+      }
+    }) 
 
     // // Click on canvases
     // dom.canvas2d.addEventListener('click', (e) => {
     // })
     // dom.canvas3d.addEventListener('click', () => {
+    //   game.doAction()
     // })
 
     // UI buttons
