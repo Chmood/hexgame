@@ -5,6 +5,7 @@ import CONFIG from './config.js'
 import Camera from './renderer3d-camera'
 import Highlight from './renderer3d-highlight'
 import Materials from './renderer3d-materials'
+import Postprocess from './renderer3d-postprocess'
 
 // image import (for Webpack loading & bundling as dependencies)
 import waterbump from "../../img/waterbump.png"
@@ -30,7 +31,8 @@ const Renderer3d = (game, canvas) => {
         // External modules
         camera = Camera(canvas),
         highlight = Highlight(),
-        materials = Materials()
+        materials = Materials(),
+        postprocess = Postprocess()
 
   let layout
 
@@ -58,6 +60,10 @@ const Renderer3d = (game, canvas) => {
   // Aliases
   renderer.updateHighlights = highlight.updateHighlights
 
+  // POSTPROCESS MODULE
+  // Aliases
+  renderer.updatePosprocessPipeline = postprocess.updatePosprocessPipeline
+
   ////////////////////////////////////////
   // BASE
 
@@ -77,100 +83,6 @@ const Renderer3d = (game, canvas) => {
         y: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.height * Math.sqrt(3) / 2
       }
     )
-  }
-
-  // UPDATE POSTPROCESS PIPELINE
-  renderer.updatePosprocessPipeline = () => {
-    if (CONFIG.render3d.postprocess !== 'none') {
-      if (CONFIG.render3d.postprocess === 'ssao') {
-        if (renderer.pipeline) {
-          // Disable pipeline
-          renderer.pipeline.dispose()
-          renderer.pipeline = undefined
-        }
-
-        // Post-process
-        // renderer.lensEffect = new BABYLON.LensRenderingPipeline(
-        //   'lensEffects', 
-        //   {
-        //     edge_blur: 0.25,
-        //     chromatic_aberration: 1.0,
-        //     distortion: 1.0,
-        //     grain_amount: 1.0,
-        //     dof_focus_distance: 30,
-        //     dof_aperture: 1
-        //   }, 
-        //   renderer.scene, 
-        //   1.0, 
-        //   camera.camera
-        // )
-    
-        renderer.ssao = new BABYLON.SSAORenderingPipeline(
-          'ssao-pipeline', 
-          renderer.scene, 
-          {
-            ssaoRatio: 1,
-            combineRatio: 1.0
-          },
-          [camera.camera, camera.cameraFree]
-        )
-
-      } else if (CONFIG.render3d.postprocess === 'multi') {
-        if (renderer.ssao) {
-          // Disable SSAO
-          renderer.ssao.dispose()
-          renderer.ssao = undefined
-        }
-
-        // DEFAULT RENDER PIPELINE
-        renderer.pipeline = new BABYLON.DefaultRenderingPipeline(
-          "default-pipeline", // The name of the pipeline
-          true, // Do you want HDR textures ?
-          renderer.scene, // The scene instance
-          [camera.camera, camera.cameraFree] // The list of cameras to be attached to
-        )
-        // Base
-        renderer.pipeline.samples = 4
-        renderer.pipeline.fxaaEnabled = true
-        // // D.O.F.
-        // renderer.pipeline.depthOfFieldEnabled = true
-        // renderer.pipeline.depthOfFieldBlurLevel = BABYLON.DepthOfFieldEffectBlurLevel.Low;
-        // renderer.pipeline.depthOfField.focusDistance  = 2000; // distance of the current focus point from the camera in millimeters considering 1 scene unit is 1 meter
-        // renderer.pipeline.depthOfField.focalLength  = 50; // focal length of the camera in millimeters
-        // renderer.pipeline.depthOfField.fStop  = 1.4; // aka F number of the camera defined in stops as it would be on a physical device
-        // Sharpen
-        // renderer.pipeline.sharpenEnabled = true
-        // renderer.pipeline.sharpen.edgeAmount = 0.9;
-        // Bloom
-        renderer.pipeline.bloomEnabled = true
-        renderer.pipeline.bloomThreshold = 0.8
-        renderer.pipeline.bloomWeight = 0.3
-        renderer.pipeline.bloomKernel = 64
-        renderer.pipeline.bloomScale = 1
-        // Chromatic aberration
-        renderer.pipeline.chromaticAberrationEnabled = true
-        renderer.pipeline.chromaticAberration.aberrationAmount = 500;
-        renderer.pipeline.chromaticAberration.radialIntensity = 3;
-        var rotation = Math.PI;
-        renderer.pipeline.chromaticAberration.direction.x = Math.sin(rotation)
-        renderer.pipeline.chromaticAberration.direction.y = Math.cos(rotation)
-        // Grain
-        renderer.pipeline.grainEnabled = true
-        renderer.pipeline.grain.intensity = 9
-        renderer.pipeline.grain.animated = 1
-      }
-    } else {
-      if (renderer.ssao) {
-        // Disable SSAO
-        renderer.ssao.dispose()
-        renderer.ssao = undefined
-      }
-      if (renderer.pipeline) {
-        // Disable pipeline
-        renderer.pipeline.dispose()
-        renderer.pipeline = undefined
-      }
-    }
   }
 
   ////////////////////////////////////////
@@ -1002,7 +914,8 @@ const Renderer3d = (game, canvas) => {
   }
 
   // Post-process
-  renderer.updatePosprocessPipeline()
+  postprocess.init(renderer.scene, camera.camera, camera.cameraFree)
+  postprocess.updatePosprocessPipeline()
 
   // Debounce counter
   renderer.debounce = 0
