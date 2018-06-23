@@ -2,6 +2,7 @@ import seedrandom from 'seedrandom'
 import HEXLIB from '../vendor/hexlib.js'
 import PriorityQueue from '../vendor/priority-queue'
 import noise from '../vendor/noise.js'
+import CONFIG from './config.js';
 
 ////////////////////////////////////////////////////////////////////////////////
 // MAP
@@ -9,6 +10,7 @@ import noise from '../vendor/noise.js'
 export default Map = (config) => { // WTF is this syntax only working here?! (bottom export elsewhere)
   const map = {
 
+    ////////////////////////////////////////
     // CELL STRUCTURE:
     // {
     //   hex,       // Hex
@@ -19,12 +21,15 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     //   moisture,  // Number - the humidity of the tile
     //   biome,     // String - the name of the biome
     //
-    //   neighbors, // [Hex] - array of VALID neighbors' hexes
     //   cost,      // Number - CURRENT pathfinding move cost from origin
-    //   costs,     // [Number] - array of VALID neighbors' move costs
+    //   neighbors, // [type][Hex] - array of VALID neighbors' hexes (one for each unit type + shooting range)
+    //   costs,     // [type][Number] - array of VALID neighbors' move costs (one for each unit type + shooting range)
     //
     //   tile       // BABYLON.Mesh - reference to the tile mesh
     // }
+
+    ////////////////////////////////////////
+    // PUBLIC ATTRIBUTES AND METHODS
 
     data: undefined, // Will be set below
 
@@ -33,7 +38,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     generate() {
       populate()
       createMap()
-      generateGraph()
+      generateGraphs(CONFIG.game.units)
     },
 
     // RANDOMIZE SEED
@@ -78,11 +83,17 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         hexOffset.row < config.mapSize.height)
     },
 
+    // IS OCEAN BIOME
+    isOceanCell(cell) {
+      return (cell.biome === 'deepsea' || cell.biome === 'sea' || cell.biome === 'shore')
+    },
+
     // IS VALID BIOME
     // Tells if the cell's biome is part of the graph
-    isValidBiome(biome) {
+    isValidBiome(biome, allowedBiomes) {
       // The biomes we can't move on
-      return (biome !== 'deepsea' && biome !== 'sea' && biome !== 'shore')
+      return allowedBiomes.indexOf(biome) !== -1
+      // return (biome !== 'deepsea' && biome !== 'sea' && biome !== 'shore')
     },
 
     // FIND PATH
@@ -90,10 +101,10 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     // From: 
     //	http://www.redblobgames.com/pathfinding/a-star/introduction.html
     //	http://www.redblobgames.com/pathfinding/a-star/implementation.html
-    findPath(start, goal, earlyExit = true, blacklist, costLimit = 1000000) {
+    findPath(graphType, start, goal, earlyExit = true, blacklist, costLimit = 1000000) {
 
-      // if (!map.getCellFromHex(start).isInGraph) console.warn('A*: start hex is NOT in graph!')
-      // if (!map.getCellFromHex(goal).isInGraph) console.warn('A*: goal hex is NOT in graph!')
+      // if (!map.getCellFromHex(start).isInGraph[type]) console.warn('A*: start hex is NOT in graph!')
+      // if (!map.getCellFromHex(goal).isInGraph[type]) console.warn('A*: goal hex is NOT in graph!')
 
       resetCosts()
 
@@ -127,8 +138,8 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
         // Get the neighbors and their associated costs
         // const	neighbors = arrayShuffle(currentCell.neighbors)	// cheapo edge breaks
-        const neighbors = currentCell.neighbors
-        const neighborsCosts = currentCell.costs
+        const neighbors = currentCell.neighbors[graphType]
+        const neighborsCosts = currentCell.costs[graphType]
 
         // Are we looking for a specific goal?
         if (goal) {
@@ -478,91 +489,104 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
   // IS VALID CELL
   // Tells if the cell is part of the graph or not
-  const isValidCell = (cell) => {
-    return map.isValidBiome(cell.biome)
+  const isValidCell = (cell, allowedBiomes) => {
+    return map.isValidBiome(cell.biome, allowedBiomes)
   }
 
   // GET MOVE COST
-  const getMoveCost = (fromHeight, toHeight, toBiome) => {
-    // let cost = 1,
-    //     heightCost = toHeight - fromHeight
+  const getMoveCost = (toBiome, biomesMoveCosts, fromHeight, toHeight) => {
+    if (!biomesMoveCosts[toBiome]) {
+      console.error(`getMoveCost(): can't find biome ${toBiome} in biomesMoveCosts!!!`)
+      return 1000000
 
-        // Heightcost is positive when we move upward
-    // In case we're moving down, limit the negative cost (aka gain) by scaling down
-    // if (heightCost < 0) {
-    //   heightCost /= 4
-    // }
-    // cost = 1 + heightCost
-
-    // if (toBiome === 'shore') {
-    //   cost *= 2
-    // }
-    if (toBiome === 'forest' || toBiome === 'deepforest' ||toBiome === 'pineforest') {
-      return 2
-    } else if (toBiome === 'mountain' || toBiome === 'highmountain') {
-      return 3
-    } else if (toBiome === 'scorched' || toBiome === 'snow' || toBiome === 'ice') {
-      return 4
+    } else {
+      return biomesMoveCosts[toBiome]
     }
-    return 1
   }
 
-  // MAP GRAPH
+  // GENERATE GRAPH
   // Build the pathfinding graph, into the map
-  const generateGraph = () => {
+  const generateGraphs = (units) => {
 
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
 
         const hexOffset = HEXLIB.hexOffset(x, y),
               hex = HEXLIB.offset2Hex(hexOffset, config.mapTopped, config.mapParity),
-              neighborsAll = HEXLIB.hexNeighbors(hex),
-              neighbors = [], // VALID neighbors of the cell
-              costs = [], // Move costs to VALID neighbors
-              cell = map.data[x][y] // Reference to the cell map data
+              cell = map.data[x][y], // Reference to the cell map data
+              neighborsAll = HEXLIB.hexNeighbors(hex)
 
-        // Add the cell to graph if the height is valid
-        cell.isInGraph = isValidCell(cell)
+        cell.neighbors = []
+        cell.costs = []
+        cell.isInGraph = []
 
-        if (cell.isInGraph) {
-          // Each (eventual) neighbor of the cell
-          for (const neighbor of neighborsAll) {
-            // Is the neighbor on/in the map?
-            if (map.isHexOnMap(neighbor)) {
-              // Get the neigbor cell
-              const neighborCell = map.getCellFromHex(neighbor)
+        // Loop on all unit types + the 'attack' special type
+        const unitsKeys = Object.keys(units)
+        unitsKeys.push('attack')
 
-              // Is the neighbor a valid move?
-              if (isValidCell(neighborCell)) {
-                // Compute the cost to move to this neighbor
-                const cost = getMoveCost(
-                  cell.height, 
-                  neighborCell.height, 
-                  neighborCell.biome
-                )
-                costs.push(cost)	// add the edge cost to the graph
+        for (const unitKey of unitsKeys) {
+          const neighbors = [], // VALID neighbors of the cell
+                costs = [] // Move costs to VALID neighbors
 
+          let isInGraph
+
+          if (unitKey === 'attack') {
+            // 'attack' graph is special: never mind the biome, cost is always 1
+            isInGraph = true // All cells are in the attack graph
+            for (const neighbor of neighborsAll) {
+              if (map.isHexOnMap(neighbor)) {
+                costs.push(1)	// All attack 'movement' cost is 1
                 // ADD EGDE
                 neighbors.push(neighbor)
               }
             }
-          }
-        }
+          } else {
+            // Otherwise we build graph for the unit type, depending on biomes and their costs
+            const biomesMoveCosts = units[unitKey].biomesMoveCosts,
+                  allowedBiomes = Object.keys(biomesMoveCosts)
 
-        // Backup things into cell
+            // Add the cell to graph if valid
+            isInGraph = isValidCell(cell, allowedBiomes)
+    
+            if (isInGraph) {
+              // Each (eventual) neighbor of the cell
+              for (const neighbor of neighborsAll) {
+                // Is the neighbor on/in the map?
+                if (map.isHexOnMap(neighbor)) {
+                  // Get the neigbor cell
+                  const neighborCell = map.getCellFromHex(neighbor)
+    
+                  // Is the neighbor a valid move?
+                  if (isValidCell(neighborCell, allowedBiomes)) {
+                    // Compute the cost to move to this neighbor
+                    const cost = getMoveCost(
+                      neighborCell.biome,
+                      biomesMoveCosts,
+                      cell.height,
+                      neighborCell.height
+                    )
+
+                    costs.push(cost)	// add the edge cost to the graph
+                    // ADD EGDE
+                    neighbors.push(neighbor)
+                  }
+                }
+              }
+            }
+          }
+          // Backup neighbors, costs and 'isInGraph' for this unit type into cell
+          cell.neighbors[unitKey] = neighbors
+          cell.costs[unitKey] = costs
+          cell.isInGraph[unitKey] = isInGraph
+        }
+        // Backup hex and hex offset into cell
         cell.hex = hex
         cell.hexOffset = hexOffset
-        cell.neighbors = neighbors
-        cell.costs = costs
       }
     }
-    // console.warn('MAP', map.data)
   }
 
-  ////////////////////////////////////////
-  // PATH FINDING
-
-  // FIND FROM HEX
+  // GET FROM HEX
   // Return a value from an hex index
   // As we have no string hex notation, we use hex objects as 'indexes'
   // in a data 2d array: [hex][value]

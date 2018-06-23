@@ -14,13 +14,25 @@ const Player = (config) => {
   player.color = config.color
   // player.colorDesaturated = ShadeBlend(0.5, player.color, '#888888')
 
+  const setUnitRandomType = () => {
+    const rng = Math.random()
+
+    if (rng > 0.66) {
+      return 'tank'
+    } else if (rng > 0.33) {
+      return 'jeep'
+    } else {
+      return 'boat'
+    }
+  }
+
   // UNITS
   player.units = []
-  for (let n = 0; n < 5; n++) {
+  for (let n = 0; n < 7; n++) {
     const unit = Unit({
       id: n,
       playerId: player.id,
-      type: Math.random() > 0.5 ? 'tank' : 'jeep',
+      type: setUnitRandomType(),
       color: player.color
     })
 

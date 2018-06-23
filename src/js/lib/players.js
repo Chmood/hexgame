@@ -41,8 +41,11 @@ const Players = (PLAYERS, map, RNG) => {
       unit.hexOffset = HEXLIB.hexOffset(col, row)
       unit.hex = HEXLIB.offset2Hex(unit.hexOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
   
-      // Check if the unit position is a valid cell
-      const isValidBiome = map.isValidBiome(map.getCellFromHex(unit.hex).biome)
+      // Check if the unit position is a valid biome cell
+      const isValidBiome = map.isValidBiome(
+        map.getCellFromHex(unit.hex).biome,
+        Object.keys(unit.biomesMoveCosts)
+      )
 
       // Check if the unit position is not already occupied by another unit
       let isFreeHex = true
@@ -55,13 +58,13 @@ const Players = (PLAYERS, map, RNG) => {
 
       // Check if the unit can move to ALL other units 
       let isConnectedToOthers = true
-      for (const otherHex of occupiedhexes) {
-        const path = map.findPath(unit.hex, otherHex)
-        if (path === undefined) {
-          isConnectedToOthers = false
-          break
-        }
-      }
+      // for (const otherHex of occupiedhexes) {
+      //   const path = map.findPath(unit.type, unit.hex, otherHex) // unit.type will do shit here!
+      //   if (path === undefined) {
+      //     isConnectedToOthers = false
+      //     break
+      //   }
+      // }
 
       isValidPosition = isValidBiome && isFreeHex && isConnectedToOthers
     }

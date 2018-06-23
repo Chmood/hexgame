@@ -135,10 +135,10 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
       console.log(`It's player ${game.currentPlayer.name}'s turn`)
     }
 
+    game.mode = 'select'
     game.unitsToMove = game.currentPlayer.units
     game.focusedUnit = game.unitsToMove[0] 
     game.focusUnit(game.focusedUnit)
-    game.mode = 'select'
 
     // Is the next player a bot?
     if (!game.currentPlayer.isHuman) {
@@ -161,6 +161,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
       if (moveZone.length === 0) { continue }
       const target = moveZone[Math.floor(RNG() * moveZone.length)] 
       const path = game.map.findPath(
+        unit.type,
         unit.hex, 
         target,
         true,
@@ -287,15 +288,13 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
             // Backup cursor in case of cancel
             game.ui.cursorBackup = game.ui.cursor
             // Highlight the whole movement zone
-            console.log(`Unit selected: ${unit.name} `)
+            console.log(`Unit selected: ${unit.name}`)
             
             const zones = game.getMoveZones(unit)
             game.ui.moveZone = zones.move
             game.ui.attackZone = zones.attack
             if (game.ui.moveZone.length === 0) {
               console.log('Nowhere to go, the unit is blocked!')
-              game.cancelMove()
-              // TODO: allow the unit to validate move "in place"
             }
             game.updateRenderers(['highlights'])
 
@@ -372,9 +371,13 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
             const attackAnimation = game.renderer3d.attackUnit(playerUnit, ennemyUnit)
             await attackAnimation.waitAsync()
 
-            // Compute damage
+            // Compute ennemy's damage
             const damage = playerUnit.strength - ennemyUnit.defense
             ennemyUnit.health -= damage
+            if (ennemyUnit.health < 0) {
+              ennemyUnit.health = 0
+            }
+            // Animate ennemy's health bar
             const healthbarAnimation = game.renderer3d.updateHealthbar(ennemyUnit)
             await healthbarAnimation.waitAsync()
 
@@ -594,7 +597,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
         game.ui.cursor = hex // Update the new cursor
         // Update the cursor line
         if (game.mode === 'move') {
-          game.ui.cursorPath = game.getCursorLine(hex, game.selectedUnit.hex, game.selectedUnit)
+          game.ui.cursorPath = game.getCursorLine(hex, game.selectedUnit.hex, game.selectedUnit.type)
         } else {
           game.ui.cursorPath = []
         }
@@ -605,9 +608,10 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   }
 
   // CURSOR LINE
-  game.getCursorLine = (cursor, target) => {
+  game.getCursorLine = (cursor, target, type) => {
     if (game.map.getCellFromHex(cursor) && game.map.getCellFromHex(cursor).isInGraph) {
       const cursorLine = game.map.findPath(
+        type,
         target, 
         cursor,
         true,
@@ -635,6 +639,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     // We call map.findPath() without the goal parameter
     // We also pass a blacklist as last parameter
     game.map.findPath(
+      unit.type,
       unit.hex, 
       undefined, // no goal
       undefined, // no early exit
@@ -657,6 +662,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     for (const moveHex of moveZone) {
 
       game.map.findPath(
+        'attack',
         moveHex,
         undefined, // no goal
         undefined, // no early exit
@@ -690,6 +696,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     const attackTargets = []
 
     game.map.findPath(
+      'attack',
       unit.hex,
       undefined, // no goal
       undefined, // no early exit

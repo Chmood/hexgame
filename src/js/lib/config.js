@@ -127,7 +127,7 @@ const CONFIG = {
     // Units stats
     units: {
       tank: {
-        class: 'Tank',
+        type: 'tank',
         level: 1,
 
         // See: http://fireemblem.wikia.com/wiki/Category:Stats
@@ -143,9 +143,18 @@ const CONFIG = {
 
         attackRangeMin: 1, // Not used by now
         attackRangeMax: 2,
+
+        biomesMoveCosts: {
+          whitebeach: 1,
+          beach: 1,
+    
+          desert: 1,
+          grass: 1,
+          plain: 1
+        }
       },
       jeep: {
-        class: 'Jeep',
+        type: 'jeep',
         level: 1,
 
         maxHealth: 10,
@@ -159,7 +168,44 @@ const CONFIG = {
         movement: 6,
 
         attackRangeMin: 1,
-        attackRangeMax: 2,
+        attackRangeMax: 1,
+
+        biomesMoveCosts: {
+          whitebeach: 1,
+          beach: 1,
+          swamp: 1,
+    
+          desert: 1,
+          grass: 1,
+          plain: 1,
+    
+          forest: 2,
+          deepforest: 2,
+          pineforest: 2
+        }
+      },
+      boat: {
+        type: 'boat',
+        level: 1,
+
+        maxHealth: 15,
+        strength: 9,
+        magic: 5,
+        skill: 7,
+        speed: 8,
+        luck: 6,
+        defense: 5,
+        resistance: 3,
+        movement: 5,
+
+        attackRangeMin: 2, // TODO: minimal attack range
+        attackRangeMax: 3,
+
+        biomesMoveCosts: {
+          deepsea: 0.5,
+          sea: 1,
+          shore: 1
+        }
       }
     }
   }

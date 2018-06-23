@@ -71,32 +71,22 @@ const Units = (game, map, camera) => {
 
   // CREATE UNIT
   renderer.createUnit = (unit, idPlayer, idUnit) => {
-    const hex = unit.hex,
-          position = HEXLIB.hex2Pixel(layout, hex), // center of tile top
-          cellSize = CONFIG.render3d.cellSize,
-          cell = map[unit.hexOffset.col][unit.hexOffset.row],
-          cellHeight = cell.height,
-          tile = cell.tile
-    
-    unit.meshes = [] // All the parts
+    const unitPositionAndRotation = getUnitPositionAndRotationOnHex(unit, unit.hex)
+
+    unit.meshes = [] // All the parts but the parent
 
     // PARENT MESH
     unit.mesh = BABYLON.MeshBuilder.CreateBox(
       `unit-${idUnit}`, {height: 0.01, width: 0.01, depth: 0.01}
     )
-
     // Position
-    unit.mesh.position = new BABYLON.Vector3(
-      position.y,
-      cellHeight * CONFIG.render3d.cellStepHeight,
-      position.x
-    )
+    unit.mesh.position = unitPositionAndRotation.position
     // Rotation
-    // Same rotation as the underneath tile
-    unit.mesh.rotation = tile.rotation
+    unit.mesh.rotation = unitPositionAndRotation.rotation
 
     // HEALTH BAR
-    const healthbarWidth = unit.maxHealth * cellSize * CONFIG.render3d.healthbars.width
+    const cellSize = CONFIG.render3d.cellSize,
+          healthbarWidth = unit.maxHealth * cellSize * CONFIG.render3d.healthbars.width
 
     // Back of the bar
     unit.meshes.healthbarBack = BABYLON.MeshBuilder.CreatePlane(
@@ -343,6 +333,42 @@ const Units = (game, map, camera) => {
           dontColorize: true
         }
       ]
+    } else if (type == 'boat') {
+      return [
+        {
+          name: 'base',
+          size: {height: 2/8, length: 12/8, width: 4/8},
+          position: {x: 0, y: 1/4, z: 0},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'sides',
+          size: {height: 2/8, length: 6/8, width: 6/8},
+          position: {x: 0, y: 1/4, z: 0},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'cabin',
+          size: {height: 2/8, length: 4/8, width: 4/8},
+          position: {x: 1/8, y: 4/8, z: 0},
+          material: materials['unitGrey'],
+          dontColorize: true
+        },
+        {
+          name: 'cannonLeft',
+          size: {height: 1/16, length: 1/2, width: 1/16},
+          position: {x: -1/4, y: 1/2, z: 1/8},
+          material: materials['unitBlack'],
+          dontColorize: true
+        },
+        {
+          name: 'cannonRight',
+          size: {height: 1/16, length: 1/2, width: 1/16},
+          position: {x: -1/4, y: 1/2, z: -1/8},
+          material: materials['unitBlack'],
+          dontColorize: true
+        }
+      ]
     }
   }
 
@@ -437,19 +463,62 @@ const Units = (game, map, camera) => {
     )
   }
 
+  // GET UNIT POSITION AND ROTATION ON HEX
+  const getUnitPositionAndRotationOnHex = (unit, hex) => {
+    const hexPosition = HEXLIB.hex2Pixel(layout, hex),
+          cell = game.map.getCellFromHex(hex),
+          height = cell.height
+
+    let cellHeight, isOnOcean, direction
+      
+      // Units on ocean have a fixed height
+      if (game.map.isOceanCell(cell)) {
+        // Ocean surface height
+        cellHeight = CONFIG.map.mapSeaMinLevel + 1
+        isOnOcean = true
+      } else {
+        cellHeight = height
+        isOnOcean = false
+      }
+
+      cellHeight *= CONFIG.render3d.cellStepHeight
+
+      if (unit.mesh) {
+        direction = unit.mesh.rotation.y
+      } else {
+        if (CONFIG.map.mapTopped === HEXLIB.FLAT) {
+          direction = (Math.floor(Math.random() * 6) * 2 * Math.PI / 6)
+        } else {
+          direction = (Math.floor(Math.random() * 6) * 2 * Math.PI / 6) + (2 * Math.PI / 12)
+        }
+      }
+
+      const position = new BABYLON.Vector3( // end value
+        hexPosition.y, // Axis inversion!
+        cellHeight, 
+        hexPosition.x // Axis inversion!
+      )
+      const rotation = !isOnOcean ? new BABYLON.Vector3(
+        cell.tile.rotation.x,
+        direction, // Keep the unit direction/orientation (Y axis) if it exists
+        cell.tile.rotation.y
+      ) : new BABYLON.Vector3(
+        0,
+        direction, // Keep the unit direction/orientation (Y axis) if it exists
+        0
+      )
+
+      return {
+      position: position,
+      rotation: rotation
+    }
+  }
+
   // MOVE UNIT
   // Move a unit to an adjacent tile
   // TODO: the rotation part seems fuxed up!?
   const moveUnit = (unit, step) => {
-    const position = HEXLIB.hex2Pixel(layout, step),
-          stepData = game.map.getCellFromHex(step),
-          height = stepData.height * CONFIG.render3d.cellStepHeight,
-          nextPosition = new BABYLON.Vector3( // end value
-            position.y, // Axis inversion!
-            height, 
-            position.x // Axis inversion!
-          ),
-          nextRotation = stepData.tile.rotation
+    const stepPositionAndRotation = getUnitPositionAndRotationOnHex(unit, step)
 
     // POSITION
     const animationPlayerPosition = new BABYLON.Animation(
@@ -461,7 +530,7 @@ const Units = (game, map, camera) => {
     )
     animationPlayerPosition.setKeys([
       { frame: 0, value: unit.mesh.position }, 
-      { frame: 10, value: nextPosition }
+      { frame: 10, value: stepPositionAndRotation.position }
     ])
     setEasing(animationPlayerPosition)
 
@@ -475,11 +544,7 @@ const Units = (game, map, camera) => {
     )
     animationPlayerRotation.setKeys([
       { frame: 0, value: unit.mesh.rotation }, 
-      { frame: 10, value: new BABYLON.Vector3(
-        nextRotation.x,
-        unit.mesh.rotation.y,
-        nextRotation.y
-      )}
+      { frame: 10, value: stepPositionAndRotation.rotation }
     ])
     setEasing(animationPlayerPosition)
 
