@@ -23,6 +23,7 @@
 * 2D map: different icons for units
 * Fullscreen mode
 * Joypad support
+* Find a real name for the game: "Hex Wars", "Hex Emblem"...
 
 ## Ideas
 
