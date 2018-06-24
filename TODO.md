@@ -14,16 +14,30 @@
 * Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work
 * Stop mutating the CONFIG object! (postprocess + environement)
+* Towns, factories, ports, airports
+* More units (see: http://advancewars.wikia.com/wiki/List_of_Units - 18 unit types, http://advancewars.wikia.com/wiki/Category:Units)
+  * 3x infantery: soldier, bazooka, [healer])
+  * 3x tanks: light tank, heavy tank, anti-air tank
+  * 3x distance: artillery (mid range), rocket-launcher (long range, 'move or fire'), anti-air missile launcher
+  * 3x boats: cruiser, battleship, submarine
+  * 3x air units: helicopter, fighter, bombers
+  * 3x support units: recon, sea transport, air transport
+  * Others: APC (ammo/fuel)???
 
 ## New features
 
 * More DOM UI (menus, stats...)
-* Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
-* "Player XXX's turn" banner (see: https://doc.babylonjs.com/how_to/dynamictexture)
+* Terrain defense bonus/malus
 * In-game menu
-* 2D map: different icons for units
+* "Player XXX's turn" banner (see: https://doc.babylonjs.com/how_to/dynamictexture)
+* Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
+* Unit parts animations (idle, shoot, move...)
+* 2D map: different icons for units???
+* Fog of war & unit vision range???
 * Fullscreen mode
 * Joypad support
+* Sound and music support
+* Log all game actions, and replay a game (and undo/redo???)
 * Find a real name for the game: "Hex Wars", "Hex Emblem"...
 
 ## Ideas
