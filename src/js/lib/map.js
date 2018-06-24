@@ -297,19 +297,21 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
   // MAKE ISLAND
   const makeIsland = (type) => {
-    const halfWidth = Math.floor(config.mapSize.width / 2 + 1),
-      halfHeight = Math.floor(config.mapSize.height / 2 + 1)
-    const offsetCenter = HEXLIB.hexOffset(halfWidth, halfHeight),
-      offsetVertical = HEXLIB.hexOffset(halfWidth, 0),
-      offsetHorizontal = HEXLIB.hexOffset(0, halfHeight)
+    const halfWidth = Math.floor(config.mapSize.width / 2),
+          halfHeight = Math.floor(config.mapSize.height / 2),
 
-    const hexCenter = HEXLIB.offset2Hex(offsetCenter, config.mapTopped, config.mapParity),
-      hexVertical = HEXLIB.offset2Hex(offsetVertical, config.mapTopped, config.mapParity),
-      hexHorizontal = HEXLIB.offset2Hex(offsetHorizontal, config.mapTopped, config.mapParity)
+          offsetCenter = HEXLIB.hexOffset(halfWidth, halfHeight),
+          offsetVertical = HEXLIB.hexOffset(halfWidth, 0),
+          offsetHorizontal = HEXLIB.hexOffset(0, halfHeight),
 
-    const distanceMaxVertical = HEXLIB.hexDistance(hexCenter, hexVertical)
-    const distanceMaxHorizontal = HEXLIB.hexDistance(hexCenter, hexHorizontal)
-    const distanceMax = Math.min(distanceMaxVertical, distanceMaxHorizontal)
+          hexCenter = HEXLIB.offset2Hex(offsetCenter, config.mapTopped, config.mapParity),
+          hexVertical = HEXLIB.offset2Hex(offsetVertical, config.mapTopped, config.mapParity),
+          hexHorizontal = HEXLIB.offset2Hex(offsetHorizontal, config.mapTopped, config.mapParity),
+
+          distanceMaxVertical = HEXLIB.hexDistance(hexCenter, hexVertical),
+          distanceMaxHorizontal = HEXLIB.hexDistance(hexCenter, hexHorizontal),
+          distanceMax = Math.min(distanceMaxVertical, distanceMaxHorizontal) - 
+            config.mapPostprocess.height.islandMargin // Make sure map border are ocean
 
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {

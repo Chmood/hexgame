@@ -9,13 +9,21 @@ const Players = (PLAYERS, map, RNG) => {
   const players = []
 
   const startingZoneRatio = CONFIG.game.playerStartingZoneRatio,
-        occupiedhexes = [] // Hexes already taken by units
+        occupiedhexes = [], // Hexes already taken by units
+        placedUnits = []
 
   // SET UNIT RANDOM POSITION
   const setUnitRandomPosition = (unit, playerId) => {
-    let isValidPosition = false
+    let isValidPosition = false,
+        nTryLeft = 10
+
 
     while (!isValidPosition) {
+      nTryLeft--
+      if (nTryLeft === 0) {
+        return false
+      }
+
       let col, row
       const randomCol = RNG(),
         randomRow = RNG(),
@@ -56,21 +64,32 @@ const Players = (PLAYERS, map, RNG) => {
         }
       }
 
-      // Check if the unit can move to ALL other units 
+      // Check if boats can move to ALL other boats
       let isConnectedToOthers = true
-      // for (const otherHex of occupiedhexes) {
-      //   const path = map.findPath(unit.type, unit.hex, otherHex) // unit.type will do shit here!
-      //   if (path === undefined) {
-      //     isConnectedToOthers = false
-      //     break
-      //   }
-      // }
+      for (const placedUnit of placedUnits) {
+        if (unit.type === 'boat' && placedUnit.type === 'boat') {
+          const path = map.findPath('boat', unit.hex, placedUnit.hex)
+          if (path === undefined) {
+            isConnectedToOthers = false
+          }
+        // } else if ((unit.type === 'tank' || unit.type === 'jeep') && 
+        //   (placedUnit.type === 'tank' || unit.type === 'jeep')) {
+        //   const path = map.findPath('jeep', unit.hex, placedUnit.hex)
+        //   if (path === undefined) {
+        //     isConnectedToOthers = false
+        //   }
+        }
+      }
 
       isValidPosition = isValidBiome && isFreeHex && isConnectedToOthers
     }
     occupiedhexes.push(unit.hex)
+    placedUnits.push(unit)
+
+    return true
   }
 
+  let nUnitsPlaced = 0
   for (const p of PLAYERS) {
     const playerId = p.id
 
@@ -82,7 +101,14 @@ const Players = (PLAYERS, map, RNG) => {
     })
 
     for (const unit of player.units) {
-      setUnitRandomPosition(unit, playerId)
+      const isUnitPlaced = setUnitRandomPosition(unit, playerId)
+      if (isUnitPlaced) {
+        nUnitsPlaced++
+      } else {
+        console.log(`Units placed: ${nUnitsPlaced}`)
+        console.log(`Unit #${nUnitsPlaced + 1} can't be placed!`)
+        return false
+      }
     }
 
     players.push(player)

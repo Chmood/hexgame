@@ -8,15 +8,17 @@
 
 ## Improvements
 
-* Player can cancel a move while targetting (ala Fire Emblem)
+* Player must be able to cancel a move while targetting (ala Fire Emblem)
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
+* Improve privacy (vars & functions) in Game module
 * Get the Asset Manager thing up to work
 * Stop mutating the CONFIG object! (postprocess + environement)
 
 ## New features
 
+* More DOM UI (menus, stats...)
 * Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
 * "Player XXX's turn" banner (see: https://doc.babylonjs.com/how_to/dynamictexture)
 * In-game menu

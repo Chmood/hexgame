@@ -38,7 +38,8 @@ const CONFIG = {
         redistributionPower: 2, // >1 => more sea / <1 more mountains
         normalize: true, // Spread the whole height range
         islandMode: true, // All map borders are sea
-        islandRedistributionPower: 0.85
+        islandRedistributionPower: 0.85,
+        islandMargin: 0 // numbers of ocean cells at map boundaries
       },
       moisture: {
         revert: false,
@@ -147,6 +148,7 @@ const CONFIG = {
         biomesMoveCosts: {
           whitebeach: 1,
           beach: 1,
+          swamp: 2,
     
           desert: 1,
           grass: 1,
@@ -157,7 +159,7 @@ const CONFIG = {
         type: 'jeep',
         level: 1,
 
-        maxHealth: 10,
+        maxHealth: 12,
         strength: 8,
         magic: 5,
         skill: 7,
@@ -203,7 +205,7 @@ const CONFIG = {
 
         biomesMoveCosts: {
           deepsea: 0.5,
-          sea: 1,
+          sea: 0.75,
           shore: 1
         }
       }

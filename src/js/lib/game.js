@@ -744,15 +744,19 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
       nTry++
 
       // MAP
+      console.log(`Map generation (#${nTry} try)`)
       game.map.generate()
+
       // PLAYERS
       game.players = Players(CONFIG.players, game.map, RNG)
 
-      success = true
+      if (game.players) {
+        success = true
+      }
     }
 
     if (success) {
-      console.log(`Game generated in ${nTry} tries`)
+      console.warn(`Game generated in ${nTry} tries`)
       console.log('MAP DATA', game.map.data)
 
       game.renderer3d.createTiles()
