@@ -79,41 +79,18 @@ const Units = (game, map, camera) => {
     unit.mesh = BABYLON.MeshBuilder.CreateBox(
       `unit-${idUnit}`, {height: 0.01, width: 0.01, depth: 0.01}
     )
+    unit.mesh.isPickable = false
     // Position
     unit.mesh.position = unitPositionAndRotation.position
     // Rotation
     unit.mesh.rotation = unitPositionAndRotation.rotation
 
     // HEALTH BAR
-    const cellSize = CONFIG.render3d.cellSize,
-          healthbarWidth = unit.maxHealth * cellSize * CONFIG.render3d.healthbars.width
+    const cellSize = CONFIG.render3d.cellSize
 
-    // Back of the bar
-    unit.meshes.healthbarBack = BABYLON.MeshBuilder.CreatePlane(
-      `unit-${idUnit}-healthbar-back`, 
-      { width: healthbarWidth, height: cellSize * CONFIG.render3d.healthbars.height })
-    unit.meshes.healthbarFront = BABYLON.MeshBuilder.CreatePlane(
-      `unit-${idUnit}-healthbar-front`, 
-      { width: healthbarWidth, height: cellSize * CONFIG.render3d.healthbars.height })
-
-    // Bars position 
-    unit.meshes.healthbarBack.position = new BABYLON.Vector3(
-      0, CONFIG.render3d.healthbars.heightAbove * cellSize, 0
-    )
-    unit.meshes.healthbarFront.position = new BABYLON.Vector3(
-      0, 0, -0.01 // Just a bit in front of the back of the bar
-    )
-
-    // Bars parenting
-    unit.meshes.healthbarBack.parent = unit.mesh
-    unit.meshes.healthbarFront.parent = unit.meshes.healthbarBack
-
-    // Bars materials
-    unit.meshes.healthbarBack.material = materials['healthbarBack']
-    unit.meshes.healthbarFront.material = materials['healthbarFront']
-
-    // Billboard mode (always face the camera)
-    unit.meshes.healthbarBack.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL
+    const healthbar = createHealthbar(unit, cellSize)
+    unit.meshes.healthbarBack = healthbar.back
+    unit.meshes.healthbarFront = healthbar.front
 
     renderer.updateHealthbar(unit, true) // Set healthbar without animation
 
@@ -406,6 +383,8 @@ const Units = (game, map, camera) => {
       // Shadows
       shadowGenerator.getShadowMap().renderList.push(p)
       p.receiveShadows = true
+      // Pickability
+      p.isPickable = false
 
       if (part.dontColorize !== undefined) {
         p.dontColorize = part.dontColorize // Risky: add property to BABYLON.mesh
@@ -413,6 +392,47 @@ const Units = (game, map, camera) => {
       meshes[part.name] = p
     }
     return meshes
+  }
+
+  // CREATE HEALTHBAR
+  const createHealthbar = (unit, cellSize) => {
+    const healthbarWidth = unit.maxHealth * cellSize * CONFIG.render3d.healthbars.width
+
+    // Back and front of the bar
+    const healthbarBack = BABYLON.MeshBuilder.CreatePlane(
+      `unit-${unit.id}-healthbar-back`, 
+      { width: healthbarWidth, height: cellSize * CONFIG.render3d.healthbars.height })
+    const healthbarFront = BABYLON.MeshBuilder.CreatePlane(
+      `unit-${unit.id}-healthbar-front`, 
+      { width: healthbarWidth, height: cellSize * CONFIG.render3d.healthbars.height })
+
+    // Do not pick them
+    healthbarBack.isPickable = false
+    healthbarFront.isPickable = false
+
+    // Bars position 
+    healthbarBack.position = new BABYLON.Vector3(
+      0, CONFIG.render3d.healthbars.heightAbove * cellSize, 0
+    )
+    healthbarFront.position = new BABYLON.Vector3(
+      0, 0, -0.01 // Just a bit in front of the back of the bar
+    )
+
+    // Bars parenting
+    healthbarBack.parent = unit.mesh
+    healthbarFront.parent = healthbarBack
+
+    // Bars materials
+    healthbarBack.material = materials['healthbarBack']
+    healthbarFront.material = materials['healthbarFront']
+
+    // Billboard mode (always face the camera)
+    healthbarBack.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL
+
+    return {
+      back: healthbarBack,
+      front: healthbarFront
+    }
   }
 
   // ROTATE UNIT
