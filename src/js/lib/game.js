@@ -27,6 +27,9 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     // DEBOUNCE
     debounce: 0,
 
+    // TODO: all public variables, and make un-needed private
+    // ex: selectedPlayer
+
     // GENERATE GAME
     // Generate a new map (with or without a fresh seed) and players
     generate(randomMapSeed = false) {
@@ -93,17 +96,17 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
       if (game.renderer3d.getActiveCamera().name === 'camera') {
         if (game.debounce === 0) {
                 if (keys['ArrowRight'] && 
-                    keys['ArrowUp']) {     cursorMove('right-up')
+                    keys['ArrowUp']) {      moveCursor('right-up')
           } else if (keys['ArrowRight'] && 
-                    keys['ArrowDown']) {   cursorMove('right-down')
+                    keys['ArrowDown']) {    moveCursor('right-down')
           } else if (keys['ArrowLeft'] && 
-                    keys['ArrowUp']) {     cursorMove('left-up')
+                    keys['ArrowUp']) {      moveCursor('left-up')
           } else if (keys['ArrowLeft'] && 
-                    keys['ArrowDown']) {   cursorMove('left-down')
-          } else if (keys['ArrowRight']) {  cursorMove('right')
-          } else if (keys['ArrowLeft']) {   cursorMove('left')
-          } else if (keys['ArrowUp']) {     cursorMove('up')
-          } else if (keys['ArrowDown']) {   cursorMove('down')
+                    keys['ArrowDown']) {    moveCursor('left-down')
+          } else if (keys['ArrowRight']) {  moveCursor('right')
+          } else if (keys['ArrowLeft']) {   moveCursor('left')
+          } else if (keys['ArrowUp']) {     moveCursor('up')
+          } else if (keys['ArrowDown']) {   moveCursor('down')
             
           } else if (keys['x']) {           game.doAction()
           } else if (keys['c']) {           cancelAction()
@@ -129,13 +132,37 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     },
 
     // DO ACTION
-    doAction() {
+    doAction(type = 'keyboard') {
       if (game.mode === 'select') {
         selectUnit()
+
       } else if (game.mode === 'move') {
-        selectDestination()
+        if (type === 'keyboard') {
+          // Moving cursor with keyboard force it to stay in move zone
+          selectDestination()
+
+        } else if (type === 'mouse') {
+          // With mouse you can click on a cell outside the move zone
+          // So we must validate the cursor position first
+          if (validateMove(game.ui.cursor)) {
+            selectDestination()
+          } else {
+            cancelMove()
+          }
+        }
+
       } else if (game.mode === 'attack') {
-        doAttack()
+        if (type === 'keyboard') {
+          // Selecting target with keyboard force to aim at a valid ennemy
+          doAttack()
+        } else if (type === 'mouse') {
+          // Mouse aiming can click anywhere on the map
+          if (validateTarget(game.ui.cursor)) {
+            doAttack()
+          } else {
+            endUnitTurn()
+          }
+        }
       }
     },
 
@@ -176,6 +203,8 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
 
           game.updateRenderers(['highlights'])
         }
+      } else {
+        console.error(`game.updateCursor(): no hex provided!`)
       }
     }
   }
@@ -228,6 +257,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   } 
 
   // PLAY BOT
+  // The current player is bot, auto-play it
   const playBot = async () => {
     for (const unit of game.currentPlayer.units) {
       game.selectedUnit = unit
@@ -395,11 +425,11 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
 
   // SELECT DESTINATION
   const selectDestination = async function() {
-    // Avoid the user to move cursor or do other actions during movement
     const path = game.ui.cursorPath // Use the cursor path as movement path
-
-    // Reset the UI
+    
+    // Avoid the user to move cursor or do other actions during movement
     game.mode = 'passive'
+    // Reset the UI
     game.ui.moveZone = []
     game.ui.attackZone = []
     game.ui.cursorPath = []
@@ -435,6 +465,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   }
 
   // DO ATTACK
+  // TODO: split this into sub functions!
   const doAttack = async () => {
     // Get the ennemy
     const targetHex = game.ui.attackZone[game.selectedTargetId]
@@ -611,35 +642,62 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     return directionIndex
   }
 
+  // VALIDATE MOVE
+  // Check (in move move) if the hex is in the unit move zone
+  const validateMove = (hex) => {
+    // In move mode, cursor can only move on valid tiles (aka move zone)
+    if (game.mode === 'move') {
+      let isValidMove = false
+      
+      for(const validHex of game.ui.moveZone) {
+        if (HEXLIB.hexEqual(hex, validHex)) {
+          isValidMove = true
+          break
+        }
+      }
+      if (!isValidMove) {
+        console.log('Invalid move!')
+        return false
+      }
+    }
+    // Move the cursor
+    game.updateCursor(hex)
+    game.renderer3d.updateCameraPosition(hex)
+
+    return true
+  }
+
+  // VALIDATE TARGET
+  // Check (in attack mode) if the hex (chosen by mouse only) is a valid target
+  // In this case, also update game.selectedTargetId
+  const validateTarget = (hex) => {
+    for (const [index, targetHex] of game.ui.attackZone.entries()) {
+      // Did the player click on a valid target hex?
+      if (HEXLIB.hexEqual(hex, targetHex)) {
+        game.selectedTargetId = index
+        return true
+      }
+    }
+
+    return false
+  }
+
   // MOVE CURSOR
+  // From keyboard arrows to a direction to an hex position
   // Select, move or attack modes
-  const cursorMove = (direction) => {
+  const moveCursor = (direction) => {
     game.resetDebounce()
 
     if (game.mode === 'select' || game.mode === 'move') {
+      // Get the direction (6 possible)
       const directionIndex = getDirectionIndex(direction, game.ui.cursor)
   
       if (directionIndex !== undefined) {
+        // Get the neighbor in that direction
         const hex = HEXLIB.hexNeighbors(game.ui.cursor)[directionIndex]
+        // Don't go outside the map boundaries
         if (game.map.isHexOnMap(hex)) {
-          // In move mode, cursor can only move on valid tiles (aka move zone)
-          if (game.mode === 'move') {
-            let isValidMove = false
-            
-            for(const validHex of game.ui.moveZone) {
-              if (HEXLIB.hexEqual(hex, validHex)) {
-                isValidMove = true
-                break
-              }
-            }
-            if (!isValidMove) {
-              console.log('Invalid move!')
-              return
-            }
-          }
-          // Move the cursor
-          game.updateCursor(hex)
-          game.renderer3d.updateCameraPosition(hex)
+          validateMove(hex)
   
         } else {
           console.log('Cannot go there, edge of the map reached!')
@@ -652,8 +710,9 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
         game.selectedTargetId += increment
         game.selectedTargetId = cycleValueInRange(game.selectedTargetId, game.ui.attackZone.length)
 
-        game.updateCursor(game.ui.attackZone[game.selectedTargetId])
-        game.renderer3d.updateCameraPosition(game.ui.attackZone[game.selectedTargetId])
+        const targetHex = game.ui.attackZone[game.selectedTargetId]
+        game.updateCursor(targetHex)
+        game.renderer3d.updateCameraPosition(targetHex)
         game.updateRenderers(['highlights'])
       }
     }
