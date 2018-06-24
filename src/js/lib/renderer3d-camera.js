@@ -187,9 +187,17 @@ const Camera = (canvas, game) => {
     }
   }
 
+  renderer.setCameraFreeAutorotate = (_cameraFreeAutoRotate) => {
+    cameraFreeAutoRotate = _cameraFreeAutoRotate
+  }
+
+  renderer.getCameraFreeAutorotate = () => {
+    return cameraFreeAutoRotate
+  }
+
   ////////////////////////////////////////
   // PRIVATE
-  let scene, layout, activeCameraName
+  let scene, layout, activeCameraName, cameraFreeAutoRotate
 
   // CREATE CAMERA
   const createCamera = () => {
@@ -270,6 +278,9 @@ const Camera = (canvas, game) => {
 
     // Set the active camera
     renderer.setActiveCamera(CONFIG.render3d.camera.activeCamera)
+
+    // Set the free camera auto-rotation
+    renderer.setCameraFreeAutorotate(CONFIG.render3d.camera.cameraFreeAutoRotate)
   }
 
   return renderer

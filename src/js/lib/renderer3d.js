@@ -45,6 +45,8 @@ const Renderer3d = (game, canvas) => {
       camera.setActiveCamera(cameraName)
       postprocess.updatePosprocessPipeline(undefined, camera.getActiveCamera().camera)
     },
+    setCameraFreeAutorotate: camera.setCameraFreeAutorotate,
+    getCameraFreeAutorotate: camera.getCameraFreeAutorotate,
     updateCameraZoom: camera.updateCameraZoom,
     updateCameraAlpha: camera.updateCameraAlpha,
   
@@ -112,7 +114,7 @@ const Renderer3d = (game, canvas) => {
         // const fps = Math.floor(engine.getFps())
         // console.log(fps + ' FPS')
   
-        if (CONFIG.render3d.camera.cameraFreeAutoRotate) {
+        if (camera.getCameraFreeAutorotate()) {
           // Make the camera rotate around the island
           camera.cameraFree.alpha += 0.01
         }

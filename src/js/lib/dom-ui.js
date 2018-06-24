@@ -20,7 +20,7 @@ const DomUI = () => {
     dom.selectPosprocess = document.getElementById('ui-select-postprocess')
     dom.checkboxBetterOcean = document.getElementById('ui-checkbox-better-ocean')
     dom.checkboxCameraFree = document.getElementById('ui-camera-free')
-    dom.checkboxCameraAutoRotate = document.getElementById('ui-camera-auto-rotate')
+    dom.checkboxCameraFreeAutoRotate = document.getElementById('ui-camera-free-auto-rotate')
   }
 
   // SET ELEMENTS
@@ -28,7 +28,7 @@ const DomUI = () => {
     dom.selectPosprocess.value = CONFIG.render3d.postprocess
     dom.checkboxBetterOcean.checked = CONFIG.render3d.betterOcean
     dom.checkboxCameraFree.checked = CONFIG.render3d.camera.activeCamera === 'cameraFree'
-    dom.checkboxCameraAutoRotate.checked = CONFIG.render3d.camera.cameraFreeAutoRotate
+    dom.checkboxCameraFreeAutoRotate.checked = CONFIG.render3d.camera.cameraFreeAutoRotate
   }
 
   // SET EVENT LISTENERS
@@ -86,8 +86,9 @@ const DomUI = () => {
       game.renderer3d.setActiveCamera(activeCamera)
     })
     // Checkbox for auto-rotating camera
-    dom.checkboxCameraAutoRotate.addEventListener('change', () => {
-      CONFIG.render3d.camera.cameraFreeAutoRotate = dom.checkboxCameraAutoRotate.checked // TODO: don't mutate CONFIG!
+    dom.checkboxCameraFreeAutoRotate.addEventListener('change', () => {
+      const cameraFreeAutoRotate = dom.checkboxCameraFreeAutoRotate.checked
+      game.renderer3d.setCameraFreeAutorotate(cameraFreeAutoRotate)
     })
 
     // Resize window

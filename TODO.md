@@ -14,7 +14,6 @@
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work
-* Stop mutating the CONFIG object! (postprocess + environement)
 * Towns, factories, ports, airports
 * More units (see: http://advancewars.wikia.com/wiki/List_of_Units - 18 unit types, http://advancewars.wikia.com/wiki/Category:Units)
   * 3x infantery: soldier, bazooka, [healer])
