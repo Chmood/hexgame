@@ -73,8 +73,9 @@ const Units = (game, map, camera) => {
   renderer.createUnit = (unit, idPlayer, idUnit) => {
     const unitPositionAndRotation = getUnitPositionAndRotationOnHex(unit, unit.hex)
 
-    unit.meshes = [] // All the parts but the parent
+    unit.meshes = {} // All the parts but the parent
 
+    ////////////////////////////////////////
     // PARENT MESH
     unit.mesh = BABYLON.MeshBuilder.CreateBox(
       `unit-${idUnit}`, {height: 0.01, width: 0.01, depth: 0.01}
@@ -85,6 +86,7 @@ const Units = (game, map, camera) => {
     // Rotation
     unit.mesh.rotation = unitPositionAndRotation.rotation
 
+    ////////////////////////////////////////
     // HEALTH BAR
     const cellSize = CONFIG.render3d.cellSize
 
@@ -96,16 +98,17 @@ const Units = (game, map, camera) => {
 
     ////////////////////////////////////////
     // PARTS MESHES
-    unit.meshes.push(
-      ...createMultipartUnit(
-        unit.name, 
-        idPlayer, 
-        idUnit, 
-        unit.mesh, 
-        cellSize, 
-        getUnitParts(unit.type, idPlayer)
-      )
+    const parts = createMultipartUnit(
+      unit.name, 
+      idPlayer, 
+      idUnit, 
+      unit.mesh, 
+      cellSize, 
+      getUnitParts(unit.type, idPlayer)
     )
+    for (const part of parts) {
+      unit.meshes[part.name] = part.mesh
+    }
   }
 
   // CREATE UNITS
@@ -234,7 +237,10 @@ const Units = (game, map, camera) => {
   // CHANGE UNIT MATERIAL
   renderer.changeUnitMaterial = (unit, color) => {
     const materialIndex = color === 'colorDesaturated' ? 1 : 0
-    for (const mesh of unit.meshes) {
+  
+    for (const part in unit.meshes) {
+      const mesh = unit.meshes[part]
+
       if (!mesh.dontColorize) {
         mesh.material = materials.players[unit.playerId][materialIndex]
       }
@@ -402,7 +408,10 @@ const Units = (game, map, camera) => {
       if (part.dontColorize !== undefined) {
         p.dontColorize = part.dontColorize // Risky: add property to BABYLON.mesh
       }
-      meshes[part.name] = p
+      meshes.push({
+        name: part.name,
+        mesh: p
+      })
     }
     return meshes
   }
