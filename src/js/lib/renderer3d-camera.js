@@ -172,14 +172,14 @@ const Camera = (canvas, game) => {
   }
 
   // SWITCH ACTIVE CAMERA
-  renderer.switchActiveCamera = () => {
-    if (scene.activeCamera === renderer.camera) {
-      scene.activeCamera = renderer.cameraFree
-      activeCamera = 'cameraFree'
+  renderer.setActiveCamera = (camera) => {
+    activeCamera = camera
 
-    } else {
+    if (activeCamera === 'cameraFree') {
+      scene.activeCamera = renderer.cameraFree
+
+    } else if (activeCamera === 'camera') {
       scene.activeCamera = renderer.camera
-      activeCamera = 'camera'
     }
   }
 
@@ -260,8 +260,7 @@ const Camera = (canvas, game) => {
     renderer.cameraFree = createCameraFree()
 
     // Set the active camera
-    scene.activeCamera = renderer.camera
-    activeCamera = 'camera'
+    renderer.setActiveCamera(CONFIG.render3d.camera.activeCamera)
   }
 
   return renderer

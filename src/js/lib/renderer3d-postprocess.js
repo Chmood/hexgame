@@ -12,9 +12,18 @@ const Postprocess = () => {
   // PUBLIC
 
   // UPDATE POSTPROCESS PIPELINE
-  renderer.updatePosprocessPipeline = () => {
-    if (CONFIG.render3d.postprocess !== 'none') {
-      if (CONFIG.render3d.postprocess === 'ssao') {
+  renderer.updatePosprocessPipeline = (_postprocess, _activeCamera) => {
+    if (_postprocess) {
+      postprocess = _postprocess
+    }
+    if (_activeCamera) {
+      activeCamera = _activeCamera
+    }
+
+    if (postprocess !== 'none') {
+
+      // SSAO
+      if (postprocess === 'ssao') {
         if (pipeline) {
           // Disable pipeline
           pipeline.dispose()
@@ -44,10 +53,11 @@ const Postprocess = () => {
             ssaoRatio: 1,
             combineRatio: 1.0
           },
-          [camera, cameraFree]
+          [activeCamera]
         )
 
-      } else if (CONFIG.render3d.postprocess === 'multi') {
+      // MULTI
+      } else if (postprocess === 'multi') {
         if (ssao) {
           // Disable SSAO
           ssao.dispose()
@@ -91,6 +101,8 @@ const Postprocess = () => {
         pipeline.grain.intensity = 9
         pipeline.grain.animated = 1
       }
+
+    // NO POSTPROCESS
     } else {
       if (ssao) {
         // Disable SSAO
@@ -108,7 +120,7 @@ const Postprocess = () => {
   ////////////////////////////////////////
   // PRIVATE
 
-  let scene, camera, cameraFree, pipeline, ssao
+  let scene, camera, cameraFree, postprocess, activeCamera, pipeline, ssao
 
   ////////////////////////////////////////
   // INIT
@@ -117,7 +129,8 @@ const Postprocess = () => {
     camera = rendererCamera
     cameraFree = rendererCameraFree
 
-    renderer.updatePosprocessPipeline()
+    activeCamera = camera
+    renderer.updatePosprocessPipeline(CONFIG.render3d.postprocess)
   }
 
   return renderer

@@ -96,7 +96,6 @@ const CONFIG = {
     // UI mods
     betterOcean: false,
     postprocess: 'multi', // 'ssao', 'multi' or 'none'
-    cameraAutoRotate: false,
     debounceKeyboardTime: 8, // In locksteppeded frames
     healthbars: {
       width: 1 / 20, // Relative to cellsize (one HP width)
@@ -110,7 +109,9 @@ const CONFIG = {
       distanceRatioMin: 0.1,
       distanceRatioMax: 2,
       distanceRatioStep: 0.25,
-      beta: Math.PI / 6 // 0 : top-down / Math.PI / 2 : side view 
+      beta: Math.PI / 6, // 0 : top-down / Math.PI / 2 : side view 
+      activeCamera: 'cameraFree', // 'camera' or 'cameraFree'
+      cameraFreeAutoRotate: false,
     }
   },
 
