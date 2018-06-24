@@ -90,7 +90,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     // ON KEY CHANGE
     onKeyDown(keys) {
       // Only catch key events if the standard camera is active
-      if (game.renderer3d.getActiveCamera() === 'camera') {
+      if (game.renderer3d.getActiveCamera().name === 'camera') {
         if (game.debounce === 0) {
                 if (keys['ArrowRight'] && 
                     keys['ArrowUp']) {     cursorMove('right-up')

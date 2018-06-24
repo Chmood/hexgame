@@ -141,13 +141,13 @@ const Environement = () => {
 
   // CREATE LIGHTS
   const createLights = () => {
-    const hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), renderer.scene)
+    const hemiLight = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(-1, 1, -1), scene)
     hemiLight.intensity = 0.4
     hemiLight.diffuse = new BABYLON.Color3(0.6, 0.6, 1)
     hemiLight.specular = new BABYLON.Color3(1, 1, 1)
     hemiLight.groundColor = new BABYLON.Color3(0.6, 1, 1)
     
-    const directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), renderer.scene)
+    const directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(1, -1, 1), scene)
     directionalLight.intensity = 0.85
     directionalLight.diffuse = new BABYLON.Color3(1, 1, 0.6)
 

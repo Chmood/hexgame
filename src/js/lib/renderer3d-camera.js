@@ -167,25 +167,29 @@ const Camera = (canvas, game) => {
   }
 
   // GET ACTIVE CAMERA
+  // Returns the name of the active camera, and a reference to this camera itself
   renderer.getActiveCamera = () => {
-    return activeCamera
+    return {
+      name: activeCameraName,
+      camera: getCameraByName(activeCameraName)
+    }
   }
 
-  // SWITCH ACTIVE CAMERA
-  renderer.setActiveCamera = (camera) => {
-    activeCamera = camera
+  // SET ACTIVE CAMERA
+  renderer.setActiveCamera = (cameraName) => {
+    activeCameraName = cameraName
 
-    if (activeCamera === 'cameraFree') {
+    if (activeCameraName === 'cameraFree') {
       scene.activeCamera = renderer.cameraFree
 
-    } else if (activeCamera === 'camera') {
+    } else if (activeCameraName === 'camera') {
       scene.activeCamera = renderer.camera
     }
   }
 
   ////////////////////////////////////////
   // PRIVATE
-  let scene, layout, activeCamera
+  let scene, layout, activeCameraName
 
   // CREATE CAMERA
   const createCamera = () => {
@@ -247,6 +251,11 @@ const Camera = (canvas, game) => {
     camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
 
     return camera
+  }
+
+  // GET CAMERA FROM NAME
+  const getCameraByName = (cameraName) => {
+    return cameraName === 'camera' ? renderer.camera : renderer.cameraFree
   }
 
   ////////////////////////////////////////

@@ -20,17 +20,16 @@ const Postprocess = () => {
       activeCamera = _activeCamera
     }
 
+    // Clear all postprocesses
+    clearAllPostprocess()
+
     if (postprocess !== 'none') {
 
-      // SSAO
+      // SSAO POSTPROCESSING
       if (postprocess === 'ssao') {
-        if (pipeline) {
-          // Disable pipeline
-          pipeline.dispose()
-          pipeline = undefined
-        }
+        // See: https://doc.babylonjs.com/how_to/using_the_ssao_rendering_pipeline
 
-        // Post-process
+        // Lens rendering pipeline
         // lensEffect = new BABYLON.LensRenderingPipeline(
         //   'lensEffects', 
         //   {
@@ -56,63 +55,51 @@ const Postprocess = () => {
           [activeCamera]
         )
 
-      // MULTI
+      // MULTI POSTPROCESSING
       } else if (postprocess === 'multi') {
-        if (ssao) {
-          // Disable SSAO
-          ssao.dispose()
-          ssao = undefined
-        }
 
         // DEFAULT RENDER PIPELINE
-        pipeline = new BABYLON.DefaultRenderingPipeline(
+        multi = new BABYLON.DefaultRenderingPipeline(
           "default-pipeline", // The name of the pipeline
           true, // Do you want HDR textures ?
           scene, // The scene instance
-          [camera, cameraFree] // The list of cameras to be attached to
+          [activeCamera] // The list of cameras to be attached to
         )
         // Base
-        pipeline.samples = 4
-        pipeline.fxaaEnabled = true
-        // // D.O.F.
-        // pipeline.depthOfFieldEnabled = true
-        // pipeline.depthOfFieldBlurLevel = BABYLON.DepthOfFieldEffectBlurLevel.Low;
-        // pipeline.depthOfField.focusDistance  = 2000; // distance of the current focus point from the camera in millimeters considering 1 scene unit is 1 meter
-        // pipeline.depthOfField.focalLength  = 50; // focal length of the camera in millimeters
-        // pipeline.depthOfField.fStop  = 1.4; // aka F number of the camera defined in stops as it would be on a physical device
-        // Sharpen
-        // pipeline.sharpenEnabled = true
-        // pipeline.sharpen.edgeAmount = 0.9;
-        // Bloom
-        pipeline.bloomEnabled = true
-        pipeline.bloomThreshold = 0.8
-        pipeline.bloomWeight = 0.3
-        pipeline.bloomKernel = 64
-        pipeline.bloomScale = 1
-        // Chromatic aberration
-        pipeline.chromaticAberrationEnabled = true
-        pipeline.chromaticAberration.aberrationAmount = 500;
-        pipeline.chromaticAberration.radialIntensity = 3;
-        var rotation = Math.PI;
-        pipeline.chromaticAberration.direction.x = Math.sin(rotation)
-        pipeline.chromaticAberration.direction.y = Math.cos(rotation)
-        // Grain
-        pipeline.grainEnabled = true
-        pipeline.grain.intensity = 9
-        pipeline.grain.animated = 1
-      }
+        multi.samples = 4 // The MSAA antialiasing
+        multi.fxaaEnabled = true // The FXAA antialiasing 
 
-    // NO POSTPROCESS
-    } else {
-      if (ssao) {
-        // Disable SSAO
-        ssao.dispose()
-        ssao = undefined
-      }
-      if (pipeline) {
-        // Disable pipeline
-        pipeline.dispose()
-        pipeline = undefined
+        // // D.O.F.
+        // multi.depthOfFieldEnabled = true
+        // multi.depthOfFieldBlurLevel = BABYLON.DepthOfFieldEffectBlurLevel.Low
+        // multi.depthOfField.focusDistance  = 2000 // distance of the current focus point from the camera in millimeters considering 1 scene unit is 1 meter
+        // multi.depthOfField.focalLength  = 50 // focal length of the camera in millimeters
+        // multi.depthOfField.fStop  = 1.4 // aka F number of the camera defined in stops as it would be on a physical device
+
+        // // Sharpening
+        // multi.sharpenEnabled = true
+        // multi.sharpen.edgeAmount = 0.5
+        // multi.sharpen.colorAmount = 0.5
+
+        // Bloom
+        multi.bloomEnabled = true
+        multi.bloomThreshold = 0.8
+        multi.bloomWeight = 0.3
+        multi.bloomKernel = 64
+        multi.bloomScale = 1
+
+        // Chromatic aberration
+        multi.chromaticAberrationEnabled = true
+        multi.chromaticAberration.aberrationAmount = 500;
+        multi.chromaticAberration.radialIntensity = 3;
+        var rotation = Math.PI;
+        multi.chromaticAberration.direction.x = Math.sin(rotation)
+        multi.chromaticAberration.direction.y = Math.cos(rotation)
+
+        // Grain
+        multi.grainEnabled = true
+        multi.grain.intensity = 9
+        multi.grain.animated = 0.1
       }
     }
   }
@@ -120,7 +107,22 @@ const Postprocess = () => {
   ////////////////////////////////////////
   // PRIVATE
 
-  let scene, camera, cameraFree, postprocess, activeCamera, pipeline, ssao
+  let scene, camera, cameraFree, postprocess, activeCamera, multi, ssao
+
+  const clearAllPostprocess = () => {
+    if (ssao) {
+      // Disable SSAO
+      // The 'true' argument is needed. The documentation says: "SSAO uses the depth map renderer and activates it by default. You can disable the depth map renderer by passing "true" as argument in the dispose() method"
+      // See: https://doc.babylonjs.com/how_to/using_the_ssao_rendering_pipeline
+      ssao.dispose(true)
+      ssao = undefined
+    }
+    if (multi) {
+      // Disable pipeline
+      multi.dispose()
+      multi = undefined
+    }
+  }
 
   ////////////////////////////////////////
   // INIT
@@ -129,7 +131,7 @@ const Postprocess = () => {
     camera = rendererCamera
     cameraFree = rendererCameraFree
 
-    activeCamera = camera
+    activeCamera = CONFIG.render3d.camera.activeCamera === 'camera' ? camera : cameraFree
     renderer.updatePosprocessPipeline(CONFIG.render3d.postprocess)
   }
 

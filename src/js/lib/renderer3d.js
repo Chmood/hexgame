@@ -39,8 +39,12 @@ const Renderer3d = (game, canvas) => {
 
     // Camera
     updateCameraPosition: camera.updateCameraPosition,
-    setActiveCamera: camera.setActiveCamera,
     getActiveCamera: camera.getActiveCamera,
+    // setActiveCamera: camera.setActiveCamera,
+    setActiveCamera(cameraName) {
+      camera.setActiveCamera(cameraName)
+      postprocess.updatePosprocessPipeline(undefined, camera.getActiveCamera().camera)
+    },
     updateCameraZoom: camera.updateCameraZoom,
     updateCameraAlpha: camera.updateCameraAlpha,
   
