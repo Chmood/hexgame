@@ -110,7 +110,7 @@ const CONFIG = {
       distanceRatioMax: 2,
       distanceRatioStep: 0.25,
       beta: Math.PI / 6, // 0 : top-down / Math.PI / 2 : side view 
-      activeCamera: 'cameraFree', // 'camera' or 'cameraFree'
+      activeCamera: 'camera', // 'camera' or 'cameraFree'
       cameraFreeAutoRotate: false,
     }
   },

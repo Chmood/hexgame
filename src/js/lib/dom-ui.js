@@ -77,8 +77,7 @@ const DomUI = () => {
     })
     // Checkbox for better ocean
     dom.checkboxBetterOcean.addEventListener('change', () => {
-      CONFIG.render3d.betterOcean = dom.checkboxBetterOcean.checked // TODO: don't mutate CONFIG!
-      game.renderer3d.updateOcean()
+      game.renderer3d.updateOcean(dom.checkboxBetterOcean.checked)
       game.renderer3d.addToOceanRenderList()
     })
     // Checkbox for switching camera ('free mode')

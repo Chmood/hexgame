@@ -26,8 +26,8 @@ const Renderer3d = (game, canvas) => {
         camera = Camera(canvas, game), // game is overkill, map is enough
         highlight = Highlight(),
         materials = Materials(),
-        postprocess = Postprocess(),
         environement = Environement(),
+        postprocess = Postprocess(),
         tiles = Tiles(map),
         units = Units(game, map, camera) // game is overkill, players is enough?
         

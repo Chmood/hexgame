@@ -29,8 +29,9 @@ const Environement = () => {
   renderer.shadowGenerator = undefined
   
   // UPDATE OCEAN
-  renderer.updateOcean = () => {
+  renderer.updateOcean = (_betterOcean) => {
     const worldSize = CONFIG.render3d.worldSize
+    betterOcean = _betterOcean
 
     // Ocean floor
     if (!oceanFloor) {
@@ -67,7 +68,7 @@ const Environement = () => {
     if (renderer.ocean.material) {
       renderer.ocean.material.dispose()
     }
-    if (CONFIG.render3d.betterOcean) {
+    if (betterOcean) {
       // Special water material
       water = new BABYLON.WaterMaterial('water', scene, new BABYLON.Vector2(512, 512))
       water.backFaceCulling = true
@@ -96,7 +97,7 @@ const Environement = () => {
   // ADD TO OCEAN RENDER LIST
   // Add all the meshes that reflect into ocean, or are seen through it
   renderer.addToOceanRenderList = () => {
-    if (CONFIG.render3d.betterOcean) {
+    if (betterOcean) {
       renderer.ocean.material.addToRenderList(skybox)
       renderer.ocean.material.addToRenderList(oceanFloor)
 
@@ -118,7 +119,7 @@ const Environement = () => {
 
   ////////////////////////////////////////
   // PRIVATE
-  let scene, materials, players, map, skybox, oceanFloor, water
+  let scene, materials, players, map, skybox, betterOcean, oceanFloor, water
 
   // CREATE SKYBOX
   const createSkybox = () => {
@@ -228,10 +229,12 @@ const Environement = () => {
     materials = rendererMaterials
     players = gamePlayers
     map = gameMap
+
+    betterOcean = CONFIG.render3d.betterOcean
     
     skybox = createSkybox()
 
-    renderer.updateOcean()
+    renderer.updateOcean(betterOcean)
 
     if (CONFIG.render3d.showAxis) {
       showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
