@@ -10,109 +10,189 @@ import Renderer3d from './renderer3d'
 // GAME
 
 const Game = (ctx2d, canvas3d, CONFIG, main) => {
-  const game = {}
 
-  // GAME MAP
-  game.map = Map(CONFIG.map)
+  ////////////////////////////////////////
+  // PUBLIC
+  const game = {
 
-  // UI OVERLAY
-  game.ui = {}
+    // GAME MAP
+    map: Map(CONFIG.map),
 
-  // PLAYERS
-  game.players = []
+    // UI OVERLAY
+    ui: {},
 
-  // DEBOUNCE
-  game.debounce = 0
+    // PLAYERS
+    players: [],
 
-  // RNG seeds
-  let gameSeed = CONFIG.game.seed
-  const RNG = seedrandom(gameSeed)
+    // DEBOUNCE
+    debounce: 0,
+
+    // GENERATE GAME
+    // Generate a new map (with or without a fresh seed) and players
+    generate(randomMapSeed = false) {
+      if (randomMapSeed) {
+        game.map.randomizeSeed()
+      } else {
+        game.map.setSeed(CONFIG.map.seed)
+      }
+
+      let success = false,
+          nTry = 0,
+          nTryLeft = 100
+
+      game.renderer3d.deleteTiles()
+      game.renderer3d.deleteUnits()
+
+      while (!success && nTryLeft >= 0) {
+        nTryLeft--
+        nTry++
+
+        // MAP
+        console.log(`Map generation (#${nTry} try)`)
+        game.map.generate()
+
+        // PLAYERS
+        game.players = Players(CONFIG.players, game.map, RNG)
+
+        if (game.players) {
+          success = true
+        }
+      }
+
+      if (success) {
+        console.warn(`Game generated in ${nTry} tries`)
+        console.log('MAP DATA', game.map.data)
+
+        game.renderer3d.createTiles()
+        game.renderer3d.createUnits()
+
+        game.ui.moveZone = []
+        game.ui.attackZone = []
+        game.mode = 'select'
+        game.selectedUnit = undefined
+        game.cameraDirection = 0
+
+        // It's first player's turn
+        changeCurrentPlayer(0)
+        
+      } else {
+        console.error('Game generation has failed!')
+      }
+    },
+
+    // RESIZE GAME
+    resizeGame() {
+      main.setSize()
+
+      game.updateRenderers(['resize'])
+    },
+
+    // ON KEY CHANGE
+    onKeyDown(keys) {
+      // Only catch key events if the standard camera is active
+      if (game.renderer3d.getActiveCamera() === 'camera') {
+        if (game.debounce === 0) {
+                if (keys['ArrowRight'] && 
+                    keys['ArrowUp']) {     cursorMove('right-up')
+          } else if (keys['ArrowRight'] && 
+                    keys['ArrowDown']) {   cursorMove('right-down')
+          } else if (keys['ArrowLeft'] && 
+                    keys['ArrowUp']) {     cursorMove('left-up')
+          } else if (keys['ArrowLeft'] && 
+                    keys['ArrowDown']) {   cursorMove('left-down')
+          } else if (keys['ArrowRight']) {  cursorMove('right')
+          } else if (keys['ArrowLeft']) {   cursorMove('left')
+          } else if (keys['ArrowUp']) {     cursorMove('up')
+          } else if (keys['ArrowDown']) {   cursorMove('down')
+            
+          } else if (keys['x']) {           game.doAction()
+          } else if (keys['c']) {           cancelAction()
+          } else if (keys['v']) {           focusUnit('previous')
+          } else if (keys['b']) {           focusUnit('next')
+
+          } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
+          } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
+          } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
+                                            game.cameraDirection--
+                                            game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
+          } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
+                                            game.cameraDirection++
+                                            game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
+          }
+        }
+      }
+    },
+
+    // RESET DEBOUNCE
+    resetDebounce() {
+      game.debounce = CONFIG.render3d.debounceKeyboardTime
+    },
+
+    // DO ACTION
+    doAction() {
+      if (game.mode === 'select') {
+        selectUnit()
+      } else if (game.mode === 'move') {
+        selectDestination()
+      } else if (game.mode === 'attack') {
+        doAttack()
+      }
+    },
+
+    // UPDATE RENDERERS
+    updateRenderers(actions) {
+      if (actions) {
+        for (const action of actions) {
+    
+          if (action === 'resize') {
+            game.renderer2d.init()
+            game.renderer3d.resizeEngine()
+    
+          } else if (action === 'highlights') {
+            game.renderer3d.updateHighlights()
+    
+          } else if (action === 'players') {
+            game.renderer3d.deleteUnits()
+            game.renderer3d.createUnits()
+            game.renderer3d.addToOceanRenderList() // TODO: overkill? (only players needed)
+          }
+        }
+      }
+      game.renderer2d.render() // Always refresh 2d canvas
+    },
+
+    // UPDATE CURSOR
+    updateCursor(hex) {
+      if (hex) { // May be called with invalid cursor hex
+        if (!HEXLIB.hexEqual(hex, game.ui.cursor)) {
+          // Cursor has moved
+          game.ui.cursor = hex // Update the new cursor
+          // Update the cursor line
+          if (game.mode === 'move') {
+            game.ui.cursorPath = getCursorLine(hex, game.selectedUnit.hex, game.selectedUnit.type)
+          } else {
+            game.ui.cursorPath = []
+          }
+
+          game.updateRenderers(['highlights'])
+        }
+      }
+    }
+  }
 
   // GAME RENDERERS
   game.renderer2d = Renderer2d(game, ctx2d)
   game.renderer3d = Renderer3d(game, canvas3d)
 
-  // UPDATE RENDERERS
-  game.updateRenderers = (actions) => {
-    if (actions) {
-      for (const action of actions) {
-  
-        if (action === 'resize') {
-          game.renderer2d.init()
-          game.renderer3d.resizeEngine()
-  
-        } else if (action === 'highlights') {
-          game.renderer3d.updateHighlights()
-  
-        } else if (action === 'players') {
-          game.renderer3d.deleteUnits()
-          game.renderer3d.createUnits()
-          game.renderer3d.addToOceanRenderList() // TODO: overkill? (only players needed)
-        }
-      }
-    }
-    game.renderer2d.render() // Always refresh 2d canvas
-  }
-
-  // HELPER FUNCTIONS
-  const clampValueInRange = (value, max, min = 0) => {
-    if (value < min) { return min }
-    if (value >= max) { return max }
-    return value
-  }
-  const cycleValueInRange = (value, max, min = 0) => {
-    if (value < min) { return value + (max - min) }
-    if (value >= max) { return value - (max - min) }
-    return value
-  }
-
   ////////////////////////////////////////
-  // GAME ACTIONS
-
-  // ON KEY CHANGE
-  game.onKeyDown = (keys) => {
-    // Only catch key events if the standard camera is active
-    if (game.renderer3d.getActiveCamera() === 'camera') {
-      if (game.debounce === 0) {
-               if (keys['ArrowRight'] && 
-                   keys['ArrowUp']) {     game.cursorMove('right-up')
-        } else if (keys['ArrowRight'] && 
-                   keys['ArrowDown']) {   game.cursorMove('right-down')
-        } else if (keys['ArrowLeft'] && 
-                   keys['ArrowUp']) {     game.cursorMove('left-up')
-        } else if (keys['ArrowLeft'] && 
-                   keys['ArrowDown']) {   game.cursorMove('left-down')
-        } else if (keys['ArrowRight']) {  game.cursorMove('right')
-        } else if (keys['ArrowLeft']) {   game.cursorMove('left')
-        } else if (keys['ArrowUp']) {     game.cursorMove('up')
-        } else if (keys['ArrowDown']) {   game.cursorMove('down')
-          
-        } else if (keys['x']) {           game.doAction()
-        } else if (keys['c']) {           game.cancelAction()
-        } else if (keys['v']) {           game.focusUnit('previous')
-        } else if (keys['b']) {           game.focusUnit('next')
-
-        } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
-        } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
-        } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
-                                          game.cameraDirection--
-                                          game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
-        } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
-                                          game.cameraDirection++
-                                          game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
-        }
-      }
-    }
-  }
-
-  // RESET DEBOUNCE
-  game.resetDebounce = () => {
-    game.debounce = CONFIG.render3d.debounceKeyboardTime
-  }
+  // PRIVATE
+  // RNG seeds
+  let gameSeed = CONFIG.game.seed
+  const RNG = seedrandom(gameSeed)
 
   // CHANGE CURRENT PLAYER
   // TODO: broken when deleting players!
-  game.changeCurrentPlayer = (playerId) => {
+  const changeCurrentPlayer = (playerId) => {
     if (game.currentPlayer === undefined) {
       // First call
       game.currentPlayer = game.players[0]
@@ -138,22 +218,22 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     game.mode = 'select'
     game.unitsToMove = game.currentPlayer.units
     game.focusedUnit = game.unitsToMove[0] 
-    game.focusUnit(game.focusedUnit)
+    focusUnit(game.focusedUnit)
 
     // Is the next player a bot?
     if (!game.currentPlayer.isHuman) {
       console.log(`Player ${game.currentPlayer.name} is a bot`)
-      game.playBot()
+      playBot()
     }
   } 
 
   // PLAY BOT
-  game.playBot = async () => {
+  const playBot = async () => {
     for (const unit of game.currentPlayer.units) {
       game.selectedUnit = unit
       game.mode = 'select'
-      game.focusUnit(unit)
-      const zones = game.getMoveZones(unit),
+      focusUnit(unit)
+      const zones = getMoveZones(unit),
             moveZone = zones.move,
             attackZone = zones.attack
 
@@ -165,30 +245,30 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
         unit.hex, 
         target,
         true,
-        game.getUnitsHexes()
+        getUnitsHexes()
       )
       path.shift() // Remove the first element (that is unit/starting cell)
       await game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
 
       // ATTACK
-      game.ui.attackZone = game.getAttackTargets(game.selectedUnit)
+      game.ui.attackZone = getAttackTargets(game.selectedUnit)
       // Does the unit can attack any ennemy?
       if (game.ui.attackZone.length !== 0) {
         game.selectedTargetId = Math.floor(RNG() * game.ui.attackZone.length)
-        await game.doAttack()
+        await doAttack()
       }
   
       // End of turn
-      // game.endUnitTurn()
+      // endUnitTurn()
       game.selectedUnit.hasPlayed = true
       game.renderer3d.changeUnitMaterial(game.selectedUnit, 'colorDesaturated') // WTF?
     }
-    game.changeCurrentPlayer()
+    changeCurrentPlayer()
   }
 
   // GET UNITS HEXES
   // Return an array of all/friends/ennemies units hexes
-  game.getUnitsHexes = (group) => {
+  const getUnitsHexes = (group) => {
     const unitsHexes = []
     if (!group || group === 'ennemies') {
       for (const player of game.players) {
@@ -211,7 +291,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   
   // FOCUS UNIT
   // Give focus (camera and cursor) either to the given unit, or next or previous
-  game.focusUnit = (param = 'next') => {
+  const focusUnit = (param = 'next') => {
     // Prevents focusing during move or passive mode
     if (game.mode !== 'select') {
       console.log(`Focus can only be used in "select" mode!`)
@@ -268,7 +348,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   }
 
   // SELECT UNIT
-  game.selectUnit = () => {
+  const selectUnit = () => {
     let isSomethingSelected = false
     for (const player of game.players) {
       for (const unit of player.units) {
@@ -290,7 +370,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
             // Highlight the whole movement zone
             console.log(`Unit selected: ${unit.name}`)
             
-            const zones = game.getMoveZones(unit)
+            const zones = getMoveZones(unit)
             game.ui.moveZone = zones.move
             game.ui.attackZone = zones.attack
             if (game.ui.moveZone.length === 0) {
@@ -314,7 +394,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   }
 
   // SELECT DESTINATION
-  game.selectDestination = async function() {
+  const selectDestination = async function() {
     // Avoid the user to move cursor or do other actions during movement
     const path = game.ui.cursorPath // Use the cursor path as movement path
 
@@ -332,14 +412,15 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     console.log(`Unit moved: ${game.selectedUnit.name}`)
 
     // Attack phase
-    game.selectAttack()
+    selectAttack()
   }
 
-  game.selectAttack = () => {
-    game.ui.attackZone = game.getAttackTargets(game.selectedUnit)
+  // SELECT ATTACK
+  const selectAttack = () => {
+    game.ui.attackZone = getAttackTargets(game.selectedUnit)
     // Does the unit can attack any ennemy?
     if (game.ui.attackZone.length === 0) {
-      game.endUnitTurn()
+      endUnitTurn()
       return
     }
 
@@ -354,7 +435,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   }
 
   // DO ATTACK
-  game.doAttack = async () => {
+  const doAttack = async () => {
     // Get the ennemy
     const targetHex = game.ui.attackZone[game.selectedTargetId]
     for (const ennemy of game.players) {
@@ -419,7 +500,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
 
             game.ui.attackZone = []
             if (player.isHuman) {
-              game.endUnitTurn()
+              endUnitTurn()
             }
             break
           }
@@ -429,7 +510,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   }
 
   // END UNIT TURN
-  game.endUnitTurn = () => {
+  const endUnitTurn = () => {
     // Mark the unit as having played
     game.selectedUnit.hasPlayed = true
     game.renderer3d.changeUnitMaterial(game.selectedUnit, 'colorDesaturated')
@@ -442,28 +523,17 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     if (nUnitsRemaining === 0) {
       // No more unit to play with
       console.log(`${game.currentPlayer.name}'s turn is over`)
-      game.changeCurrentPlayer()
+      changeCurrentPlayer()
 
     } else {
       console.log(`Still ${nUnitsRemaining} unit(s) to play`)
       game.mode = 'select'
-      game.focusUnit('next')
-    }
-  }
-
-  // DO ACTION
-  game.doAction = () => {
-    if (game.mode === 'select') {
-      game.selectUnit()
-    } else if (game.mode === 'move') {
-      game.selectDestination()
-    } else if (game.mode === 'attack') {
-      game.doAttack()
+      focusUnit('next')
     }
   }
 
   // CANCEL MOVE
-  game.cancelMove = () => {
+  const cancelMove = () => {
     game.mode = 'select'
     game.ui.cursor = game.ui.cursorBackup
     game.ui.cursorPath = []
@@ -476,17 +546,17 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   }
 
   // CANCEL ACTION
-  game.cancelAction = () => {
+  const cancelAction = () => {
     if (game.mode === 'select') {
       console.log('Nothing to cancel!')
       // Nothing to do
     } else if (game.mode === 'move') {
-      game.cancelMove()
+      cancelMove()
     }
   }
 
   // GET DIRECTION INDEX
-  game.getDirectionIndex = (direction, hex) => {
+  const getDirectionIndex = (direction, hex) => {
     const cursorOffset = HEXLIB.hex2Offset(hex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
     let directionIndex
 
@@ -543,11 +613,11 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
 
   // MOVE CURSOR
   // Select, move or attack modes
-  game.cursorMove = (direction) => {
+  const cursorMove = (direction) => {
     game.resetDebounce()
 
     if (game.mode === 'select' || game.mode === 'move') {
-      const directionIndex = game.getDirectionIndex(direction, game.ui.cursor)
+      const directionIndex = getDirectionIndex(direction, game.ui.cursor)
   
       if (directionIndex !== undefined) {
         const hex = HEXLIB.hexNeighbors(game.ui.cursor)[directionIndex]
@@ -589,33 +659,15 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     }
   }
 
-  // UPDATE CURSOR
-  game.updateCursor = (hex) => {
-    if (hex) { // May be called with invalid cursor hex
-      if (!HEXLIB.hexEqual(hex, game.ui.cursor)) {
-        // Cursor has moved
-        game.ui.cursor = hex // Update the new cursor
-        // Update the cursor line
-        if (game.mode === 'move') {
-          game.ui.cursorPath = game.getCursorLine(hex, game.selectedUnit.hex, game.selectedUnit.type)
-        } else {
-          game.ui.cursorPath = []
-        }
-
-        game.updateRenderers(['highlights'])
-      }
-    }
-  }
-
   // CURSOR LINE
-  game.getCursorLine = (cursor, target, type) => {
+  const getCursorLine = (cursor, target, type) => {
     if (game.map.getCellFromHex(cursor) && game.map.getCellFromHex(cursor).isInGraph) {
       const cursorLine = game.map.findPath(
         type,
         target, 
         cursor,
         true,
-        game.getUnitsHexes()
+        getUnitsHexes()
       )
       if (cursorLine) {
         return cursorLine
@@ -625,14 +677,14 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
 
   // GET MOVE ZONE
   // Grab all the tiles with a cost lower than the player movement value
-  game.getMoveZones = (unit) => {
+  const getMoveZones = (unit) => {
     // TODO: 
     // * make findPath return an array of cells in that range???
     // * use a second graph for attacking, with uniform move costs of 1???
     
     const moveZone = [],
           attackZone = [],
-          friendsHexes = game.getUnitsHexes('friends')
+          friendsHexes = getUnitsHexes('friends')
 
     // MOVE ZONE
     // Scan the whole graph to compute cost of each tile
@@ -643,7 +695,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
       unit.hex, 
       undefined, // no goal
       undefined, // no early exit
-      game.getUnitsHexes(), // blacklist
+      getUnitsHexes(), // blacklist
       unit.movement // cost higher limit
     )  
     game.updateRenderers() // Draw numbers on 2D map
@@ -692,7 +744,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
   }
 
   // GET ATTACK TARGETS
-  game.getAttackTargets = (unit) => {
+  const getAttackTargets = (unit) => {
     const attackTargets = []
 
     game.map.findPath(
@@ -704,7 +756,7 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
       unit.attackRangeMax // cost higher limit
     )
 
-    for (const ennemyHex of game.getUnitsHexes('ennemies')) {
+    for (const ennemyHex of getUnitsHexes('ennemies')) {
       const ennemyCell = game.map.getCellFromHex(ennemyHex)
       // Is the nnemy in the attack range?
       if (ennemyCell.cost <= unit.attackRangeMax) {
@@ -714,68 +766,18 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     return attackTargets
   }
 
-  // RESIZE GAME
-  game.resizeGame = () => {
-    main.setSize()
-
-    game.updateRenderers(['resize'])
+  // HELPER FUNCTIONS
+  const clampValueInRange = (value, max, min = 0) => {
+    if (value < min) { return min }
+    if (value >= max) { return max }
+    return value
   }
-
-  ////////////////////////////////////////
-  // GENERATE GAME
-
-  // Generate a new map (with or without a fresh seed) and players
-  game.generate = (randomMapSeed = false) => {
-    if (randomMapSeed) {
-      game.map.randomizeSeed()
-    } else {
-      game.map.setSeed(CONFIG.map.seed)
-    }
-
-    let success = false,
-        nTry = 0,
-        nTryLeft = 100
-
-    game.renderer3d.deleteTiles()
-    game.renderer3d.deleteUnits()
-
-    while (!success && nTryLeft >= 0) {
-      nTryLeft--
-      nTry++
-
-      // MAP
-      console.log(`Map generation (#${nTry} try)`)
-      game.map.generate()
-
-      // PLAYERS
-      game.players = Players(CONFIG.players, game.map, RNG)
-
-      if (game.players) {
-        success = true
-      }
-    }
-
-    if (success) {
-      console.warn(`Game generated in ${nTry} tries`)
-      console.log('MAP DATA', game.map.data)
-
-      game.renderer3d.createTiles()
-      game.renderer3d.createUnits()
-
-      game.ui.moveZone = []
-      game.ui.attackZone = []
-      game.mode = 'select'
-      game.selectedUnit = undefined
-      game.cameraDirection = 0
-
-      // It's first player's turn
-      game.changeCurrentPlayer(0)
-      
-    } else {
-      console.error('Game generation has failed!')
-    }
+  const cycleValueInRange = (value, max, min = 0) => {
+    if (value < min) { return value + (max - min) }
+    if (value >= max) { return value - (max - min) }
+    return value
   }
-
+  
   return game
 }
 
