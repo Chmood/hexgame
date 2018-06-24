@@ -142,6 +142,7 @@ const Units = (game, map, camera) => {
     }
   }
 
+  // MOVE UNIT ON PATH
   renderer.moveUnitOnPath = (unit, path) => {
     return new Promise(async (resolve) => {
 
@@ -154,6 +155,18 @@ const Units = (game, map, camera) => {
       const newPath = await moveUnitOnePathStep(unit, path)
       game.updateRenderers() // Update 2D map
       resolve(renderer.moveUnitOnPath(unit, newPath))
+    })
+  }
+
+  // TELEPORT UNIT
+  renderer.teleportUnit = (unit, hex, orientation = 0) => {
+    return new Promise(async (resolve) => {
+
+      const moveUnitAnimation = moveUnit(unit, hex)
+      await moveUnitAnimation.waitAsync()
+      // Update unit's position
+      unit.moveToHex(hex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      resolve()
     })
   }
 

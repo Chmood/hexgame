@@ -70,6 +70,7 @@ const Renderer3d = (game, canvas) => {
     deleteUnits: units.deleteUnits,
     deleteUnit: units.deleteUnit,
     moveUnitOnPath: units.moveUnitOnPath,
+    teleportUnit: units.teleportUnit,
     attackUnit: units.attackUnit,
     destroyUnit: units.destroyUnit,
     updateHealthbar: units.updateHealthbar,

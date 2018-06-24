@@ -2,13 +2,14 @@
 
 ## Known bugs
 
+* Unit desaturated color (when having played) is dead
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
 * Switching post-processing ('multi'/'ssao') cause lignting issues (too dark / too bright)
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too, it shouldn't lean with its unit, but stay stricly above it)
 
 ## Improvements
 
-* Player must be able to cancel a move while targetting (ala Fire Emblem)
+* Camera moves too much, followinf the action: make it follow a "box" to dampen it
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
@@ -27,7 +28,6 @@
 
 * More DOM UI (menus, stats...)
 * Terrain defense bonus/malus
-* In-game menu
 * "Player XXX's turn" banner (see: https://doc.babylonjs.com/how_to/dynamictexture)
 * Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
 * Unit parts animations (idle, shoot, move...)

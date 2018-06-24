@@ -96,16 +96,27 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       // Only catch key events if the standard camera is active
       if (game.renderer3d.getActiveCamera().name === 'camera') {
         if (game.debounce === 0) {
-          if (game.mode === 'game-menu-select') {
+          if (game.mode === 'game-menu-select' || game.mode === 'game-menu-move') {
                    if (keys['ArrowUp']) {     dom.moveGameMenu('up')
             } else if (keys['ArrowDown']) {   dom.moveGameMenu('down')
             } else if (keys['x']) {           dom.selectGameMenu()
-            } else if (keys['c']) {           dom.closeGameMenu()
+            }
+
+            if (game.mode === 'game-menu-select') {
+              // Player can only close menu (with no item selected) during selection phase
+                   if (keys['c']) {           dom.closeGameMenu()
                                               game.mode = 'select'
+              }
+            } else if (game.mode === 'game-menu-move') {
+              // Closing the menu in move phase cancel the move
+                   if (keys['c']) {           dom.closeGameMenu()
+                                              // game.mode = 'move'
+                                              cancelFinishedMove()
+              }
             }
 
           } else {
-                  if (keys['ArrowRight'] && 
+                   if (keys['ArrowRight'] && 
                       keys['ArrowUp']) {      moveCursor('right-up')
             } else if (keys['ArrowRight'] && 
                       keys['ArrowDown']) {    moveCursor('right-down')
@@ -145,7 +156,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // DO ACTION
     doAction(type = 'keyboard') {
       if (game.mode === 'select') {
-        selectUnit()
+        selectCell()
 
       } else if (game.mode === 'move') {
         if (type === 'keyboard') {
@@ -221,18 +232,21 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     // GAME MENU ITEMS
     gameMenuAttack() {
-      console.log('GAME MENU: attack')
+      // Attack phase
+      selectAttack()
+      dom.closeGameMenu()
     },
     gameMenuWait() {
-      console.log('GAME MENU: wait')
+      // End the unit turn
+      endUnitTurn()
+      dom.closeGameMenu()
     },
     gameMenuEndTurn() {
-      console.log('GAME MENU: end turn')
       changeCurrentPlayer()
       dom.closeGameMenu()
     },
     gameMenuQuitGame() {
-      console.log('GAME MENU: quit game')
+      // TODO
     }
   }
 
@@ -405,7 +419,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   }
 
   // SELECT UNIT
-  const selectUnit = () => {
+  const selectCell = () => {
     let isSomethingSelected = false
     for (const player of game.players) {
       for (const unit of player.units) {
@@ -415,25 +429,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
           if (player === game.currentPlayer) {
             // The player selected one of its own units
-            if (unit.hasPlayed) {
-              console.log(`Unit ${unit.name} has already played!`)
-              return
-            }
-            // The unit can move
-            game.mode = 'move'
-            game.selectedUnit = unit
-            // Backup cursor in case of cancel
-            game.ui.cursorBackup = game.ui.cursor
-            // Highlight the whole movement zone
-            console.log(`Unit selected: ${unit.name}`)
-            
-            const zones = getMoveZones(unit)
-            game.ui.moveZone = zones.move
-            game.ui.attackZone = zones.attack
-            if (game.ui.moveZone.length === 0) {
-              console.log('Nowhere to go, the unit is blocked!')
-            }
-            game.updateRenderers(['highlights'])
+            selectPlayerUnit(unit)
 
           } else {
             // The player selected one of another player's unit
@@ -445,11 +441,34 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     }
     // Empty selection
     if (!isSomethingSelected) {
-      console.log('Nothing to select here!')
-      // TODO: open game menu (ala Fire Emblem!)
+      // Open the game menu (ala Fire Emblem!)
       dom.openGameMenu(['EndTurn', 'QuitGame'])
       game.mode = 'game-menu-select'
     }
+  }
+
+  // SELECT UNIT
+  const selectPlayerUnit = (unit) => {
+    if (unit.hasPlayed) {
+      console.log(`Unit ${unit.name} has already played!`)
+      return
+    }
+
+    console.log(`Unit selected: ${unit.name}`)
+    // The unit can move
+    game.mode = 'move'
+    game.selectedUnit = unit
+    // Backup cursor in case of cancel
+    game.ui.cursorBackup = game.ui.cursor
+    
+    // Highlight the whole movement zone
+    const zones = getMoveZones(unit)
+    game.ui.moveZone = zones.move
+    game.ui.attackZone = zones.attack
+    if (game.ui.moveZone.length === 0) {
+      console.log('Nowhere to go, the unit is blocked!')
+    }
+    game.updateRenderers(['highlights'])
   }
 
   // SELECT DESTINATION
@@ -463,6 +482,12 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     game.ui.attackZone = []
     game.ui.cursorPath = []
     game.updateRenderers(['highlights'])
+
+    // // Backup unit position and rotation in case of cancel
+    // game.unitMoveBackup = {
+    //   hex: game.selectedUnit.hex,
+    //   rotation: 
+    // }
     
     // Make the unit travel the path
     path.shift() // Remove the first element (that is unit/starting cell)
@@ -470,19 +495,23 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     await game.renderer3d.moveUnitOnPath(game.selectedUnit, path)
     console.log(`Unit moved: ${game.selectedUnit.name}`)
 
-    // Attack phase
-    selectAttack()
+    game.mode = 'game-menu-move'
+    if (canUnitAttack()) {
+      dom.openGameMenu(['Attack', 'Wait'])
+    } else {
+      dom.openGameMenu(['Wait'])
+    }
+  }
+
+  // CAN UNIT ATTACK
+  const canUnitAttack = () => {
+    game.ui.attackZone = getAttackTargets(game.selectedUnit)
+    // Does the unit can attack any ennemy?
+    return game.ui.attackZone.length > 0
   }
 
   // SELECT ATTACK
   const selectAttack = () => {
-    game.ui.attackZone = getAttackTargets(game.selectedUnit)
-    // Does the unit can attack any ennemy?
-    if (game.ui.attackZone.length === 0) {
-      endUnitTurn()
-      return
-    }
-
     game.mode = 'attack'
     // Target the first ennemy
     game.selectedTargetId = 0
@@ -603,6 +632,23 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // game.updateCursor(game.ui.cursor)
     game.renderer3d.updateCameraPosition(game.ui.cursor)
     console.log('Move has been cancelled')
+  }
+
+  // CANCEL FINISHED MOVE
+  // The player cancels the unit move with the game menu
+  const cancelFinishedMove = async () => {
+    await game.renderer3d.teleportUnit(
+      game.selectedUnit, 
+      game.ui.cursorBackup, // We use the cursor backup as the previous unit position
+      0 // TODO: backup unit orientation too!
+    )
+    console.log('Move has been totally cancelled')
+
+    // Reset UI, replace cursor and camera
+    game.ui.cursor = game.ui.cursorBackup
+    game.ui.cursorPath = []
+    game.renderer3d.updateCameraPosition(game.ui.cursor)
+    selectPlayerUnit(game.selectedUnit)
   }
 
   // CANCEL ACTION
