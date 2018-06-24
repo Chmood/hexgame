@@ -1,3 +1,4 @@
+import CONFIG from './config'
 import HEXLIB from '../vendor/hexlib'
 import seedrandom from 'seedrandom'
 
@@ -9,7 +10,7 @@ import Renderer3d from './renderer3d'
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
 
-const Game = (ctx2d, canvas3d, CONFIG, main) => {
+const Game = (ctx2d, canvas3d, dom, main) => {
 
   ////////////////////////////////////////
   // PUBLIC
@@ -95,32 +96,42 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
       // Only catch key events if the standard camera is active
       if (game.renderer3d.getActiveCamera().name === 'camera') {
         if (game.debounce === 0) {
-                if (keys['ArrowRight'] && 
-                    keys['ArrowUp']) {      moveCursor('right-up')
-          } else if (keys['ArrowRight'] && 
-                    keys['ArrowDown']) {    moveCursor('right-down')
-          } else if (keys['ArrowLeft'] && 
-                    keys['ArrowUp']) {      moveCursor('left-up')
-          } else if (keys['ArrowLeft'] && 
-                    keys['ArrowDown']) {    moveCursor('left-down')
-          } else if (keys['ArrowRight']) {  moveCursor('right')
-          } else if (keys['ArrowLeft']) {   moveCursor('left')
-          } else if (keys['ArrowUp']) {     moveCursor('up')
-          } else if (keys['ArrowDown']) {   moveCursor('down')
-            
-          } else if (keys['x']) {           game.doAction()
-          } else if (keys['c']) {           cancelAction()
-          } else if (keys['v']) {           focusUnit('previous')
-          } else if (keys['b']) {           focusUnit('next')
+          if (game.mode === 'game-menu-select') {
+                   if (keys['ArrowUp']) {     dom.moveGameMenu('up')
+            } else if (keys['ArrowDown']) {   dom.moveGameMenu('down')
+            } else if (keys['x']) {           dom.selectGameMenu()
+            } else if (keys['c']) {           dom.closeGameMenu()
+                                              game.mode = 'select'
+            }
 
-          } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
-          } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
-          } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
-                                            game.cameraDirection--
-                                            game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
-          } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
-                                            game.cameraDirection++
-                                            game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
+          } else {
+                  if (keys['ArrowRight'] && 
+                      keys['ArrowUp']) {      moveCursor('right-up')
+            } else if (keys['ArrowRight'] && 
+                      keys['ArrowDown']) {    moveCursor('right-down')
+            } else if (keys['ArrowLeft'] && 
+                      keys['ArrowUp']) {      moveCursor('left-up')
+            } else if (keys['ArrowLeft'] && 
+                      keys['ArrowDown']) {    moveCursor('left-down')
+            } else if (keys['ArrowRight']) {  moveCursor('right')
+            } else if (keys['ArrowLeft']) {   moveCursor('left')
+            } else if (keys['ArrowUp']) {     moveCursor('up')
+            } else if (keys['ArrowDown']) {   moveCursor('down')
+              
+            } else if (keys['x']) {           game.doAction()
+            } else if (keys['c']) {           cancelAction()
+            } else if (keys['v']) {           focusUnit('previous')
+            } else if (keys['b']) {           focusUnit('next')
+
+            } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
+            } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
+            } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
+                                              game.cameraDirection--
+                                              game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
+            } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
+                                              game.cameraDirection++
+                                              game.cameraDirection = cycleValueInRange(game.cameraDirection, 6)
+            }
           }
         }
       }
@@ -206,6 +217,22 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
       } else {
         console.error(`game.updateCursor(): no hex provided!`)
       }
+    },
+
+    // GAME MENU ITEMS
+    gameMenuAttack() {
+      console.log('GAME MENU: attack')
+    },
+    gameMenuWait() {
+      console.log('GAME MENU: wait')
+    },
+    gameMenuEndTurn() {
+      console.log('GAME MENU: end turn')
+      changeCurrentPlayer()
+      dom.closeGameMenu()
+    },
+    gameMenuQuitGame() {
+      console.log('GAME MENU: quit game')
     }
   }
 
@@ -420,6 +447,8 @@ const Game = (ctx2d, canvas3d, CONFIG, main) => {
     if (!isSomethingSelected) {
       console.log('Nothing to select here!')
       // TODO: open game menu (ala Fire Emblem!)
+      dom.openGameMenu(['EndTurn', 'QuitGame'])
+      game.mode = 'game-menu-select'
     }
   }
 

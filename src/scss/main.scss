@@ -1,22 +1,32 @@
 @import '../../node_modules/normalize-css/normalize.css';
 
+// BASE
+
 html {
+	font-size: 62.5%;
 }
 
 body {
 	overflow: hidden;
+	font-size: 1.0rem;
 }
+
+// GAME WRAPPER
 
 .game-wrapper {
 	height: 100vh;
 	position: relative;
 }
 
+// CANVAS 3D
+
 #canvas3d {
 	width: 100vw;
 	height: 100vh;
 	touch-action: none;
 }
+
+// CANVAS 2D
 
 #canvas2d-wrapper {
 	position: absolute;
@@ -30,28 +40,89 @@ body {
 #canvas2d {
 }
 
-#ui {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	width: 100vw;
-	padding: 0.5rem;
+// UI PANEL & GAME MENU
+
+#ui,
+#game-menu {
+	position: fixed;
+	padding: 1rem;
 	background-color: rgba(0,0,0,0.75);
 	color: white;
-	font-size: 0.6rem;
-  text-align: center;
-	
+
 	button {
+		border: none;
 		padding: 0.5rem 1rem;
 		text-transform: uppercase;
 		color: black;
 		font-weight: bold;
-		font-size: 0.6rem;
+
+		&:hover,
+		&:focus {
+			background-color: #111;
+			color: white;
+			outline: none;
+		}
+
+		&:active {
+			background-color: #f80;
+			color: white;
+		}
 	}
+}
+
+// UI PANEL
+
+#ui {
+	bottom: 0;
+	left: 0;
+	width: 100vw;
+  text-align: center;
 
 	p {
 		margin-top: 0;
 	}
 }
 
+// GAME MENU PANEL
 
+#game-menu {
+	top: 0;
+	right: 0;
+	padding: 0.5rem;
+	padding-bottom: 0;
+	color: white;
+	transform: translateX(100%);
+	transition: all 0.25s;
+
+	&.active {
+		transform: translateX(0);
+	}
+
+	button {
+		display: none;
+		width: 100%;
+		margin-bottom: 0.5rem;
+		text-align: left;
+	}
+
+	&.Attack {
+		#game-menu-Attack {
+			display: block;
+		}
+	}
+	&.Wait {
+		#game-menu-Wait {
+			display: block;
+		}
+	}
+	&.EndTurn {
+		#game-menu-EndTurn {
+			display: block;
+		}
+	}
+	&.QuitGame {
+		#game-menu-QuitGame {
+			display: block;
+		}
+	}
+}

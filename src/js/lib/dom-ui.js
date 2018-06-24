@@ -6,15 +6,26 @@ import CONFIG from './config'
 const DomUI = () => {
 
   const dom = {},
-        keys = {}
-  let game = undefined
+        keys = {},
+        gameMenuItems = ['Attack', 'Wait', 'EndTurn', 'QuitGame']
+
+  let game = {}
 
   // GET ELEMENTS
   dom.getElements = () => {
+    // 2D and 3D canvases
     dom.canvas2d = document.getElementById('canvas2d')
     dom.canvas2dWrapper = document.getElementById('canvas2d-wrapper')
     dom.canvas3d = document.getElementById('canvas3d')
   
+    // Game menu and its items
+    dom.gameMenu = document.getElementById('game-menu')
+    dom.gameMenuItems = document.querySelectorAll('.game-menu-item')
+    for (const item of gameMenuItems) {
+      dom[`gameMenu${item}`] = document.getElementById(`game-menu-${item}`)
+    }
+
+    // Config panel elements
     dom.btnUpdate = document.getElementById('ui-btn-update')
     dom.btnNew = document.getElementById('ui-btn-new')
     dom.selectPosprocess = document.getElementById('ui-select-postprocess')
@@ -60,7 +71,7 @@ const DomUI = () => {
       game.doAction('mouse')
     })
 
-    // UI buttons
+    // UI panel buttons
     dom.btnUpdate.addEventListener('click', () => {
       game.generate()
     })
@@ -68,8 +79,7 @@ const DomUI = () => {
       game.generate(true) // New random seed
     })
 
-    // UI SETTINGS
-
+    // UI panel settings
     // Select post-process
     dom.selectPosprocess.addEventListener('change', () => {
       const postprocess = dom.selectPosprocess.value
@@ -91,16 +101,77 @@ const DomUI = () => {
       game.renderer3d.setCameraFreeAutorotate(cameraFreeAutoRotate)
     })
 
+    // Game menu
+    for (const item of gameMenuItems) {
+      dom[`gameMenu${item}`].addEventListener('click', () => {
+        game[`gameMenu${item}`]()
+      })
+    }
+
     // Resize window
     window.onresize = () => {
       game.resizeGame()
     }
   }
 
+  // GAME MENU
+
+  dom.openGameMenu = (items) => {
+    // Clear all existing menu items
+    dom.gameMenu.classList.remove(...gameMenuItems)
+    dom.gameMenuItems.forEach((item) => {
+      item.classList.remove('is-selectable')
+    })
+
+    // Add the specified menu items
+    for (const [index, item] of items.entries()) {
+      dom.gameMenu.classList.add(item) // class on the menu
+      dom[`gameMenu${item}`].classList.add('is-selectable') // class on available items
+      if (index === 0) {
+        // dom[`gameMenu${item}`].classList.add('is-selected')
+        dom[`gameMenu${item}`].focus()
+      }
+    }
+
+    // Make the menu visible
+    dom.gameMenu.classList.add('active')
+
+    // Backup items
+    currentGameMenuItems = items
+    currentGameMenuItemId = 0
+  }
+
+  dom.closeGameMenu = () => {
+    dom.gameMenu.classList.remove('active')
+  }
+
+  dom.moveGameMenu = (direction) => {
+    const increment = direction === 'up' ? -1 : 1
+    currentGameMenuItemId += increment
+
+    // Wrap index
+    if (currentGameMenuItemId < 0) {
+      currentGameMenuItemId += currentGameMenuItems.length
+    } else if (currentGameMenuItemId >= currentGameMenuItems.length) {
+      currentGameMenuItemId -= currentGameMenuItems.length
+    }
+
+    // Give the focus to the selected menu item button
+    dom[`gameMenu${currentGameMenuItems[currentGameMenuItemId]}`].focus()
+  }
+
+  dom.selectGameMenu = () => {
+    // Simulates a click on the menu item button
+    dom[`gameMenu${currentGameMenuItems[currentGameMenuItemId]}`].click()
+  }
+
   // SET GAME
   dom.setGame = (newGame) => {
     game = newGame
   }
+
+  let currentGameMenuItems = []
+  let currentGameMenuItemId = undefined
 
   dom.getElements()
   dom.setElements()

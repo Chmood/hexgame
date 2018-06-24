@@ -65,7 +65,7 @@ const Main = () => {
     ////////////////////////////////
     // CREATE THE GAME
 
-    main.game = Game(main.ctx, main.domUI.canvas3d, CONFIG, main)
+    main.game = Game(main.ctx, main.domUI.canvas3d, main.domUI, main)
     main.game.generate()
     main.domUI.setGame(main.game)
 
