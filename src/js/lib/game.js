@@ -164,7 +164,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     // RESET DEBOUNCE
     resetDebounce() {
-      game.debounce = CONFIG.render3d.debounceKeyboardTime
+      game.debounce = CONFIG.game.debounceKeyboardTime
     },
 
     // DO ACTION

@@ -96,7 +96,6 @@ const CONFIG = {
     // UI mods
     betterOcean: false,
     postprocess: 'multi', // 'ssao', 'multi' or 'none'
-    debounceKeyboardTime: 8, // In locksteppeded frames
     healthbars: {
       width: 1 / 20, // Relative to cellsize (one HP width)
       height: 1 / 5, // Relative to cellsize
@@ -126,6 +125,7 @@ const CONFIG = {
     seed: 'staticgameseed', // undefined for a random seed
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
     animationsSpeed: 1.5,
+    debounceKeyboardTime: 8, // In locksteppeded frames
     // Buildings
     buildings: {
       base: {
