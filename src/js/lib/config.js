@@ -93,9 +93,10 @@ const CONFIG = {
     // Environement
     worldSize: 4096, // Used for skybox and ocean
     showAxis: false,
-    // UI mods
     betterOcean: false,
+    // Render quality options
     postprocess: 'multi', // 'ssao', 'multi' or 'none'
+    shadows: false,
     healthbars: {
       width: 1 / 20, // Relative to cellsize (one HP width)
       height: 1 / 5, // Relative to cellsize

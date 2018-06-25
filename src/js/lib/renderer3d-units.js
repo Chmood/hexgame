@@ -401,8 +401,10 @@ const Units = (game, map, camera) => {
       // Material
       p.material = part.material
       // Shadows
-      shadowGenerator.getShadowMap().renderList.push(p)
-      p.receiveShadows = true
+      if (CONFIG.render3d.shadows) {
+        shadowGenerator.getShadowMap().renderList.push(p)
+        p.receiveShadows = true
+      }
       // Pickability
       p.isPickable = false
 

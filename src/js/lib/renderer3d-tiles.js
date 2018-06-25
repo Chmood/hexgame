@@ -298,8 +298,10 @@ const Tiles = (map) => {
     // Give the tile mesh a material
     tile.material = materials[cell.biome]
     // Make and receive shadows
-    shadowGenerator.getShadowMap().renderList.push(tile)
-    tile.receiveShadows = true;
+    if (CONFIG.render3d.shadows) {
+      shadowGenerator.getShadowMap().renderList.push(tile)
+      tile.receiveShadows = true;
+    }
 
     tile.freezeWorldMatrix()
  
@@ -334,8 +336,10 @@ const Tiles = (map) => {
       // building.material = materials['buildingGreyLight']
       building.material = materials.players[gameBuilding.ownerId][0]
       // Make and receive shadows
-      shadowGenerator.getShadowMap().renderList.push(building)
-      building.receiveShadows = true;
+      if (CONFIG.render3d.shadows) {
+        shadowGenerator.getShadowMap().renderList.push(building)
+        building.receiveShadows = true;
+      }
 
       building.freezeWorldMatrix()
     }

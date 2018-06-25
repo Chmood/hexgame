@@ -241,7 +241,10 @@ const Environement = () => {
     }
 
     renderer.lights = createLights()
-    renderer.shadowGenerator = createShadows()
+
+    if (CONFIG.render3d.shadows) {
+      renderer.shadowGenerator = createShadows()
+    }
   }
 
   return renderer
