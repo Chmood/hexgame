@@ -13,6 +13,7 @@ const Tiles = (map) => {
   // PUBLIC
 
   // CREATE TILES
+  // Create tiles and buildings
   renderer.createTiles = (gameBuildings) => {
     buildings = gameBuildings
     console.warn('BULDINGS IN TILES', buildings)
@@ -39,11 +40,16 @@ const Tiles = (map) => {
   }
 
   // DELETE TILES
+  // Delete tiles and buildings
   renderer.deleteTiles = () => {
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
         if (map[x][y] && map[x][y].tile) {
           map[x][y].tile.dispose()
+
+          if (map[x][y].building) {
+            map[x][y].building.dispose()
+          }
         }
       }
     }
@@ -345,11 +351,6 @@ const Tiles = (map) => {
     }
 
     return {tile, building}
-  }
-
-  // CREATE BUILDING
-  const createBuilding = () => {
-
   }
 
   ////////////////////////////////////////
