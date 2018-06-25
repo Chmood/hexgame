@@ -2,7 +2,6 @@
 
 ## Known bugs
 
-* deleteUnit is broken + desaturated color impact healthbars too
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
 * Switching post-processing ('multi'/'ssao') cause lignting issues (too dark / too bright)
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too, it shouldn't lean with its unit, but stay stricly above it)

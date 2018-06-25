@@ -126,8 +126,9 @@ const Units = (game, map, camera) => {
       unit.mesh.dispose()
     }
     if (unit.meshes) {
-      for (const mesh of unit.meshes) {
-        mesh.dispose()
+      for (const part in unit.meshes) {
+        console.log(unit.meshes[part])
+        unit.meshes[part].dispose()
       }
     }
   }
@@ -447,6 +448,10 @@ const Units = (game, map, camera) => {
     // Bars materials
     healthbarBack.material = materials['healthbarBack']
     healthbarFront.material = materials['healthbarFront']
+
+    // Don't colorize
+    healthbarBack.dontColorize = true
+    healthbarFront.dontColorize = true
 
     // Billboard mode (always face the camera)
     healthbarBack.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL
