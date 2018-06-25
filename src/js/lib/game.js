@@ -276,7 +276,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   // CHANGE CURRENT PLAYER
   // TODO: broken when deleting players!
-  const changeCurrentPlayer = (playerId) => {
+  const changeCurrentPlayer = async (playerId) => {
     if (game.currentPlayer === undefined) {
       // First call
       game.currentPlayer = game.players[0]
@@ -298,6 +298,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       game.currentPlayer = game.players[playerId]
       console.log(`It's player ${game.currentPlayer.name}'s turn`)
     }
+
+    await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
 
     mode = 'select'
     unitsToMove = game.currentPlayer.units

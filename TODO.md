@@ -2,18 +2,18 @@
 
 ## Known bugs
 
+* deleteUnit is broken + desaturated color impact healthbars too
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
 * Switching post-processing ('multi'/'ssao') cause lignting issues (too dark / too bright)
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too, it shouldn't lean with its unit, but stay stricly above it)
 
 ## Improvements
 
-* Camera moves too much, followinf the action: make it follow a "box" to dampen it
+* Camera moves too much, following the action: make it follow a "box" to dampen it
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work
-* Towns, factories, ports, airports
 * More units (see: http://advancewars.wikia.com/wiki/List_of_Units - 18 unit types, http://advancewars.wikia.com/wiki/Category:Units)
   * 3x infantery: soldier, bazooka, [healer])
   * 3x tanks: light tank, heavy tank, anti-air tank
@@ -25,9 +25,9 @@
 
 ## New features
 
+* Towns, factories, ports, airports
 * More DOM UI (menus, stats...)
 * Terrain defense bonus/malus
-* "Player XXX's turn" banner (see: https://doc.babylonjs.com/how_to/dynamictexture)
 * Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
 * Unit parts animations (idle, shoot, move...)
 * 2D map: different icons for units???

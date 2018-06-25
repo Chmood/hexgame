@@ -25,6 +25,10 @@ const DomUI = () => {
       dom[`gameMenu${item}`] = document.getElementById(`game-menu-${item}`)
     }
 
+    // Big banner
+    dom.bigBanner = document.getElementById('big-banner')
+    dom.bigBannerContent = document.getElementById('big-banner-content')
+
     // Config panel elements
     dom.btnUpdate = document.getElementById('ui-btn-update')
     dom.btnNew = document.getElementById('ui-btn-new')
@@ -115,7 +119,6 @@ const DomUI = () => {
   }
 
   // GAME MENU
-
   dom.openGameMenu = (items) => {
     // Clear all existing menu items
     dom.gameMenu.classList.remove(...gameMenuItems)
@@ -163,6 +166,48 @@ const DomUI = () => {
   dom.selectGameMenu = () => {
     // Simulates a click on the menu item button
     dom[`gameMenu${currentGameMenuItems[currentGameMenuItemId]}`].click()
+  }
+
+  // BIG BANNER
+  dom.displayBigBanner = (message) => {
+    return new Promise((resolve) => {
+
+      dom.bigBannerContent.textContent = message
+
+      // above + left + active
+      dom.bigBanner.classList.add('active')
+  
+      window.setTimeout(() => {
+        // middle + left + active
+        dom.bigBanner.classList.remove('above')
+
+        window.setTimeout(() => {
+          // middle + center + active
+          dom.bigBanner.classList.remove('text-left')
+
+          window.setTimeout(() => {
+            // middle + right + active
+            dom.bigBanner.classList.add('text-right')
+
+            window.setTimeout(() => {
+              // below + right + active
+              dom.bigBanner.classList.add('below')
+  
+              resolve()
+              window.setTimeout(() => {
+                // above + left
+                dom.bigBanner.classList.remove('active', 'below')
+                dom.bigBanner.classList.add('above')
+                dom.bigBanner.classList.remove('text-right')
+                dom.bigBanner.classList.add('text-left')
+    
+                resolve()
+              }, 750)
+            }, 750)
+          }, 1500)
+        }, 750)
+      }, 750)
+    })
   }
 
   // SET GAME
