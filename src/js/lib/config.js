@@ -7,7 +7,7 @@ const CONFIG = {
   map: {
     seed: 'staticmapseed', // undefined for a random seed
     // mapSize: 						{ width: 29, height: 25 }, // Logical map size, in cells
-    mapSize: { width: 25, height: 25 }, // Logical map size, in cells
+    mapSize: { width: 27, height: 27 }, // Logical map size, in cells
     // mapTopped: Math.random() > 0.5 ? HEXLIB.FLAT : HEXLIB.POINTY, // HEXLIB.FLAT or HEXLIB.POINTY
     mapTopped: HEXLIB.FLAT, // HEXLIB.FLAT or HEXLIB.POINTY
     mapParity: Math.random() > 0.5 ? HEXLIB.EVEN : HEXLIB.ODD, // HEXLIB.EVEN or HEXLIB.ODD
@@ -126,6 +126,30 @@ const CONFIG = {
     seed: 'staticgameseed', // undefined for a random seed
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
     animationsSpeed: 1.5,
+    // Buildings
+    buildings: {
+      base: {
+        number: 1, // Per player
+        biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
+      },
+      city: {
+        number: 2, // Per player
+        biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
+      },
+      factory: {
+        number: 1, // Per player
+        biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
+      },
+      port: {
+        number: 1, // Per player
+        // biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
+        biomes: ['shore']
+      },
+      airport: {
+        number: 1, // Per player
+        biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
+      }
+    },
     // Units stats
     units: {
       tank: {

@@ -3,6 +3,7 @@ import HEXLIB from '../vendor/hexlib'
 import seedrandom from 'seedrandom'
 
 import Map from './map'
+import Buildings from './buildings'
 import Players from './players'
 import Renderer2d from './renderer2d'
 import Renderer3d from './renderer3d'
@@ -37,6 +38,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Current player
     currentPlayer: undefined, // Player
 
+    // Buildings (cities, factories, ports and airports)
+    buildings: [],
+
     // GENERATE GAME
     // Generate a new map (with or without a fresh seed) and players
     generate(randomMapSeed = false) {
@@ -61,10 +65,13 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         console.log(`Map generation (#${nTry} try)`)
         game.map.generate()
 
+        // BULDINGS
+        game.buildings = Buildings(game.map, RNG)
+
         // PLAYERS
         game.players = Players(CONFIG.players, game.map, RNG)
 
-        if (game.players) {
+        if (game.buildings && game.players) {
           success = true
         }
       }
@@ -72,8 +79,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       if (success) {
         console.warn(`Game generated in ${nTry} tries`)
         console.log('MAP DATA', game.map.data)
+        console.log('BULDINGS', game.buildings)
 
-        game.renderer3d.createTiles()
+        game.renderer3d.createTiles(game.buildings)
         game.renderer3d.createUnits()
 
         game.ui.moveZone = []
@@ -231,8 +239,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
           game.updateRenderers(['highlights'])
         }
-      } else {
-        console.error(`game.updateCursor(): no hex provided!`)
       }
     },
 
@@ -299,7 +305,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       console.log(`It's player ${game.currentPlayer.name}'s turn`)
     }
 
-    await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
+    // await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
 
     mode = 'select'
     unitsToMove = game.currentPlayer.units

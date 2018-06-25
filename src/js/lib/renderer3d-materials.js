@@ -56,6 +56,10 @@ const Materials = () => {
       true // emmissive
     )
 
+    // Buildings
+    materials['buildingGreyLight'] = createSimpleMaterial('building-grey-light', '#aaaaaa')
+    materials['buildingGreyDark'] = createSimpleMaterial('building-grey-dark', '#888888')
+
     return materials
   }
 

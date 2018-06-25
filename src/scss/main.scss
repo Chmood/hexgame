@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css?family=Ranchers');
+// @import url('https://fonts.googleapis.com/css?family=Ranchers');
+@import url('https://fonts.googleapis.com/css?family=Righteous');
 @import '../../node_modules/normalize-css/normalize.css';
 
 // BASE
@@ -10,7 +11,8 @@ html {
 body {
 	overflow: hidden;
 	font-size: 1.0rem;
-	font-family: 'Ranchers', cursive;
+	// font-family: 'Ranchers', cursive;
+	font-family: 'Righteous', cursive;
 }
 
 // GAME WRAPPER

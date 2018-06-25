@@ -188,7 +188,7 @@ const Renderer3d = (game, canvas) => {
   postprocess.init(scene, camera.camera, camera.cameraFree)
 
   // Tiles
-  tiles.init(scene, layout, renderer.materials, environement.shadowGenerator)
+  tiles.init(scene, layout, renderer.materials, environement.shadowGenerator, game.buildings)
 
   // Units
   units.init(scene, layout, renderer.materials, environement.shadowGenerator)
