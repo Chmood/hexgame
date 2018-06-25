@@ -814,7 +814,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   const getMoveZones = (unit) => {
     // TODO: 
     // * make findPath return an array of cells in that range???
-    // * use a second graph for attacking, with uniform move costs of 1???
     
     const moveZone = [],
           attackZone = [],
@@ -829,7 +828,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       unit.hex, 
       undefined, // no goal
       undefined, // no early exit
-      getUnitsHexes(), // blacklist
+      getUnitsHexes(undefined), // blacklist
       unit.movement // cost higher limit
     )  
     game.updateRenderers() // Draw numbers on 2D map
@@ -843,6 +842,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         }
       }
     }
+    // Add the unit position to the move zone, since it can stay at the same location
+    moveZone.push(unit.hex)
+
     // ATTACK ZONES
     // Ugly code omg!
     for (const moveHex of moveZone) {
