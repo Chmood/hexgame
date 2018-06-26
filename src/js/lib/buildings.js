@@ -89,7 +89,6 @@ const Buildings = (map, RNG) => {
     buildings.push(building)
     occupiedhexes.push(building.hex)
 
-
     return true
   }
 

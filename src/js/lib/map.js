@@ -38,6 +38,10 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     generate() {
       populate()
       createMap()
+      // generateGraphs(CONFIG.game.units)
+    },
+
+    generateGraphs() {
       generateGraphs(CONFIG.game.units)
     },
 
@@ -489,18 +493,37 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     }
   }
 
+  // IS VALID BUILDING
+  const isValidBuilding = (buildingType, allowedBuildings) => {
+    return allowedBuildings.indexOf(buildingType) !== -1
+  }
+
   // IS VALID CELL
   // Tells if the cell is part of the graph or not
-  const isValidCell = (cell, allowedBiomes) => {
+  const isValidCell = (cell, allowedBiomes, allowedBuildings) => {
+    // Check if there a building on this cell
+    if (cell.building) {
+      // Is the building is valid? (whichever biome is below)
+      return isValidBuilding(cell.building.type, allowedBuildings)
+    }
+    // Otherwise check the biome
     return map.isValidBiome(cell.biome, allowedBiomes)
   }
 
   // GET MOVE COST
-  const getMoveCost = (toBiome, biomesMoveCosts, fromHeight, toHeight) => {
-    if (!biomesMoveCosts[toBiome]) {
-      console.error(`getMoveCost(): can't find biome ${toBiome} in biomesMoveCosts!!!`)
-      return 1000000
+  const getMoveCost = (toBiome, biomesMoveCosts, toBuilding, buildingsMoveCosts, fromHeight, toHeight) => {
+    if (toBuilding) {
+      if (!buildingsMoveCosts[toBuilding.type]) {
+        console.error(`getMoveCost(): can't find building ${toBuilding.type} in buildingsMoveCosts!`)  
+        return 1000000
+      } else {
+        return buildingsMoveCosts[toBuilding.type]
+      }
+    }
 
+    if (!biomesMoveCosts[toBiome]) {
+      console.error(`getMoveCost(): can't find biome ${toBiome} in biomesMoveCosts!`)
+      return 1000000
     } else {
       return biomesMoveCosts[toBiome]
     }
@@ -543,12 +566,15 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
               }
             }
           } else {
-            // Otherwise we build graph for the unit type, depending on biomes and their costs
+            // Otherwise we build graph for the unit type, 
+            // depending on biomes/buildings and their costs
             const biomesMoveCosts = units[unitKey].biomesMoveCosts,
-                  allowedBiomes = Object.keys(biomesMoveCosts)
+                  allowedBiomes = Object.keys(biomesMoveCosts),
+                  buildingsMoveCosts = units[unitKey].buildingsMoveCosts,
+                  allowedBuildings = Object.keys(buildingsMoveCosts),
 
             // Add the cell to graph if valid
-            isInGraph = isValidCell(cell, allowedBiomes)
+            isInGraph = isValidCell(cell, allowedBiomes, allowedBuildings)
     
             if (isInGraph) {
               // Each (eventual) neighbor of the cell
@@ -559,11 +585,13 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
                   const neighborCell = map.getCellFromHex(neighbor)
     
                   // Is the neighbor a valid move?
-                  if (isValidCell(neighborCell, allowedBiomes)) {
+                  if (isValidCell(neighborCell, allowedBiomes, allowedBuildings)) {
                     // Compute the cost to move to this neighbor
                     const cost = getMoveCost(
                       neighborCell.biome,
                       biomesMoveCosts,
+                      neighborCell.building,
+                      buildingsMoveCosts,
                       cell.height,
                       neighborCell.height
                     )

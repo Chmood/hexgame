@@ -68,6 +68,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         // BULDINGS
         game.buildings = Buildings(game.map, RNG)
 
+        // GRAPHS
+        game.map.generateGraphs()
+
         // PLAYERS
         game.players = Players(CONFIG.players, game.map, RNG)
 

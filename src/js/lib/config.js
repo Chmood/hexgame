@@ -154,6 +154,7 @@ const CONFIG = {
     units: {
       tank: {
         type: 'tank',
+        family: 'ground',
         // level: 1,
 
         // See: http://fireemblem.wikia.com/wiki/Category:Stats
@@ -178,10 +179,12 @@ const CONFIG = {
           desert: 1,
           grass: 1,
           plain: 1
-        }
+        },
+        buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
       bazooka: {
         type: 'bazooka',
+        family: 'ground',
 
         maxHealth: 8,
         strength: 6,
@@ -209,10 +212,12 @@ const CONFIG = {
           snow: 2,
     
           ice: 3
-        }
+        },
+        buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
       jeep: {
         type: 'jeep',
+        family: 'ground',
 
         maxHealth: 12,
         strength: 8,
@@ -232,10 +237,12 @@ const CONFIG = {
           forest: 2,
           deepforest: 2,
           pineforest: 2
-        }
+        },
+        buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
       boat: {
         type: 'boat',
+        family: 'sea',
 
         maxHealth: 15,
         strength: 9,
@@ -247,7 +254,8 @@ const CONFIG = {
           deepsea: 0.5,
           sea: 0.75,
           shore: 1
-        }
+        },
+        buildingsMoveCosts: {port: 0.5}
       }
     }
   }
