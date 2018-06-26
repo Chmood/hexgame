@@ -16,7 +16,6 @@ const Tiles = (map) => {
   // Create tiles and buildings
   renderer.createTiles = (gameBuildings) => {
     buildings = gameBuildings
-    console.warn('BULDINGS IN TILES', buildings)
 
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
@@ -103,17 +102,19 @@ const Tiles = (map) => {
   // GET HEXAPRISM VERTEX DATA
   const getHexaprismVertexData = (
     hex, 
-    topHeight, 
-    bottomHeight = 0, 
-    topScaling = 1, 
+    topHeight,
+    middleHeight = 0,
+    bottomHeight = 0,
+    topScaling = 1,
+    middleScaling = 1,
     bottomScaling = 1,
     randomDispSets,
-    type = 'tile'
+    type = 'tile',
+    noTop = false
   ) => {
     const cornersTop = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * topScaling),
+          cornersMiddle = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * middleScaling),
           cornersBottom = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * bottomScaling)
-          // cornersBottom = cornersTop // Same size
-
 
     // HACK: 
     // map X axis (width) => world Z axis
@@ -123,7 +124,7 @@ const Tiles = (map) => {
 
     if (type === 'tile') {
       // TILE
-      // top
+      // top outer (0 to 5)
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersTop[c].y + randomDispSets[0][c].y, // X
@@ -131,7 +132,7 @@ const Tiles = (map) => {
           cornersTop[c].x + randomDispSets[0][c].x // Z
         )
       }
-      // bottom
+      // bottom outer (6 to 11)
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersBottom[c].y + randomDispSets[1][c].y, // X
@@ -143,8 +144,9 @@ const Tiles = (map) => {
       // BULDINGS
       const innerRatio = 0.8,
             cornersTopInner = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * topScaling * innerRatio),
+            cornersMiddleInner = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * middleScaling * innerRatio),
             cornersBottomInner = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * bottomScaling * innerRatio)
-      // top
+      // top outer (0 to 5)
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersTop[c].y + randomDispSets[0][c].y, // X
@@ -152,7 +154,7 @@ const Tiles = (map) => {
           cornersTop[c].x + randomDispSets[0][c].x // Z
         )
       }
-      // bottom
+      // bottom outer (6 to 11)
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersBottom[c].y + randomDispSets[0][c].y, // X
@@ -160,7 +162,15 @@ const Tiles = (map) => {
           cornersBottom[c].x + randomDispSets[0][c].x // Z
         )
       }
-      // top inner
+      // middle outer (12 to 17) ///WIP
+      for(let c = 0; c < 6; c++) {
+        positions.push(
+          cornersMiddle[c].y + randomDispSets[0][c].y, // X
+          middleHeight * CONFIG.render3d.cellStepHeight, // Y
+          cornersMiddle[c].x + randomDispSets[0][c].x // Z
+        )
+      }
+      // top inner (18 to 23)
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersTopInner[c].y + randomDispSets[0][c].y, // X
@@ -168,7 +178,7 @@ const Tiles = (map) => {
           cornersTopInner[c].x + randomDispSets[0][c].x // Z
         )
       }
-      // bottom inner
+      // bottom inner (24 to 29)
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersBottomInner[c].y + randomDispSets[0][c].y, // X
@@ -176,83 +186,227 @@ const Tiles = (map) => {
           cornersBottomInner[c].x + randomDispSets[0][c].x // Z
         )
       }
+      // middle inner (30 to 35) // WIP
+      for(let c = 0; c < 6; c++) {
+        positions.push(
+          cornersMiddleInner[c].y + randomDispSets[0][c].y, // X
+          middleHeight * CONFIG.render3d.cellStepHeight, // Y
+          cornersMiddleInner[c].x + randomDispSets[0][c].x // Z
+        )
+      }
     }
 
-    let indices
-    if (type === 'tile') {
-      indices = [
-        // Top
-        0, 2, 1,
-        0, 3, 2,
-        0, 4, 3,
-        0, 5, 4,
-  
-        // Sides
-        0, 1, 6,
-        7, 6, 1,
-        1, 2, 7,
-        8, 7, 2,
-        2, 3, 8,
-        9, 8, 3,
-        3, 4, 9,
-        10, 9, 4,
-        4, 5, 10,
-        11, 10, 5,
-        5, 6, 11,
-        0, 6, 5
-  
-        // TODO: Bottom facets (when needed)
-      ]
-    } else {
-      indices = [
-        // Inner bottom
-        // 18, 20, 19,
-        // 18, 21, 20,
-        // 18, 22, 21,
-        // 18, 23, 22,
-  
-        // Outer sides
-        0, 1, 6,
-        7, 6, 1,
-        1, 2, 7,
-        8, 7, 2,
-        2, 3, 8,
-        9, 8, 3,
-        3, 4, 9,
-        10, 9, 4,
-        4, 5, 10,
-        11, 10, 5,
-        5, 6, 11,
-        0, 6, 5,
-  
-        // Inner sides
-        12, 18, 13,
-        13, 18, 19,
-        13, 19, 14,
-        20, 14, 19,
-        14, 20, 15,
-        21, 15, 20,
-        15, 21, 16,
-        22, 16, 21,
-        16, 22, 17,
-        23, 17, 22,
-        17, 23, 18,
-        12, 17, 18,
+    const 
+    indicesOuterTopSide = [ // Closing exterior top hex side
+      0, 2, 1,
+      0, 3, 2,
+      0, 4, 3,
+      0, 5, 4
+    ],
+    indicesOuterSides = [ // Full height exterior
+      0, 1, 6,
+      7, 6, 1,
+      1, 2, 7,
+      8, 7, 2,
+      2, 3, 8,
+      9, 8, 3,
+      3, 4, 9,
+      10, 9, 4,
+      4, 5, 10,
+      11, 10, 5,
+      5, 6, 11,
+      0, 6, 5
+    ],
+    indicesOuterSidesBottomToMiddle = [ // Lower half height exterior
+      12, 13, 6,
+      13, 7, 6,
+      13, 14, 7,
+      14, 8, 7,
+      14, 15, 8,
+      15, 9, 8,
+      15, 16, 9,
+      16, 10, 9,
+      16, 17, 10,
+      17, 11, 10,
+      17, 12, 11,
+      12, 6, 11
+    ],
+    indicesOuterSidesMiddleToTop = [ // Upper half height exterior
+      0, 1, 12,
+      13, 12, 1,
+      1, 2, 13,
+      14, 13, 2,
+      2, 3, 14,
+      15, 14, 3,
+      3, 4, 15,
+      16, 15, 4,
+      4, 5, 16,
+      17, 16, 5,
+      5, 12, 17,
+      0, 12, 5
+    ],
+    indicesInnerSidesBottomToMiddle = [ // Lower half height interior
+      31, 30, 24,
+      24, 25, 31,
+      32, 31, 25,
+      25, 26, 32,
+      33, 32, 26,
+      26, 27, 33,
+      34, 33, 27,
+      27, 28, 34,
+      35, 34, 28,
+      28, 29, 35,
+      30, 35, 29,
+      29, 24, 30
+    ],
+    indicesInnerSidesMiddleToTop = [ // Upper half height interior // TODO
+    ],
+    indicesInnerTopSide = [ // Closing interior top hex side
+      18, 20, 19,
+      18, 21, 20,
+      18, 22, 21,
+      18, 23, 22
+    ],
+    indicesInnerBottomSide = [ // Closing interior bottom hex side
+      24, 26, 25,
+      24, 27, 26,
+      24, 28, 27,
+      24, 29, 28
+    ],
+    indicesOuterBottomSide = [ // Closing exterior bottom hex side
+      6, 8, 7,
+      6, 9, 8,
+      6, 10, 9,
+      6, 11, 10
+    ],
+    indicesInnerToOuterSidesMiddle = [ // Middle closing walls
+      13, 12, 30,
+      30, 31, 13,
+      14, 13, 31,
+      31, 32, 14,
+      15, 14, 32,
+      32, 33, 15,
+      16, 15, 33,
+      33, 34, 16,
+      17, 16, 34,
+      34, 35, 17,
+      12, 17, 35,
+      35, 30, 12
+    ]
 
-        // Top sides
-        0, 12, 1,
-        1, 12, 13,
-        1, 13, 2,
-        2, 13, 14,
-        2, 14, 3,
-        3, 14, 15,
-        3, 15, 4,
-        4, 15, 16,
-        4, 16, 5,
-        5, 16, 17,
-        5, 17, 0,
-        0, 17, 12,
-      ]
+    let indices = []
+
+    if (type === 'tile') {
+      indices = indices
+      .concat(indicesOuterSides)
+
+      if (!noTop) {
+        indices = indices
+        .concat(indicesOuterTopSide)
+      }
+    } else {
+      // Buildings
+      if (type === 'airport') {
+        indices = indices
+        .concat(indicesOuterBottomSide)
+        .concat([
+          15, 16, 9, // outer wall
+          16, 10, 9,
+          34, 33, 27, // inner wall
+          27, 28, 34,
+          15, 9, 33, // closing small walls
+          9, 27, 33,
+          16, 34, 10,
+          10, 34, 28,
+          34, 16, 33, // half roof
+          3, 15, 33, // antenna small wall
+          16, 15, 3, // antenna outer wall
+          16, 3, 33 // antenna diagonal wall
+        ])
+      } else if (type === 'factory') {
+        indices = indices
+        .concat(indicesOuterBottomSide)
+        .concat([
+          // Bat 1 (full height)
+          3, 4, 9, // outer wall
+          4, 10, 9,
+          22, 21, 27, // inner wall
+          27, 28, 22,
+          3, 9, 21, // closing small walls
+          9, 27, 21,
+          4, 22, 10,
+          10, 22, 28,
+          22, 4, 21, // roof
+          21, 4, 3,
+
+          // Bat 2
+          17, 12, 11, // outer wall
+          12, 6, 11,
+          30, 35, 29, // inner wall
+          29, 24, 30,
+          17, 11, 35, // closing small walls
+          11, 29, 35,
+          12, 30, 6,
+          6, 30, 24,
+          30, 12, 35, // roof
+          35, 12, 17,
+
+          // Bat 3
+          13, 14, 7, // outer wall
+          14, 8, 7,
+          32, 31, 25, // inner wall
+          25, 26, 32,
+          13, 7, 31, // closing small walls
+          7, 25, 31,
+          14, 32, 8,
+          8, 32, 26,
+          32, 14, 31, // roof
+          31, 14, 13,
+        ])
+      } else if (type === 'base') {
+        indices = indices
+        .concat(indicesOuterSidesBottomToMiddle)
+        .concat(indicesInnerSidesBottomToMiddle)
+        .concat(indicesInnerBottomSide)
+        .concat([
+          13, 12, 30, // middle height roof
+          30, 31, 13,
+          14, 13, 1, // triangular outer wall
+          31, 32, 19, // triangular inner wall
+          1, 31, 19, // vertical upper wall
+          13, 31, 1,
+          1, 19, 14, // diagonal upper wall
+          32, 14, 19,
+
+          15, 14, 32, // middle height roof
+          32, 33, 15,
+          16, 15, 3, // triangular outer wall
+          33, 34, 21, // triangular inner wall
+          3, 33, 21, // vertical upper wall
+          15, 33, 3,
+          3, 21, 16, // diagonal upper wall
+          34, 16, 21,
+
+          17, 16, 34, // middle height roof
+          34, 35, 17,
+          12, 17, 5, // triangular outer wall
+          35, 30, 23, // triangular inner wall
+          5, 35, 23, // vertical upper wall
+          17, 35, 5,
+          5, 23, 12, // diagonal upper wall
+          30, 12, 23,
+        ])
+      } else if (type === 'city' || type === 'port') {
+        indices = indices
+        .concat(indicesInnerToOuterSidesMiddle)
+        .concat(indicesOuterSidesBottomToMiddle)
+        .concat(indicesInnerSidesBottomToMiddle)
+        
+        if (type === 'city') {
+          indices = indices
+          .concat(indicesInnerBottomSide)
+        }
+      }
     }
 
     const vertexData = new BABYLON.VertexData()
@@ -280,11 +434,14 @@ const Tiles = (map) => {
       hex, 
       // TODO: why the fuck is this +0.2 needed for the units to stick to the floor?!?!
       (height + 0.3), // top height
+      undefined, // middle height
       0, // bottom height
+      undefined, // Middle scaling
       1, // top scaling
-      1.25, // bottom scaling
+      1.125, // bottom scaling
       randomDispSets,
-      'tile'
+      'tile',
+      gameBuilding && gameBuilding.type !== 'port' ? true : false // No tile top when a building is present
     )
     vertexData.applyToMesh(tile)
 
@@ -320,9 +477,11 @@ const Tiles = (map) => {
       const buildingVertexData = getHexaprismVertexData(
         hex, 
         // TODO: why the fuck is this +0.2 needed for the units to stick to the floor?!?!
-        (height + 0.3 + buildingHeight), // top height
+        (height + 0.3 + buildingHeight * 3), // top height
+        (height + 0.3 + buildingHeight), // middle height
         (height + 0.3), // bottom height
         1, // top scaling
+        1, // middle scaling
         1, // bottom scaling
         randomDispSets,
         gameBuilding.type
@@ -339,8 +498,11 @@ const Tiles = (map) => {
 
       // MATERIAL
       // Give the tile mesh a material
-      // building.material = materials['buildingGreyLight']
-      building.material = materials.players[gameBuilding.ownerId][0]
+      if (gameBuilding.ownerId !== undefined) {
+        building.material = materials.players[gameBuilding.ownerId][0]
+      } else {
+        building.material = materials['buildingGreyLight']
+      }
       // Make and receive shadows
       if (CONFIG.render3d.shadows) {
         shadowGenerator.getShadowMap().renderList.push(building)

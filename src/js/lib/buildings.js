@@ -10,17 +10,24 @@ const Buildings = (map, RNG) => {
   // PUBLIC
   const buildings = [],
         buildingType = ['base', 'city', 'factory', 'port', 'airport'],
-        startingZoneRatio = CONFIG.game.playerStartingZoneRatio * 0.66,
         occupiedhexes = [] // Hexes already taken by buildings
 
   // SET BUILDING RANDOM POSITION
   const setBuildingRandomPosition = (type, playerId) => {
     const building = {
       type: type,
-      ownerId: playerId
+      ownerId: type === 'base' ? playerId : undefined
     }
+
     let isValidPosition = false,
-        nTryLeft = 10
+        nTryLeft = 20,
+        startingZoneRatio = CONFIG.game.playerStartingZoneRatio
+
+    if (type === 'city') {
+      startingZoneRatio *= 1
+    } else if (type === 'base') {
+      startingZoneRatio = 3 // One third
+    }
 
     while (!isValidPosition) {
       nTryLeft--
