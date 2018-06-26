@@ -81,7 +81,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         console.log('MAP DATA', game.map.data)
         console.log('BULDINGS', game.buildings)
 
-        game.renderer3d.createTiles(game.buildings)
+        game.renderer3d.createTiles()
         game.renderer3d.createUnits()
 
         game.ui.moveZone = []

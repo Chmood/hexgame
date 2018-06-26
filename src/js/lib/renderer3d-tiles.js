@@ -14,26 +14,15 @@ const Tiles = (map) => {
 
   // CREATE TILES
   // Create tiles and buildings
-  renderer.createTiles = (gameBuildings) => {
-    buildings = gameBuildings
+  renderer.createTiles = () => {
 
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
         const cell = map[x][y]
 
-        // BULDINGS
-        // Is there a building on this tile?
-        let gameBuilding
-        for (const building of buildings) {
-          if (HEXLIB.hexEqual(building.hex, cell.hex)) {
-            gameBuilding = building
-            break
-          }
-        }
-
-        const tileAndBuilding = createTileAndBuilding(x, y, cell, gameBuilding)
+        const tileAndBuilding = createTileAndBuilding(x, y, cell, cell.building)
         map[x][y].tile = tileAndBuilding.tile
-        map[x][y].building = tileAndBuilding.building
+        map[x][y].buildingMesh = tileAndBuilding.building
       }
     }
   }
@@ -46,8 +35,8 @@ const Tiles = (map) => {
         if (map[x][y] && map[x][y].tile) {
           map[x][y].tile.dispose()
 
-          if (map[x][y].building) {
-            map[x][y].building.dispose()
+          if (map[x][y].buildingMesh) {
+            map[x][y].buildingMesh.dispose()
           }
         }
       }

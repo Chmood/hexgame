@@ -60,9 +60,11 @@ const Buildings = (map, RNG) => {
       building.hexOffset = HEXLIB.hexOffset(col, row)
       building.hex = HEXLIB.offset2Hex(building.hexOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
   
+      const cell = map.getCellFromHex(building.hex)
+
       // Check if the building position is a valid biome cell
       const isValidBiome = map.isValidBiome(
-        map.getCellFromHex(building.hex).biome,
+        cell.biome,
         CONFIG.game.buildings[type].biomes
       )
 
@@ -76,10 +78,17 @@ const Buildings = (map, RNG) => {
       }
 
       isValidPosition = isValidBiome && isFreeHex
+
+      // Backup building into map
+      // TODO: useless?
+      if (isValidPosition) {
+        cell.building = building
+      }
     }
 
     buildings.push(building)
     occupiedhexes.push(building.hex)
+
 
     return true
   }
