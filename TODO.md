@@ -8,6 +8,7 @@
 
 ## Improvements
 
+* Make buildings a special biome, built-in the map + pathfinding graph (beware the port)
 * Camera moves too much, following the action: make it follow a "box" to dampen it
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
@@ -28,6 +29,8 @@
 
 ## New features
 
+* Players should earn money
+* Unit building in factories, ports and airports (new menu)
 * Roads and bridges???
 * More DOM UI (menus, stats...)
 * Terrain defense bonus/malus

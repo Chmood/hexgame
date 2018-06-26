@@ -17,10 +17,12 @@ const Player = (config) => {
   const setUnitRandomType = () => {
     const rng = Math.random()
 
-    if (rng > 0.66) {
+    if (rng > 0.75) {
       return 'tank'
-    } else if (rng > 0.33) {
+    } else if (rng > 0.5) {
       return 'jeep'
+    } else if (rng > 0.25) {
+      return 'bazooka'
     } else {
       return 'boat'
     }

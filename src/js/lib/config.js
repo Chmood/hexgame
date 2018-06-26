@@ -134,7 +134,7 @@ const CONFIG = {
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       },
       city: {
-        number: 2, // Per player
+        number: 3, // Per player
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       },
       factory: {
@@ -143,7 +143,6 @@ const CONFIG = {
       },
       port: {
         number: 1, // Per player
-        // biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
         biomes: ['shore']
       },
       airport: {
@@ -155,20 +154,20 @@ const CONFIG = {
     units: {
       tank: {
         type: 'tank',
-        level: 1,
+        // level: 1,
 
         // See: http://fireemblem.wikia.com/wiki/Category:Stats
         maxHealth: 20, // http://fireemblem.wikia.com/wiki/HP
         strength: 10, // http://fireemblem.wikia.com/wiki/Strength
-        magic: 5, // http://fireemblem.wikia.com/wiki/Magic_(stat)
-        skill: 7, // http://fireemblem.wikia.com/wiki/Skill_(stat)
-        speed: 8, // http://fireemblem.wikia.com/wiki/Speed_(stat)
-        luck: 6, // http://fireemblem.wikia.com/wiki/Luck
+        // magic: 5, // http://fireemblem.wikia.com/wiki/Magic_(stat)
+        // skill: 7, // http://fireemblem.wikia.com/wiki/Skill_(stat)
+        // speed: 8, // http://fireemblem.wikia.com/wiki/Speed_(stat)
+        // luck: 6, // http://fireemblem.wikia.com/wiki/Luck
         defense: 5, // http://fireemblem.wikia.com/wiki/Defense_(stat)
-        resistance: 3, // http://fireemblem.wikia.com/wiki/Resistance
+        // resistance: 3, // http://fireemblem.wikia.com/wiki/Resistance
         movement: 4, // http://fireemblem.wikia.com/wiki/Movement
 
-        attackRangeMin: 1, // Not used by now
+        // attackRangeMin: 1, // Not used by now
         attackRangeMax: 2,
 
         biomesMoveCosts: {
@@ -181,21 +180,44 @@ const CONFIG = {
           plain: 1
         }
       },
+      bazooka: {
+        type: 'bazooka',
+
+        maxHealth: 8,
+        strength: 6,
+        defense: 3,
+        movement: 3,
+        attackRangeMax: 1,
+
+        biomesMoveCosts: {
+          whitebeach: 1,
+          beach: 1,
+          swamp: 1,
+    
+          desert: 1,
+          grass: 1,
+          plain: 1,
+    
+          forest: 1,
+          deepforest: 1,
+          pineforest: 1,
+
+          mountain: 1,
+          highmountain: 1,
+    
+          scorched: 2,
+          snow: 2,
+    
+          ice: 3
+        }
+      },
       jeep: {
         type: 'jeep',
-        level: 1,
 
         maxHealth: 12,
         strength: 8,
-        magic: 5,
-        skill: 7,
-        speed: 8,
-        luck: 6,
         defense: 4,
-        resistance: 3,
         movement: 6,
-
-        attackRangeMin: 1,
         attackRangeMax: 1,
 
         biomesMoveCosts: {
@@ -214,19 +236,11 @@ const CONFIG = {
       },
       boat: {
         type: 'boat',
-        level: 1,
 
         maxHealth: 15,
         strength: 9,
-        magic: 5,
-        skill: 7,
-        speed: 8,
-        luck: 6,
         defense: 5,
-        resistance: 3,
         movement: 5,
-
-        attackRangeMin: 2, // TODO: minimal attack range
         attackRangeMax: 3,
 
         biomesMoveCosts: {

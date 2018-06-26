@@ -287,6 +287,54 @@ const Units = (game, map, camera) => {
           material: materials.players[idPlayer][0]
         }
       ]
+    } else if (type == 'bazooka') {
+      return [
+        {
+          name: 'head',
+          size: {height: 2/8, length: 2/8, width: 2/8},
+          position: {x: 0, y: 7.5/8, z: 0},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'body',
+          size: {height: 3/8, length: 1/8, width: 3/8},
+          position: {x: 0, y: 5/8, z: 0},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'armLeft',
+          size: {height: 3/8, length: 1/8, width: 1/16},
+          position: {x: 0, y: 5/8, z: -2/8},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'armRight',
+          size: {height: 1/8, length: 3/8, width: 1/16},
+          position: {x: -1/8, y: 6/8, z: 2/8},
+          material: materials.players[idPlayer][0]
+        },
+        {
+          name: 'bazooka',
+          size: {height: 2/8, length: 5/8, width: 2/8},
+          position: {x: -1/8, y: 8/8, z: 2/8},
+          material: materials['unitGrey'],
+          dontColorize: true
+        },
+        {
+          name: 'legLeft',
+          size: {height: 3/8, length: 1/8, width: 1/8},
+          position: {x: 0, y: 1/4, z: 1/8},
+          material: materials['unitBlack'],
+          dontColorize: true
+        },
+        {
+          name: 'legRight',
+          size: {height: 3/8, length: 1/8, width: 1/8},
+          position: {x: 0, y: 1/4, z: -1/8},
+          material: materials['unitBlack'],
+          dontColorize: true
+        },
+      ]
     } else if (type == 'jeep') {
       return [
         {
