@@ -43,6 +43,11 @@ const Tiles = (map) => {
     }
   }
 
+  // CHANGE BULDING COLOR
+  renderer.changeBuildingColor = (cell, playerId) => {
+    cell.buildingMesh.material = materials.players[playerId][0]
+  }
+
   // REDISTRIBUTE ELEVATION WITH GAP
   // TODO: rewrite all this crap! (not used by now)
   renderer.redistributeElevationWithGap = (height) => {

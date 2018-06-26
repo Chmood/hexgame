@@ -63,6 +63,7 @@ const Renderer3d = (game, canvas) => {
     // Tiles
     createTiles: tiles.createTiles,
     deleteTiles: tiles.deleteTiles,
+    changeBuildingColor: tiles.changeBuildingColor,
   
     // Units
     createUnits: units.createUnits,

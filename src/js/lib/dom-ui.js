@@ -7,7 +7,7 @@ const DomUI = () => {
 
   const dom = {},
         keys = {},
-        gameMenuItems = ['Attack', 'Wait', 'EndTurn', 'QuitGame']
+        gameMenuItems = ['Attack', 'Conquer', 'Wait', 'EndTurn', 'QuitGame']
 
   let game = {}
 

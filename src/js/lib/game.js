@@ -248,6 +248,12 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       selectAttack()
       dom.closeGameMenu()
     },
+    gameMenuConquer() {
+      conquer()
+      // End the unit turn
+      endUnitTurn()
+      dom.closeGameMenu()
+    },
     gameMenuWait() {
       // End the unit turn
       endUnitTurn()
@@ -305,7 +311,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       console.log(`It's player ${game.currentPlayer.name}'s turn`)
     }
 
-    // await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
+    await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
 
     mode = 'select'
     unitsToMove = game.currentPlayer.units
@@ -494,6 +500,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   }
 
   // SELECT DESTINATION
+  // Then open the move menu
   const selectDestination = async function() {
     const path = game.ui.cursorPath // Use the cursor path as movement path
     
@@ -505,12 +512,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     game.ui.cursorPath = []
     game.updateRenderers(['highlights'])
 
-    // // Backup unit position and rotation in case of cancel
-    // game.unitMoveBackup = {
-    //   hex: selectedUnit.hex,
-    //   rotation: 
-    // }
-    
     // Make the unit travel the path
     path.shift() // Remove the first element (that is unit/starting cell)
 
@@ -518,11 +519,14 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     console.log(`Unit moved: ${selectedUnit.name}`)
 
     mode = 'game-menu-move'
+    const actions = ['Wait']
     if (canUnitAttack()) {
-      dom.openGameMenu(['Attack', 'Wait'])
-    } else {
-      dom.openGameMenu(['Wait'])
+      actions.unshift('Attack')
     }
+    if (canUnitConquer()) {
+      actions.unshift('Conquer')
+    }
+    dom.openGameMenu(actions)
   }
 
   // CAN UNIT ATTACK
@@ -618,6 +622,22 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         }
       }
     }
+  }
+
+  // AN UNIT CONQUER
+  const canUnitConquer = () => {
+    const cell = game.map.getCellFromHex(selectedUnit.hex)
+    return (cell.building && cell.building.ownerId !== game.currentPlayer.id)
+  }
+
+  // CONQUER
+  // Seize a building
+  const conquer = () => {
+    const cell = game.map.getCellFromHex(selectedUnit.hex)
+    const building = cell.building
+
+    building.ownerId = game.currentPlayer.id
+    game.renderer3d.changeBuildingColor(cell, game.currentPlayer.id)
   }
 
   // END UNIT TURN

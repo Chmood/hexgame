@@ -13,7 +13,11 @@
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work
-* More units (see: http://advancewars.wikia.com/wiki/List_of_Units - 18 unit types, http://advancewars.wikia.com/wiki/Category:Units)
+
+### More units!
+
+18 unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
+
   * 3x infantery: soldier, bazooka, [healer])
   * 3x tanks: light tank, heavy tank, anti-air tank
   * 3x distance: artillery (mid range), rocket-launcher (long range, 'move or fire'), anti-air missile launcher
@@ -24,7 +28,7 @@
 
 ## New features
 
-* Towns, factories, ports, airports
+* Roads and bridges???
 * More DOM UI (menus, stats...)
 * Terrain defense bonus/malus
 * Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
