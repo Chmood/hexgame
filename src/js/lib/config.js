@@ -155,6 +155,7 @@ const CONFIG = {
       tank: {
         type: 'tank',
         family: 'ground',
+        canConquer: false,
         // level: 1,
 
         // See: http://fireemblem.wikia.com/wiki/Category:Stats
@@ -185,6 +186,7 @@ const CONFIG = {
       bazooka: {
         type: 'bazooka',
         family: 'ground',
+        canConquer: true,
 
         maxHealth: 8,
         strength: 6,
@@ -218,6 +220,7 @@ const CONFIG = {
       jeep: {
         type: 'jeep',
         family: 'ground',
+        canConquer: false,
 
         maxHealth: 12,
         strength: 8,
@@ -243,6 +246,7 @@ const CONFIG = {
       boat: {
         type: 'boat',
         family: 'sea',
+        canConquer: false,
 
         maxHealth: 15,
         strength: 9,

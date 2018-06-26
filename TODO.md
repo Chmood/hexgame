@@ -8,7 +8,6 @@
 
 ## Improvements
 
-* Make buildings a special biome, built-in the map + pathfinding graph (beware the port)
 * Camera moves too much, following the action: make it follow a "box" to dampen it
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
@@ -19,7 +18,7 @@
 
 18 unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
 
-  * 3x infantery: soldier, bazooka, [healer])
+  * 3x infantry: soldier, bazooka, [healer])
   * 3x tanks: light tank, heavy tank, anti-air tank
   * 3x distance: artillery (mid range), rocket-launcher (long range, 'move or fire'), anti-air missile launcher
   * 3x boats: cruiser, battleship, submarine

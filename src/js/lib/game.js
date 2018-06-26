@@ -630,7 +630,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   // AN UNIT CONQUER
   const canUnitConquer = () => {
     const cell = game.map.getCellFromHex(selectedUnit.hex)
-    return (cell.building && cell.building.ownerId !== game.currentPlayer.id)
+    return (
+      cell.building && 
+      cell.building.ownerId !== game.currentPlayer.id &&
+      selectedUnit.canConquer
+    )
   }
 
   // CONQUER
