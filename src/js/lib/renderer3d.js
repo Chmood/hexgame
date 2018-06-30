@@ -177,7 +177,7 @@ const Renderer3d = (game, canvas) => {
 
   // Highlight layers
   // Last parameter is the number of highlight layers
-  highlight.init(scene, game.ui, map, 3)
+  highlight.init(scene, game.ui, map, 3, game)
 
   // Materials
   renderer.materials = materials.createMaterials()

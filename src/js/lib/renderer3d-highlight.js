@@ -47,7 +47,7 @@ const Highlight = () => {
 
   ////////////////////////////////////////
   // PRIVATE
-  let scene, ui, map
+  let scene, ui, map, game
 
   const highlightLayer = [],
         highlightMeshes = []
@@ -65,11 +65,35 @@ const Highlight = () => {
         offset.col >= 0 && offset.row >= 0 &&
         offset.col < CONFIG.map.mapSize.width && offset.row < CONFIG.map.mapSize.height
       ) {
-      // Add to layer
+      // Add tile mesh to layer
       highlightMeshes[n].push({
         mesh: map[offset.col][offset.row].tile,
         color: color
       })
+
+      // Is there a building on this tile?
+      if (map[offset.col][offset.row].buildingMesh) {
+        highlightMeshes[n].push({
+          mesh: map[offset.col][offset.row].buildingMesh,
+          color: color
+        })
+      }
+
+      // Is there a unit on this tile?
+      for (const player of game.players) {
+        for (const unit of player.units) {
+          if (HEXLIB.hexEqual(unit.hex, hex)) {
+            // Loop on unit parts meshes
+            for (const part in unit.meshes) {
+              const mesh = unit.meshes[part]
+              highlightMeshes[n].push({
+                mesh: mesh,
+                color: color
+              })
+            }
+          }
+        }
+      }
     }
   }
 
@@ -93,10 +117,11 @@ const Highlight = () => {
 
   ////////////////////////////////////////
   // INIT
-  renderer.init = (rendererScene, gameUI, gameMap, nHightlighLayers) => {
+  renderer.init = (rendererScene, gameUI, gameMap, nHightlighLayers, rendererGame) => {
     scene = rendererScene
     ui = gameUI
     map = gameMap
+    game = rendererGame // TODO: So absurd to pass the whole Game here....
 
     // Create game highlights
     for (let n = 0; n < nHightlighLayers; n++) {
