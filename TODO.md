@@ -13,6 +13,7 @@
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work
+* OOP/prototype: make 'class methods' (single function for all instances)
 
 ### More units!
 
@@ -28,10 +29,9 @@
 
 ## New features
 
-* Players should earn money
-* Unit building in factories, ports and airports (new menu)
+* Players should earn money (depending on number of buildings they own)
+* New DOM element: unit/terrain/building info panel
 * Roads and bridges???
-* More DOM UI (menus, stats...)
 * Terrain defense bonus/malus
 * Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
 * Unit parts animations (idle, shoot, move...)

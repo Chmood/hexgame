@@ -19,6 +19,11 @@ const Buildings = (map, RNG) => {
       ownerId: type === 'base' ? playerId : undefined
     }
 
+    if (type === 'factory' || type === 'port' || type === 'airport') {
+      building.canBuild = true
+      building.hasBuilt = false
+    }
+
     let isValidPosition = false,
         nTryLeft = 20,
         startingZoneRatio = CONFIG.game.playerStartingZoneRatio

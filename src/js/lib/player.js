@@ -1,19 +1,62 @@
+import HEXLIB from '../vendor/hexlib.js'
 import ShadeBlend from '../vendor/shadeblend'
 import Unit from './unit'
+import CONFIG from './config';
 
 ////////////////////////////////////////////////////////////////////////////////
 // PLAYER
 
 const Player = (config) => {
-  const player = {}
 
-  // BASE
-  player.id = config.id
-  player.name = config.name
-  player.isHuman = config.isHuman
-  player.color = config.color
-  // player.colorDesaturated = ShadeBlend(0.5, player.color, '#888888')
+  const player = {
+    id: config.id,
+    name: config.name,
+    isHuman: config.isHuman,
+    money: CONFIG.game.playerStartingMoney,
+    color: config.color,
+    // colorDesaturated: ShadeBlend(0.5, player.color, '#888888'),
+    units: [],
+  
+    // ADD UNIT
+    addUnit(unitType, position = HEXLIB.hex(-1, -1)) {
+      const unit = Unit({
+        id: findFreeUnitId(),
+        playerId: player.id,
+        type: unitType,
+        color: player.color
+      })
 
+      unit.moveToHex(position, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+  
+      player.units.push(unit)
+
+      return unit
+    }
+  }
+
+  // FIND UNIT BY ID
+  const findUnitById = (id) => {
+    for (const unit of player.units) {
+      if (unit.id === id) {
+        return unit
+      }
+    }
+
+    return false
+  }
+
+  // FIND FREE UNIT ID
+  const findFreeUnitId = () => {
+    let id = 0
+
+    while(findUnitById(id) !== false) {
+      id++
+    }
+
+    return id
+  }
+
+  // SET UNIT RANDOM TYPE
   const setUnitRandomType = () => {
     const rng = Math.random()
 
@@ -29,16 +72,8 @@ const Player = (config) => {
   }
 
   // UNITS
-  player.units = []
   for (let n = 0; n < 7; n++) {
-    const unit = Unit({
-      id: n,
-      playerId: player.id,
-      type: setUnitRandomType(),
-      color: player.color
-    })
-
-    player.units.push(unit)
+    player.addUnit(setUnitRandomType())
   }
 
   return player

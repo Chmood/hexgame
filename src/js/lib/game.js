@@ -262,8 +262,16 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       endUnitTurn()
       dom.closeGameMenu()
     },
+    gameMenuBuildUnits() {
+      dom.closeGameMenu()
+      dom.openGameBuildMenu(selectedBuilding, game.currentPlayer.money)
+    },
     gameMenuEndTurn() {
       changeCurrentPlayer()
+      dom.closeGameMenu()
+    },
+    gameMenuBuildUnit(unitType) {
+      buildUnit(unitType)
       dom.closeGameMenu()
     },
     gameMenuQuitGame() {
@@ -287,7 +295,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       focusedUnit = undefined, // Unit
       unitsToMove = [], // [Unit]
       cameraDirection = undefined, // From 0 to 5
-      selectedTargetId = undefined // Number
+      selectedTargetId = undefined, // Number
+      selectedBuilding = undefined // Building
 
   // CHANGE CURRENT PLAYER
   // TODO: broken when deleting players!
@@ -452,6 +461,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   // SELECT UNIT
   const selectCell = () => {
     let isSomethingSelected = false
+    const actions = ['EndTurn', 'QuitGame']
+
+    // Check if a unit is selected
     for (const player of game.players) {
       for (const unit of player.units) {
         if (HEXLIB.hexEqual(game.ui.cursor, unit.hex)) {
@@ -465,16 +477,43 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           } else {
             // The player selected one of another player's unit
             // TODO: info mode (ala Fire Emblem)
+            // Show ennemy attack range
             console.log(`TODO: display infos about ${player.name}'s ${unit.name}`)
           }
         }
       }
     }
+
+    // Check if a building is selected
+    if (!isSomethingSelected) { 
+      const cell = game.map.getCellFromHex(game.ui.cursor)
+      if (cell.building) {
+        const building = cell.building
+        // Does the building belongs to the active player?
+        if (building.ownerId === game.currentPlayer.id) {
+          // Is the building a factory, a port or an airport?
+          if (building.canBuild) {
+            // Is the building free to build a unit?
+            if (!building.hasBuilt) {
+              selectedBuilding = building
+              actions.unshift('BuildUnits')
+            } else {
+              // TODO: infos on the unit that will be built
+            }
+          } else {
+            // TODO: infos on player city/base
+          }
+        } else {
+          // TODO: infos on ennemy's building
+        }
+      }
+    }
+
     // Empty selection
     if (!isSomethingSelected) {
       // Open the game menu (ala Fire Emblem!)
-      dom.openGameMenu(['EndTurn', 'QuitGame'])
       mode = 'game-menu-select'
+      dom.openGameMenu(actions)
     }
   }
 
@@ -645,6 +684,18 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     building.ownerId = game.currentPlayer.id
     game.renderer3d.changeBuildingColor(cell, game.currentPlayer.id)
+  }
+
+  // BUILD UNIT
+  const buildUnit = (unitType) => {
+    const unit = game.currentPlayer.addUnit(unitType, selectedBuilding.hex)
+
+    // New born unit can't play during the first turn
+    unit.hasPlayed = true
+    game.updateRenderers(['players'])
+
+    // Go back to select mode
+    mode = 'select'
   }
 
   // END UNIT TURN

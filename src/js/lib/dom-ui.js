@@ -7,7 +7,7 @@ const DomUI = () => {
 
   const dom = {},
         keys = {},
-        gameMenuItems = ['Attack', 'Conquer', 'Wait', 'EndTurn', 'QuitGame']
+        gameMenuItems = ['Attack', 'Conquer', 'Wait', 'BuildUnits', 'EndTurn', 'QuitGame']
 
   let game = {}
 
@@ -119,29 +119,85 @@ const DomUI = () => {
   }
 
   // GAME MENU
-  dom.openGameMenu = (items) => {
-    // Clear all existing menu items
+  // Clear all existing menu items
+  dom.clearGameMenu = () => {
+    // Remove items visibility menu classes
     dom.gameMenu.classList.remove(...gameMenuItems)
+    // Remove items selectability classes
     dom.gameMenuItems.forEach((item) => {
       item.classList.remove('is-selectable')
     })
+    // Remove dynamic items (build menu)
+    const dynamicItems = document.querySelectorAll('.game-menu-item--dynamic')
+    dynamicItems.forEach(function(dynamicItem) {
+      dynamicItem.remove()
+    })
+  }
 
-    // Add the specified menu items
-    for (const [index, item] of items.entries()) {
-      dom.gameMenu.classList.add(item) // class on the menu
-      dom[`gameMenu${item}`].classList.add('is-selectable') // class on available items
-      if (index === 0) {
-        // dom[`gameMenu${item}`].classList.add('is-selected')
-        dom[`gameMenu${item}`].focus()
-      }
-    }
-
+  dom.activateGameMenu = (items) => {
     // Make the menu visible
     dom.gameMenu.classList.add('active')
 
     // Backup items
     currentGameMenuItems = items
     currentGameMenuItemId = 0
+
+    // Give the focus to the first menu item
+    dom[`gameMenu${currentGameMenuItems[0]}`].focus()
+  }
+
+  dom.openGameMenu = (items) => {
+    dom.clearGameMenu()
+
+    // Add the specified menu items
+    for (const item of items) {
+      dom.gameMenu.classList.add(item) // class on the menu
+      dom[`gameMenu${item}`].classList.add('is-selectable') // class on available items
+    }
+
+    dom.activateGameMenu(items)
+  }
+
+  // Build menu
+  dom.openGameBuildMenu = (building, money) => {
+    dom.clearGameMenu()
+
+    let unitFamily
+    if (building.type === 'factory') {
+      unitFamily = 'ground'
+    } else if (building.type === 'port') {
+      unitFamily = 'sea'
+    } else if (building.type === 'airport') {
+      unitFamily = 'air'
+    }
+
+    const items = []
+    for (const unitType in CONFIG.game.units) {
+      const unit = CONFIG.game.units[unitType]
+
+      if (unit.family === unitFamily) {
+        const menuItem = document.createElement("button")
+        // menuItem.id = `game-menu-${unitType}`
+        menuItem.classList.add('game-menu-item', 'game-menu-item--dynamic')
+        menuItem.innerHTML = `${unitType} <span>(${unit.cost})</span>`
+        items.push(unitType)
+
+        if (unit.cost <= money) {
+          menuItem.addEventListener('click', () => {
+            game.gameMenuBuildUnit(unitType)
+          })
+        } else {
+          menuItem.classList.add('game-menu-item--disabled')
+        }
+
+        dom.gameMenu.appendChild(menuItem)
+
+        // Backup item
+        dom[`gameMenu${unitType}`] = menuItem
+      }
+    }
+
+    dom.activateGameMenu(items)
   }
 
   dom.closeGameMenu = () => {

@@ -109,6 +109,10 @@ const Units = (game, map, camera) => {
     for (const part of parts) {
       unit.meshes[part.name] = part.mesh
     }
+
+    if (unit.hasPlayed) {
+      renderer.changeUnitMaterial(unit, 'colorDesaturated')
+    }
   }
 
   // CREATE UNITS
@@ -127,7 +131,6 @@ const Units = (game, map, camera) => {
     }
     if (unit.meshes) {
       for (const part in unit.meshes) {
-        console.log(unit.meshes[part])
         unit.meshes[part].dispose()
       }
     }

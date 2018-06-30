@@ -125,6 +125,7 @@ const CONFIG = {
   game: {
     seed: 'staticgameseed', // undefined for a random seed
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
+    playerStartingMoney: 5000,
     animationsSpeed: 1.5,
     debounceKeyboardTime: 8, // In locksteppeded frames
     // Buildings
@@ -152,40 +153,10 @@ const CONFIG = {
     },
     // Units stats
     units: {
-      tank: {
-        type: 'tank',
-        family: 'ground',
-        canConquer: false,
-        // level: 1,
-
-        // See: http://fireemblem.wikia.com/wiki/Category:Stats
-        maxHealth: 20, // http://fireemblem.wikia.com/wiki/HP
-        strength: 10, // http://fireemblem.wikia.com/wiki/Strength
-        // magic: 5, // http://fireemblem.wikia.com/wiki/Magic_(stat)
-        // skill: 7, // http://fireemblem.wikia.com/wiki/Skill_(stat)
-        // speed: 8, // http://fireemblem.wikia.com/wiki/Speed_(stat)
-        // luck: 6, // http://fireemblem.wikia.com/wiki/Luck
-        defense: 5, // http://fireemblem.wikia.com/wiki/Defense_(stat)
-        // resistance: 3, // http://fireemblem.wikia.com/wiki/Resistance
-        movement: 4, // http://fireemblem.wikia.com/wiki/Movement
-
-        // attackRangeMin: 1, // Not used by now
-        attackRangeMax: 2,
-
-        biomesMoveCosts: {
-          whitebeach: 1,
-          beach: 1,
-          swamp: 2,
-    
-          desert: 1,
-          grass: 1,
-          plain: 1
-        },
-        buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
-      },
       bazooka: {
         type: 'bazooka',
         family: 'ground',
+        cost: 3000,
         canConquer: true,
 
         maxHealth: 8,
@@ -220,6 +191,7 @@ const CONFIG = {
       jeep: {
         type: 'jeep',
         family: 'ground',
+        cost: 4000,
         canConquer: false,
 
         maxHealth: 12,
@@ -243,9 +215,42 @@ const CONFIG = {
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
+      tank: {
+        type: 'tank',
+        family: 'ground',
+        cost: 7000,
+        canConquer: false,
+        // level: 1,
+
+        // See: http://fireemblem.wikia.com/wiki/Category:Stats
+        maxHealth: 20, // http://fireemblem.wikia.com/wiki/HP
+        strength: 10, // http://fireemblem.wikia.com/wiki/Strength
+        // magic: 5, // http://fireemblem.wikia.com/wiki/Magic_(stat)
+        // skill: 7, // http://fireemblem.wikia.com/wiki/Skill_(stat)
+        // speed: 8, // http://fireemblem.wikia.com/wiki/Speed_(stat)
+        // luck: 6, // http://fireemblem.wikia.com/wiki/Luck
+        defense: 5, // http://fireemblem.wikia.com/wiki/Defense_(stat)
+        // resistance: 3, // http://fireemblem.wikia.com/wiki/Resistance
+        movement: 4, // http://fireemblem.wikia.com/wiki/Movement
+
+        // attackRangeMin: 1, // Not used by now
+        attackRangeMax: 2,
+
+        biomesMoveCosts: {
+          whitebeach: 1,
+          beach: 1,
+          swamp: 2,
+    
+          desert: 1,
+          grass: 1,
+          plain: 1
+        },
+        buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
+      },
       boat: {
         type: 'boat',
         family: 'sea',
+        cost: 10000,
         canConquer: false,
 
         maxHealth: 15,

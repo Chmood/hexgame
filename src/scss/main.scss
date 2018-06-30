@@ -56,14 +56,16 @@ body {
 	button {
 		border: none;
 		padding: 0.5rem 1rem;
-		text-transform: uppercase;
-		color: black;
+		background-color: transparent;
+		color: white;
 		font-weight: bold;
+		text-transform: capitalize;
+		transition: all 0.25s;
 
 		&:hover,
 		&:focus {
-			background-color: #111;
-			color: white;
+			background-color: white;
+			color: #333;
 			outline: none;
 		}
 
@@ -107,6 +109,19 @@ body {
 		width: 100%;
 		margin-bottom: 0.5rem;
 		text-align: left;
+		
+		&.game-menu-item--dynamic {
+			display: flex;
+			justify-content: space-between;
+
+			> span {
+				margin-left: 1rem;
+			}
+		}
+
+		&.game-menu-item--disabled {
+			opacity: 0.5;
+		}
 	}
 
 	&.Attack {
@@ -121,6 +136,11 @@ body {
 	}
 	&.Wait {
 		#game-menu-Wait {
+			display: block;
+		}
+	}
+	&.BuildUnits {
+		#game-menu-BuildUnits {
 			display: block;
 		}
 	}
