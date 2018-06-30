@@ -325,6 +325,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
 
+    dom.updateTopPanel(game.currentPlayer)
+    earnMoney(game.currentPlayer)
+
     mode = 'select'
     unitsToMove = game.currentPlayer.units
     focusedUnit = unitsToMove[0] 
@@ -336,6 +339,17 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       playBot()
     }
   } 
+
+  // EARN MONEY
+  // Compute the money income for the current player
+  const earnMoney = (player) => {
+    for (const building of game.buildings) {
+      if (building.ownerId === player.id) {
+        player.money += CONFIG.game.moneyEarnedPerBuilding
+        dom.updateTopPanel(player)
+      }
+    }
+  }
 
   // PLAY BOT
   // The current player is bot, auto-play it
@@ -688,11 +702,16 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   // BUILD UNIT
   const buildUnit = (unitType) => {
-    const unit = game.currentPlayer.addUnit(unitType, selectedBuilding.hex)
+    const player = game.currentPlayer,
+          unit = player.addUnit(unitType, selectedBuilding.hex)
 
     // New born unit can't play during the first turn
     unit.hasPlayed = true
     game.updateRenderers(['players'])
+
+    // Remove unit cost from player's money
+    player.money -= unit.cost
+    dom.updateTopPanel(player)
 
     // Go back to select mode
     mode = 'select'

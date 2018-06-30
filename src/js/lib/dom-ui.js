@@ -18,6 +18,10 @@ const DomUI = () => {
     dom.canvas2dWrapper = document.getElementById('canvas2d-wrapper')
     dom.canvas3d = document.getElementById('canvas3d')
   
+    // Top panel
+    dom.playerName = document.getElementById('player-name')
+    dom.playerMoney = document.getElementById('player-money')
+
     // Game menu and its items
     dom.gameMenu = document.getElementById('game-menu')
     dom.gameMenuItems = document.querySelectorAll('.game-menu-item')
@@ -116,6 +120,12 @@ const DomUI = () => {
     window.onresize = () => {
       game.resizeGame()
     }
+  }
+
+  // TOP PANEL
+  dom.updateTopPanel = (player) => {
+    dom.playerName.textContent = player.name
+    dom.playerMoney.textContent = player.money
   }
 
   // GAME MENU

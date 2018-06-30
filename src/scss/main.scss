@@ -44,9 +44,10 @@ body {
 #canvas2d {
 }
 
-// UI PANEL & GAME MENU
+// COMMON
 
 #ui,
+#top-panel,
 #game-menu {
 	position: fixed;
 	padding: 1rem;
@@ -73,6 +74,22 @@ body {
 			background-color: #f80;
 			color: white;
 		}
+	}
+}
+
+// TOP PANEL
+#top-panel {
+	top: 0;
+	left: 0;
+	width: 100vw;
+	display: flex;
+}
+
+.top-panel-item {
+	margin-right: 1rem;
+
+	> span {
+		font-weight: bold;
 	}
 }
 
