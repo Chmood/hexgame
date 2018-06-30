@@ -266,6 +266,60 @@ const CONFIG = {
           shore: 1
         },
         buildingsMoveCosts: {port: 0.5}
+      },
+      bomber: {
+        type: 'bomber',
+        family: 'air',
+        cost: 15000,
+        canConquer: false,
+
+        maxHealth: 20,
+        strength: 10,
+        defense: 7,
+        movement: 7,
+        attackRangeMax: 1,
+
+        biomesMoveCosts: {
+          // Air unit: all biomes, cost is always 1
+          deepsea: 1, sea: 1, shore: 1, whitebeach: 1, beach: 1, swamp: 1, desert: 1, grass: 1, plain: 1, forest: 1, deepforest: 1, pineforest: 1, mountain: 1, highmountain: 1, scorched: 1, snow: 1, ice: 1
+        },
+        buildingsMoveCosts: {base: 1, city: 1, factory: 1, port: 1, airport: 1}
+      },
+      fighter: {
+        type: 'fighter',
+        family: 'air',
+        cost: 12000,
+        canConquer: false,
+
+        maxHealth: 15,
+        strength: 7,
+        defense: 6,
+        movement: 10,
+        attackRangeMax: 2,
+
+        biomesMoveCosts: {
+          // Air unit: all biomes, cost is always 1
+          deepsea: 1, sea: 1, shore: 1, whitebeach: 1, beach: 1, swamp: 1, desert: 1, grass: 1, plain: 1, forest: 1, deepforest: 1, pineforest: 1, mountain: 1, highmountain: 1, scorched: 1, snow: 1, ice: 1
+        },
+        buildingsMoveCosts: {base: 1, city: 1, factory: 1, port: 1, airport: 1}
+      },
+      helicopter: {
+        type: 'helicopter',
+        family: 'air',
+        cost: 6000,
+        canConquer: false,
+
+        maxHealth: 12,
+        strength: 7,
+        defense: 5,
+        movement: 5,
+        attackRangeMax: 1,
+
+        biomesMoveCosts: {
+          // Air unit: all biomes, cost is always 1
+          deepsea: 1, sea: 1, shore: 1, whitebeach: 1, beach: 1, swamp: 1, desert: 1, grass: 1, plain: 1, forest: 1, deepforest: 1, pineforest: 1, mountain: 1, highmountain: 1, scorched: 1, snow: 1, ice: 1
+        },
+        buildingsMoveCosts: {base: 1, city: 1, factory: 1, port: 1, airport: 1}
       }
     }
   }

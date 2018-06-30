@@ -58,22 +58,17 @@ const Player = (config) => {
 
   // SET UNIT RANDOM TYPE
   const setUnitRandomType = () => {
-    const rng = Math.random()
+    const types = Object.keys(CONFIG.game.units),
+          nTypes = types.length,
+          rng = Math.floor(Math.random() * nTypes)
 
-    if (rng > 0.75) {
-      return 'tank'
-    } else if (rng > 0.5) {
-      return 'jeep'
-    } else if (rng > 0.25) {
-      return 'bazooka'
-    } else {
-      return 'boat'
-    }
+    return types[rng]
   }
 
   // UNITS
   for (let n = 0; n < 7; n++) {
     player.addUnit(setUnitRandomType())
+    // player.addUnit('fighter')
   }
 
   return player

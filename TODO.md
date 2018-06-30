@@ -17,19 +17,18 @@
 
 ### More units!
 
-18 unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
+5/18 unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
 
-  * 3x infantry: soldier, bazooka, [healer])
-  * 3x tanks: light tank, heavy tank, anti-air tank
+  * 3x infantry: soldier, [bazooka], healer)
+  * 3x tanks: [tank], heavy tank, anti-air tank
   * 3x distance: artillery (mid range), rocket-launcher (long range, 'move or fire'), anti-air missile launcher
-  * 3x boats: cruiser, battleship, submarine
-  * 3x air units: helicopter, fighter, bombers
-  * 3x support units: recon, sea transport, air transport
+  * 3x boats: cruiser, [battleship(boat)], submarine
+  * 3x air units: [helicopter], [fighter], [bomber]
+  * 3x support units: [recon(jeep)], sea transport, air transport
   * Others: APC (ammo/fuel)???
 
 ## New features
 
-* Players should earn money (depending on number of buildings they own)
 * New DOM element: unit/terrain/building info panel
 * Roads and bridges???
 * Terrain defense bonus/malus
