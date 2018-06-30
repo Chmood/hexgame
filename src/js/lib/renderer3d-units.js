@@ -724,7 +724,7 @@ const Units = (game, map, camera) => {
 
     // ROTATION
     // TODO: fucked up applied terrain rotation!!!
-    const rotation = !doFollowTerrainSlope ? new BABYLON.Vector3(
+    const rotation = doFollowTerrainSlope ? new BABYLON.Vector3(
       cell.tile.rotation.x,
       direction, // Keep the unit direction/orientation (Y axis) if it exists
       cell.tile.rotation.y
