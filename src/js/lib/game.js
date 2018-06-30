@@ -326,7 +326,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
 
     dom.updateTopPanel(game.currentPlayer)
-    earnMoney(game.currentPlayer)
+
+    await earnMoney(game.currentPlayer)
 
     mode = 'select'
     unitsToMove = game.currentPlayer.units
@@ -343,12 +344,20 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   // EARN MONEY
   // Compute the money income for the current player
   const earnMoney = (player) => {
-    for (const building of game.buildings) {
-      if (building.ownerId === player.id) {
-        player.money += CONFIG.game.moneyEarnedPerBuilding
-        dom.updateTopPanel(player)
+    return new Promise(async (resolve) => {
+
+      for (const building of game.buildings) {
+        if (building.ownerId === player.id) {
+  
+          player.money += CONFIG.game.moneyEarnedPerBuilding
+          dom.updateTopPanel(player)
+          game.renderer3d.updateCameraPosition(building.hex)
+  
+          await wait()
+        }
       }
-    }
+      resolve()
+    })
   }
 
   // PLAY BOT
@@ -1031,6 +1040,16 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     if (value < min) { return value + (max - min) }
     if (value >= max) { return value - (max - min) }
     return value
+  }
+
+  // WAIT
+  // Simply wait for some time
+  const wait = (time = 500) => {
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        resolve()
+      }, time)
+    })
   }
   
   return game
