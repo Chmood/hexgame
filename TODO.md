@@ -17,15 +17,13 @@
 
 ### More units!
 
-5/18 unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
+7/19 unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
 
-  * 3x infantry: soldier, [bazooka], healer)
-  * 3x tanks: [tank], heavy tank, anti-air tank
-  * 3x distance: artillery (mid range), rocket-launcher (long range, 'move or fire'), anti-air missile launcher
-  * 3x boats: cruiser, [battleship(boat)], submarine
-  * 3x air units: [helicopter], [fighter], [bomber]
-  * 3x support units: [recon(jeep)], sea transport, air transport
-  * Others: APC (ammo/fuel)???
+* 2x infantry: soldier, healer)
+* 2x tanks: heavy tank, anti-air tank
+* 3x distance: artillery (mid range), rocket-launcher (long range, 'move or fire'), anti-air missile launcher
+* 2x boats: cruiser, submarine
+* 3x support units: ground transport, sea transport, air transport
 
 ## New features
 
@@ -40,6 +38,7 @@
 * Joypad support
 * Sound and music support
 * Log all game actions, and replay a game (and undo/redo???)
+* Client-server refactor, network playing
 * Find a real name for the game: "Hex Wars", "Hex Emblem"...
 
 ## Ideas

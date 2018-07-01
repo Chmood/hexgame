@@ -28,6 +28,7 @@ const Buildings = (map, RNG) => {
         nTryLeft = 20,
         startingZoneRatio = CONFIG.game.playerStartingZoneRatio
 
+    // Starting zone tweaking
     if (type === 'city') {
       startingZoneRatio *= 1
     } else if (type === 'base') {
@@ -72,6 +73,25 @@ const Buildings = (map, RNG) => {
         cell.biome,
         CONFIG.game.buildings[type].biomes
       )
+
+      // Ports
+      if (type === 'port') {
+        // Ports must touch the ground
+        const portNeighbors = HEXLIB.hexNeighbors(building.hex)
+        let hasGroundNeighbor = false
+
+        for (const portNeighbor of portNeighbors) {
+          const portNeighborCell = map.getCellFromHex(portNeighbor)
+          if (portNeighborCell && !map.isOceanCell(portNeighborCell)) {
+            hasGroundNeighbor = true
+            break
+          }
+        }
+
+        if (!hasGroundNeighbor) {
+          continue
+        }
+      }
 
       // Check if the building position is not already occupied by another building
       let isFreeHex = true

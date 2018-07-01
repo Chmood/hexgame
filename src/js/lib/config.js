@@ -152,8 +152,15 @@ const CONFIG = {
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       }
     },
-    // Units stats
+    // Units
     units: {
+      // TODO
+      // * can attack ground/sea/air
+      // * can move AND attack
+      // * can carry
+      // * can heal
+      // * can dive (submarine)
+
       bazooka: {
         type: 'bazooka',
         family: 'ground',
