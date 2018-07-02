@@ -17,16 +17,16 @@
 
 ### More units!
 
-7/19 unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
+10/19 unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
 
-* 2x infantry: soldier, healer)
-* 2x tanks: heavy tank, anti-air tank
+* 1x tanks: anti-air tank
 * 3x distance: artillery (mid range), rocket-launcher (long range, 'move or fire'), anti-air missile launcher
 * 2x boats: cruiser, submarine
-* 3x support units: ground transport, sea transport, air transport
+* 3x transport units: ground transport, sea transport, air transport
 
 ## New features
 
+* Healing allied units
 * New DOM element: unit/terrain/building info panel
 * Roads and bridges???
 * Terrain defense bonus/malus
@@ -38,7 +38,7 @@
 * Joypad support
 * Sound and music support
 * Log all game actions, and replay a game (and undo/redo???)
-* Client-server refactor, network playing
+* Client-server refactor, network playing (see Colyseus or Pomelo)
 * Find a real name for the game: "Hex Wars", "Hex Emblem"...
 
 ## Ideas

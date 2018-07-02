@@ -86,7 +86,7 @@ const CONFIG = {
     cellStepHeight: 0.5,
     randomTileSizeFactor: 0.15,
     randomTileSizeOffset: 0, // 1 => only smaller / 0.5 => smaller & bigger / 0 => only bigger
-    randomTileRotation: true, // Shall we random rotate the tiles
+    randomTileRotation: false, // Shall we random rotate the tiles
     randomTileRotationFactor: 1, // 0 : flat / 1 : sloppy / 2 : chaos
     shinyIce: true,
     transparentIce: false,
@@ -161,15 +161,15 @@ const CONFIG = {
       // * can heal
       // * can dive (submarine)
 
-      bazooka: {
-        type: 'bazooka',
+      'soldier': {
+        type: 'soldier',
         family: 'ground',
-        cost: 3000,
+        cost: 1000,
         canConquer: true,
 
-        maxHealth: 8,
-        strength: 6,
-        defense: 3,
+        maxHealth: 5,
+        strength: 4,
+        defense: 2,
         movement: 3,
         attackRangeMax: 1,
 
@@ -196,7 +196,77 @@ const CONFIG = {
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
-      jeep: {
+      'bazooka': {
+        type: 'bazooka',
+        family: 'ground',
+        cost: 3000,
+        canConquer: true,
+
+        maxHealth: 8,
+        strength: 6,
+        defense: 3,
+        movement: 2,
+        attackRangeMax: 1,
+
+        biomesMoveCosts: {
+          whitebeach: 1,
+          beach: 1,
+          swamp: 1,
+    
+          desert: 1,
+          grass: 1,
+          plain: 1,
+    
+          forest: 1,
+          deepforest: 1,
+          pineforest: 1,
+
+          mountain: 1,
+          highmountain: 1,
+    
+          scorched: 2,
+          snow: 2,
+    
+          ice: 3
+        },
+        buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
+      },
+      'healer': {
+        type: 'healer',
+        family: 'ground',
+        cost: 4000,
+        canConquer: true,
+
+        maxHealth: 5,
+        strength: 5,
+        defense: 3,
+        movement: 3,
+        attackRangeMax: 0,
+
+        biomesMoveCosts: {
+          whitebeach: 1,
+          beach: 1,
+          swamp: 1,
+    
+          desert: 1,
+          grass: 1,
+          plain: 1,
+    
+          forest: 1,
+          deepforest: 1,
+          pineforest: 1,
+
+          mountain: 1,
+          highmountain: 1,
+    
+          scorched: 2,
+          snow: 2,
+    
+          ice: 3
+        },
+        buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
+      },
+      'jeep': {
         type: 'jeep',
         family: 'ground',
         cost: 4000,
@@ -223,7 +293,7 @@ const CONFIG = {
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
-      tank: {
+      'tank': {
         type: 'tank',
         family: 'ground',
         cost: 7000,
@@ -255,7 +325,35 @@ const CONFIG = {
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
-      boat: {
+      'heavy-tank': {
+        type: 'heavy-tank',
+        family: 'ground',
+        cost: 15000,
+        canConquer: false,
+
+        maxHealth: 30, // http://fireemblem.wikia.com/wiki/HP
+        strength: 12, // http://fireemblem.wikia.com/wiki/Strength
+        defense: 7, // http://fireemblem.wikia.com/wiki/Defense_(stat)
+        movement: 3, // http://fireemblem.wikia.com/wiki/Movement
+
+        attackRangeMax: 2,
+
+        biomesMoveCosts: {
+          whitebeach: 1,
+          beach: 1,
+          swamp: 2,
+
+forest: 2,
+deepforest: 2,
+pineforest: 2,
+    
+          desert: 1,
+          grass: 1,
+          plain: 1
+        },
+        buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
+      },
+      'boat': {
         type: 'boat',
         family: 'sea',
         cost: 10000,
@@ -274,7 +372,7 @@ const CONFIG = {
         },
         buildingsMoveCosts: {port: 0.5}
       },
-      bomber: {
+      'bomber': {
         type: 'bomber',
         family: 'air',
         cost: 15000,
@@ -292,7 +390,7 @@ const CONFIG = {
         },
         buildingsMoveCosts: {base: 1, city: 1, factory: 1, port: 1, airport: 1}
       },
-      fighter: {
+      'fighter': {
         type: 'fighter',
         family: 'air',
         cost: 12000,
@@ -310,7 +408,7 @@ const CONFIG = {
         },
         buildingsMoveCosts: {base: 1, city: 1, factory: 1, port: 1, airport: 1}
       },
-      helicopter: {
+      'helicopter': {
         type: 'helicopter',
         family: 'air',
         cost: 6000,
