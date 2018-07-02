@@ -108,11 +108,6 @@ const Renderer3d = (game, canvas) => {
       scene.onBeforeStepObservable.add((scene) => {
         // console.log('Performing game logic, BEFORE animations and physics for stepId: ' + scene.getStepId());
   
-        // Cheap debounce
-        if (game.debounce > 0) {
-          game.debounce--
-        }
-    
         // const fps = Math.floor(engine.getFps())
         // console.log(fps + ' FPS')
   

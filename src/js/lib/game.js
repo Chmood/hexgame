@@ -23,9 +23,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Players
     players: [],
 
-    // Debounce countdown
-    debounce: 0,
-
     // UI overlay
     ui: {
       cursor: undefined, // Hex
@@ -112,62 +109,55 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     onKeyDown(keys) {
       // Only catch key events if the standard camera is active
       if (game.renderer3d.getActiveCamera().name === 'camera') {
-        if (game.debounce === 0) {
-          if (mode === 'game-menu-select' || mode === 'game-menu-move') {
-                   if (keys['ArrowUp']) {     dom.moveGameMenu('up')
-            } else if (keys['ArrowDown']) {   dom.moveGameMenu('down')
-            } else if (keys['x']) {           dom.selectGameMenu()
-            }
+        if (mode === 'game-menu-select' || mode === 'game-menu-move') {
+                  if (keys['ArrowUp']) {     dom.moveGameMenu('up')
+          } else if (keys['ArrowDown']) {   dom.moveGameMenu('down')
+          } else if (keys['x']) {           dom.selectGameMenu()
+          }
 
-            if (mode === 'game-menu-select') {
-              // Player can only close menu (with no item selected) during selection phase
-                   if (keys['c']) {           dom.closeGameMenu()
-                                              mode = 'select'
-              }
-            } else if (mode === 'game-menu-move') {
-              // Closing the menu in move phase cancel the move
-                   if (keys['c']) {           dom.closeGameMenu()
-                                              // mode = 'move'
-                                              cancelFinishedMove()
-              }
+          if (mode === 'game-menu-select') {
+            // Player can only close menu (with no item selected) during selection phase
+                  if (keys['c']) {           dom.closeGameMenu()
+                                            mode = 'select'
             }
-
-          } else {
-                   if (keys['ArrowRight'] && 
-                      keys['ArrowUp']) {      moveCursor('right-up')
-            } else if (keys['ArrowRight'] && 
-                      keys['ArrowDown']) {    moveCursor('right-down')
-            } else if (keys['ArrowLeft'] && 
-                      keys['ArrowUp']) {      moveCursor('left-up')
-            } else if (keys['ArrowLeft'] && 
-                      keys['ArrowDown']) {    moveCursor('left-down')
-            } else if (keys['ArrowRight']) {  moveCursor('right')
-            } else if (keys['ArrowLeft']) {   moveCursor('left')
-            } else if (keys['ArrowUp']) {     moveCursor('up')
-            } else if (keys['ArrowDown']) {   moveCursor('down')
-              
-            } else if (keys['x']) {           game.doAction()
-            } else if (keys['c']) {           cancelAction()
-            } else if (keys['v']) {           focusUnit('previous')
-            } else if (keys['b']) {           focusUnit('next')
-
-            } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
-            } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
-            } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
-                                              cameraDirection--
-                                              cameraDirection = cycleValueInRange(cameraDirection, 6)
-            } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
-                                              cameraDirection++
-                                              cameraDirection = cycleValueInRange(cameraDirection, 6)
+          } else if (mode === 'game-menu-move') {
+            // Closing the menu in move phase cancel the move
+                  if (keys['c']) {           dom.closeGameMenu()
+                                            // mode = 'move'
+                                            cancelFinishedMove()
             }
+          }
+
+        } else {
+                  if (keys['ArrowRight'] && 
+                    keys['ArrowUp']) {      moveCursor('right-up')
+          } else if (keys['ArrowRight'] && 
+                    keys['ArrowDown']) {    moveCursor('right-down')
+          } else if (keys['ArrowLeft'] && 
+                    keys['ArrowUp']) {      moveCursor('left-up')
+          } else if (keys['ArrowLeft'] && 
+                    keys['ArrowDown']) {    moveCursor('left-down')
+          } else if (keys['ArrowRight']) {  moveCursor('right')
+          } else if (keys['ArrowLeft']) {   moveCursor('left')
+          } else if (keys['ArrowUp']) {     moveCursor('up')
+          } else if (keys['ArrowDown']) {   moveCursor('down')
+            
+          } else if (keys['x']) {           game.doAction()
+          } else if (keys['c']) {           cancelAction()
+          } else if (keys['v']) {           focusUnit('previous')
+          } else if (keys['b']) {           focusUnit('next')
+
+          } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
+          } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
+          } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
+                                            cameraDirection--
+                                            cameraDirection = cycleValueInRange(cameraDirection, 6)
+          } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
+                                            cameraDirection++
+                                            cameraDirection = cycleValueInRange(cameraDirection, 6)
           }
         }
       }
-    },
-
-    // RESET DEBOUNCE
-    resetDebounce() {
-      game.debounce = CONFIG.game.debounceKeyboardTime
     },
 
     // DO ACTION
@@ -889,8 +879,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   // From keyboard arrows to a direction to an hex position
   // Select, move or attack modes
   const moveCursor = (direction) => {
-    game.resetDebounce()
-
     if (mode === 'select' || mode === 'move') {
       // Get the direction (6 possible)
       const directionIndex = getDirectionIndex(direction, game.ui.cursor)

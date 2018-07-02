@@ -128,7 +128,7 @@ const CONFIG = {
     playerStartingMoney: 5000,
     moneyEarnedPerBuilding: 1000,
     animationsSpeed: 1.5,
-    debounceKeyboardTime: 8, // In locksteppeded frames
+    throttleKeyboardTime: 128, // In milliseconds
     // Buildings
     buildings: {
       base: {
