@@ -3,7 +3,6 @@ import HEXLIB from '../vendor/hexlib'
 import seedrandom from 'seedrandom'
 
 import Map from './map'
-import Buildings from './buildings'
 import Players from './players'
 import Renderer2d from './renderer2d'
 import Renderer3d from './renderer3d'
@@ -35,9 +34,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Current player
     currentPlayer: undefined, // Player
 
-    // Buildings (cities, factories, ports and airports)
-    buildings: [],
-
     // GENERATE GAME
     // Generate a new map (with or without a fresh seed) and players
     generate(randomMapSeed = false) {
@@ -60,10 +56,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         // MAP
         console.log(`Map generation (#${nTry} try)`)
-        game.map.generate()
-
-        // BULDINGS
-        game.buildings = Buildings(game.map, RNG)
+        const generateMapSuccess = game.map.generateMap()
 
         // GRAPHS
         game.map.generateGraphs()
@@ -71,7 +64,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         // PLAYERS
         game.players = Players(CONFIG.players, game.map, RNG)
 
-        if (game.buildings && game.players) {
+        if (generateMapSuccess && game.players) {
           success = true
         }
       }
@@ -79,7 +72,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       if (success) {
         console.warn(`Game generated in ${nTry} tries`)
         console.log('MAP DATA', game.map.data)
-        console.log('BULDINGS', game.buildings)
+        console.log('BULDINGS', game.map.data.buildings)
 
         game.renderer3d.createTiles()
         game.renderer3d.createUnits()
@@ -336,7 +329,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   const earnMoney = (player) => {
     return new Promise(async (resolve) => {
 
-      for (const building of game.buildings) {
+      for (const building of game.map.data.buildings) {
         if (building.ownerId === player.id) {
   
           player.money += CONFIG.game.moneyEarnedPerBuilding
@@ -951,7 +944,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
       for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-        const cell = game.map.data[x][y]
+        const cell = game.map.data.terrain[x][y]
 
         if (cell.cost <= unit.movement) {
           moveZone.push(cell.hex)
@@ -976,7 +969,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
         for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-          const cell = game.map.data[x][y]
+          const cell = game.map.data.terrain[x][y]
   
           // Is the cell in the attack range?
           if (cell.cost <= unit.attackRangeMax) {

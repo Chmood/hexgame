@@ -1,8 +1,10 @@
-import seedrandom from 'seedrandom'
+import CONFIG from './config.js';
 import HEXLIB from '../vendor/hexlib.js'
+import seedrandom from 'seedrandom'
+
 import PriorityQueue from '../vendor/priority-queue'
 import noise from '../vendor/noise.js'
-import CONFIG from './config.js';
+import MapBuildings from './map-buildings'
 
 ////////////////////////////////////////////////////////////////////////////////
 // MAP
@@ -31,16 +33,33 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     ////////////////////////////////////////
     // PUBLIC ATTRIBUTES AND METHODS
 
-    data: undefined, // Will be set below
-
-    // MAP GENERATE
-    // Re-generate map datas
-    generate() {
-      populate()
-      createMap()
-      // generateGraphs(CONFIG.game.units)
+    data: {
+      terrain: [],
+      buildings : []
     },
 
+    // GENERATE MAP
+    generateMap() {
+      let generateMapSuccess = false
+
+      // Map cells instanciation
+      populateMap()
+
+      // Procedural terrain generation
+      createMapData('height', config.mapValueRange.height)
+      createMapData('moisture', config.mapValueRange.moisture)
+      createMapBiomes()
+
+      // Buildings
+      // This generation can fail!
+      const buildings = createdMapBuildings()
+
+      generateMapSuccess = buildings
+
+      return generateMapSuccess
+    },
+
+    // GENERATE GRAPHS
     generateGraphs() {
       generateGraphs(CONFIG.game.units)
     },
@@ -63,9 +82,9 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     // Returns a map cell from a given (cubic) hex
     getCellFromHex(hex) {
       const hexOffset = HEXLIB.hex2Offset(hex, config.mapTopped, config.mapParity)
-      if (map.data[hexOffset.col]) {
-        if (map.data[hexOffset.col][hexOffset.row]) {
-          return map.data[hexOffset.col][hexOffset.row]
+      if (map.data.terrain[hexOffset.col]) {
+        if (map.data.terrain[hexOffset.col][hexOffset.row]) {
+          return map.data.terrain[hexOffset.col][hexOffset.row]
         } else {
           console.warn(`Map.getCellFromHex(): unknown row ${hexOffset.row}`)
           return undefined
@@ -247,10 +266,10 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
   // MAP POPULATE
   // Fill the 2d array with empty objects
-  const populate = () => {
+  const populateMap = () => {
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
-        map.data[x][y] = {}
+        map.data.terrain[x][y] = {}
       }
     }
   }
@@ -265,7 +284,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
-        const value = map.data[x][y][type]
+        const value = map.data.terrain[x][y][type]
         if (value < minValue) {
           minValue = value
         } else if (value > maxValue) {
@@ -292,9 +311,9 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
-        const ratio = (map.data[x][y][type] - range.min) / (range.max - range.min)
+        const ratio = (map.data.terrain[x][y][type] - range.min) / (range.max - range.min)
         const newHeight = ratio * (targetRange - 0.00001)
-        map.data[x][y][type] = newHeight
+        map.data.terrain[x][y][type] = newHeight
       }
     }
   }
@@ -335,7 +354,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         if (ratio < 0.5) {
           ratio += (RNG() / 5)
         }
-        map.data[x][y][type] *= ratio
+        map.data.terrain[x][y][type] *= ratio
       }
     }
   }
@@ -418,7 +437,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   const createMapBiomes = () => {
     for (let x = 0; x < config.mapSize.width; x++) {
       for (let y = 0; y < config.mapSize.height; y++) {
-        map.data[x][y].biome = getBiome(map.data[x][y].height, map.data[x][y].moisture)
+        map.data.terrain[x][y].biome = getBiome(map.data.terrain[x][y].height, map.data.terrain[x][y].moisture)
       }
     }
   }
@@ -456,14 +475,6 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   return value
   }
 
-  // CREATE MAP
-  const createMap = () => {
-    // Procedural map generation
-    createMapData('height', config.mapValueRange.height)
-    createMapData('moisture', config.mapValueRange.moisture)
-    createMapBiomes()
-  }
-
   // CREATE MAP DATA
   const createMapData = (type, range) => {
     for (let x = 0; x < config.mapSize.width; x++) {
@@ -478,7 +489,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
           // Noise based value
           value = createNoise(type, x, y)
         }
-        map.data[x][y][type] = value * range
+        map.data.terrain[x][y][type] = value * range
       }
     }
 
@@ -491,6 +502,13 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     if (config.mapPostprocess[type].normalize) {
       normalizeMap(type, config.mapValueRange[type])
     }
+  }
+
+  // CREATE MAP BUILDINGS
+  const createdMapBuildings = () => {
+    map.data.buildings = MapBuildings(map, RNG)
+
+    return map.data.buildings
   }
 
   // IS VALID BUILDING
@@ -538,7 +556,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
         const hexOffset = HEXLIB.hexOffset(x, y),
               hex = HEXLIB.offset2Hex(hexOffset, config.mapTopped, config.mapParity),
-              cell = map.data[x][y], // Reference to the cell map data
+              cell = map.data.terrain[x][y], // Reference to the cell map data
               neighborsAll = HEXLIB.hexNeighbors(hex)
 
         cell.neighbors = []
@@ -661,12 +679,12 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   const resetCosts = () => {
     for (let y = 0; y < config.mapSize.height; y++) {
       for (let x = 0; x < config.mapSize.width; x++) {
-        map.data[x][y].cost = 100000000
+        map.data.terrain[x][y].cost = 100000000
       }
     }
   }
 
-  map.data = array2d(config.mapSize.width, config.mapSize.height)
+  map.data.terrain = array2d(config.mapSize.width, config.mapSize.height)
 
   return map
 }

@@ -21,7 +21,7 @@ import img6 from "../../img/TropicalSunnyDay_pz.jpg"
 // RENDERER 3D
 
 const Renderer3d = (game, canvas) => {
-  const map = game.map.data,
+  const map = game.map.data, // Only data, no calls to Map's functions should be made here
         // External modules
         camera = Camera(canvas, game), // game is overkill, map is enough
         highlight = Highlight(),

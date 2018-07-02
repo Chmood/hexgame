@@ -2,7 +2,7 @@ import CONFIG from './config'
 import HEXLIB from '../vendor/hexlib'
 
 ////////////////////////////////////////////////////////////////////////////////
-// BULDINGS
+// MAP BULDINGS
 
 const Buildings = (map, RNG) => {
 

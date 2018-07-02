@@ -67,14 +67,14 @@ const Highlight = () => {
       ) {
       // Add tile mesh to layer
       highlightMeshes[n].push({
-        mesh: map[offset.col][offset.row].tile,
+        mesh: map.terrain[offset.col][offset.row].tile,
         color: color
       })
 
       // Is there a building on this tile?
-      if (map[offset.col][offset.row].buildingMesh) {
+      if (map.terrain[offset.col][offset.row].buildingMesh) {
         highlightMeshes[n].push({
-          mesh: map[offset.col][offset.row].buildingMesh,
+          mesh: map.terrain[offset.col][offset.row].buildingMesh,
           color: color
         })
       }

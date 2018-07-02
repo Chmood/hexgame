@@ -125,7 +125,7 @@ const Renderer2d = (game, ctx) => {
       for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
 
         // Cell variables
-        const val = map.data[x][y].height,
+        const val = map.data.terrain[x][y].height,
               valFloor = Math.floor(val),
 
               offset = HEXLIB.hexOffset(x, y),
@@ -137,7 +137,7 @@ const Renderer2d = (game, ctx) => {
               cornersHalf = HEXLIB.hexCorners(renderer.layout, hex, 0.5),
               cornersTwoThird = HEXLIB.hexCorners(renderer.layout, hex, 0.6667),
 
-              color = renderer.getTerrainColor(map.data[x][y].biome)
+              color = renderer.getTerrainColor(map.data.terrain[x][y].biome)
 
         ////////////////////////////////////
         // DRAW
@@ -187,8 +187,8 @@ const Renderer2d = (game, ctx) => {
           }
 
           // renderer.ctx.fillText(valFloor, point.x - 3, point.y + 3)// display height
-          if (map.data[x][y].cost < 1000000) {
-            renderer.ctx.fillText(Math.floor(map.data[x][y].cost), point.x - 3, point.y + 3)
+          if (map.data.terrain[x][y].cost < 1000000) {
+            renderer.ctx.fillText(Math.floor(map.data.terrain[x][y].cost), point.x - 3, point.y + 3)
           }
         }
       }

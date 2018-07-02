@@ -18,11 +18,11 @@ const Tiles = (map) => {
 
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-        const cell = map[x][y]
+        const cell = map.terrain[x][y]
 
         const tileAndBuilding = createTileAndBuilding(x, y, cell, cell.building)
-        map[x][y].tile = tileAndBuilding.tile
-        map[x][y].buildingMesh = tileAndBuilding.building
+        map.terrain[x][y].tile = tileAndBuilding.tile
+        map.terrain[x][y].buildingMesh = tileAndBuilding.building
       }
     }
   }
@@ -32,11 +32,11 @@ const Tiles = (map) => {
   renderer.deleteTiles = () => {
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-        if (map[x][y] && map[x][y].tile) {
-          map[x][y].tile.dispose()
+        if (map.terrain[x][y] && map[x][y].tile) {
+          map.terrain[x][y].tile.dispose()
 
-          if (map[x][y].buildingMesh) {
-            map[x][y].buildingMesh.dispose()
+          if (map.terrain[x][y].buildingMesh) {
+            map.terrain[x][y].buildingMesh.dispose()
           }
         }
       }
