@@ -69,7 +69,7 @@ const Player = (config) => {
   // UNITS
   for (let n = 0; n < 7; n++) {
     player.addUnit(setUnitRandomType())
-    // player.addUnit('heavy-tank')
+    // player.addUnit('soldier')
   }
 
   return player

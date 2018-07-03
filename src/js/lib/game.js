@@ -1,6 +1,7 @@
 import CONFIG from './config'
 import HEXLIB from '../vendor/hexlib'
 import seedrandom from 'seedrandom'
+import arrayShuffle from '../vendor/array-shuffle'
 
 import Map from './map'
 import Players from './players'
@@ -278,6 +279,18 @@ const Game = (ctx2d, canvas3d, dom, main) => {
             unit.hasAttacked = false
             game.renderer3d.changeUnitMaterial(unit, 'color')
           }
+          // Reset player buildings
+          for (const building of game.map.data.buildings) {
+            if (building.ownerId === game.currentPlayer.id) {
+              if (
+                building.type === 'factory' ||
+                building.type === 'port' ||
+                building.type === 'airport'
+              ) {
+                building.hasBuilt = false
+              }
+            }
+          }
           // Set the next player
           let nMaxTry = game.players.length
           let playerId = game.currentPlayer.id
@@ -466,11 +479,19 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     BUILD_UNIT(player, building, unitType) {
       return new Promise(async (resolve) => {
+
+        if (building.hasBuilt) {
+          console.warn(`${building.name} has already built this turn!`)
+          resolve ()
+        }
+
         const unit = player.addUnit(unitType, building.hex)
     
         // New born unit can't play during the first turn
         unit.hasPlayed = true
+        building.hasBuilt = true
         game.updateRenderers(['players'])
+        game.renderer3d.updateCameraPosition(building.hex)
         const buildUnitAnimation = game.renderer3d.buildUnit(unit)
         await buildUnitAnimation.waitAsync()
     
@@ -518,6 +539,41 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   ////////////////////////////////////////
   // BOT AI (sort of)
+
+  const getNearestItem = (unit, items) => {
+    let nearestItem, nearestItemDistance = 100000
+    let isSimpleItem = items[0].hex ? false : true
+
+    for (const item of items) {
+      const path = game.map.findPath(
+        unit.type,
+        unit.hex, 
+        isSimpleItem ? item : item.hex,
+        true,
+        getUnitsHexes()
+      )
+      if (path && path.length < nearestItemDistance) {
+        nearestItemDistance = path.length
+        nearestItem = item
+      }
+    }
+
+    if (nearestItem) {
+      return nearestItem
+    } else {
+      console.error('getClosestItem() - no clothest item')
+    }
+  }
+
+  const getNearestBuilding = (unit) => {
+    const conquerableBuildings = game.map.data.buildings.filter(
+      (building) => 
+      building.ownerId === undefined || 
+      building.ownerId !== unit.playerId
+    )
+
+    return getNearestItem(unit, conquerableBuildings)
+  }
 
   const getEnnemiesInAttackZone = (unit) => {
     const ennemies = [],
@@ -568,7 +624,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       }
     }
 
-    console.warn('findPathToAttack() - ennemyWeakZone.length', ennemyWeakZone.length)
+    // console.log('findPathToAttack() - ennemyWeakZone.length', ennemyWeakZone.length)
     game.ui.attackZone = ennemyWeakZone
     game.updateRenderers('highlights')
     await wait(500)
@@ -588,8 +644,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         if (pathToTarget) {
           pathsToTarget.push(pathToTarget)
-        } else {
-          console.error('findPathToAttack() - no path to an ennemyWeakZone hex!')
         }
       }
     } else {
@@ -619,7 +673,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   }
 
   const moveUnitTowards = async (unit, goal) => {
-    console.warn('MOVE TORWARDS', goal)
+    // console.warn('MOVE TORWARDS', goal)
 
     let longPath
     longPath = game.map.findPath(
@@ -631,7 +685,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     )
 
     if (longPath) {
-      console.log('PATH TOWARDS - can reach', longPath)
+      // console.log('PATH TOWARDS - can reach', longPath)
     // No direct path, use attack graph
     } else {
       longPath = game.map.findPath(
@@ -641,7 +695,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         true
         // getUnitsHexes()
       )
-      console.log('PATH TOWARDS - won\'t reach', longPath)
+      // console.log('PATH TOWARDS - won\'t reach', longPath)
     }
 
     if (!longPath || longPath.length === 0) {
@@ -658,7 +712,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     let id = 0
     for (const longPathStep of longPath) {
-      console.log('PATHFIND step', id)
+      // console.log('PATHFIND step', id)
       id++
 
       game.ui.cursor = longPathStep
@@ -675,16 +729,17 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       )
 
       if (path && path.length > 0) {
-        console.warn('MOVE TOWARDS path found', path.length)
         game.ui.cursorPath = path
         game.ui.cursor = path[path.length - 1]
         game.updateRenderers(['highlights'])
         await wait(500)
-
+        
         await game.MOVE(unit, path)
-        // break
-
+        
         return path
+
+      } else {
+        console.warn('MOVE TOWARDS path not found!')
       }
     }
 
@@ -723,7 +778,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       const health = ennemy.health
 
       // Hysterersis!
-      const value = health / 2 + distance / 4
+      const value = health * 2 + distance * 4
 
       if (value < bestEnnemyValue) {
         bestEnnemyValue = value
@@ -734,11 +789,69 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     }
   }
 
+  const botBuildUnits = async (player) => {
+    // Build things
+    let playerBuildings = game.map.data.buildings.filter(
+      (building) => 
+      building.ownerId === player.id && 
+      (
+        building.type === 'factory' || 
+        building.type === 'port' || 
+        building.type === 'airport') &&
+      !building.hasBuilt
+    )
+
+    if (playerBuildings.length) {
+
+      playerBuildings = arrayShuffle(playerBuildings)
+
+      for (const playerBuilding of playerBuildings) {
+        if (player.money >= 1000) {
+
+          // Choose random unit type
+          const unitTypes = Object.keys(CONFIG.game.units)
+          let nMaxTry = 10, unitType
+    
+          while (!unitType && nMaxTry > 0) {
+            nMaxTry--
+            const type = unitTypes[Math.floor(RNG() * unitTypes.length)]
+            if (
+              CONFIG.game.units[type].cost <= player.money &&
+              (
+                (
+                  CONFIG.game.units[type].family === 'ground' &&
+                  playerBuilding.type === 'factory'
+                ) || (
+                  CONFIG.game.units[type].family === 'sea' &&
+                  playerBuilding.type === 'port'
+                ) || (
+                  CONFIG.game.units[type].family === 'air' &&
+                  playerBuilding.type === 'airport'
+                )
+              )
+            ) {
+              unitType = type
+            }
+          }
+  
+          if (unitType) {
+            await game.BUILD_UNIT(game.currentPlayer, playerBuilding, unitType)
+          }
+        }
+      }
+    }
+  }
+
   // PLAY BOT (step 3)
   // The current player is bot, auto-play it
   const playBot = async () => {
+    const player = game.currentPlayer
     
     for (const unit of game.currentPlayer.units) {
+      let isUnitTurnFinished = false,
+          mustStayInPlace = false
+      const unitCell = game.map.getCellFromHex(unit.hex)
+
       mode = 'select'
       focusUnit(unit)
       await wait(500)
@@ -747,78 +860,150 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       // mode is 'move' now
       await wait(500)
       
-      const targets = getEnnemiesInAttackZone(unit)
-      const pacificMode = false
+      // GROUND UNIT ROUTINE
+      // Conquer and defend
 
-      if (targets.length > 0 && !pacificMode) {
-        console.warn(`${targets.length} ennemies found, MOVE AND ATTACK`)
+      // Can the unit conquer a building?
+      if (unit.canConquer) {
 
-        const targetsHexes = []
-        for (const target of targets) {
-          targetsHexes.push(target.hex)
+        if (unitCell.building && unitCell.building.ownerId !== player.id) {
+          game.CONQUER(unit)
+          isUnitTurnFinished = true
         }
-        
-        game.ui.moveZone = []
-        game.ui.attackZone = targetsHexes
-        game.updateRenderers('highlights')
-        
-        await wait(500)
 
-        // Choose the target
-        const ennemy = chooseEnnemy(unit, targets)
-        // Choose a random victim
-        // const ennemy = targets[Math.floor(RNG() * targets.length)]
-        
-        game.ui.attackZone = [ennemy.hex]
-        game.updateRenderers(['highlights'])
-        
-        console.warn(`${unit.name} will *try* to attack ${ennemy.name}`)
-        
-        await wait(500)
+        if (unitCell.building && unitCell.building.type === 'city') {
+          // Defend the city
+          mustStayInPlace = true
+          console.warn('DEFEND THE CITY!')
 
-        const pathToTarget = await findPathToAttack(unit, ennemy)
+        } else {
+          const nearestBuilding = getNearestBuilding(unit)
 
-        if (pathToTarget) {
-          // console.log('PATH TO TARGET', pathToTarget)
-          mode = 'move'
-  
-          game.ui.cursorPath = pathToTarget
-          game.updateRenderers(['highlights'])
-
-          await wait(500)
-
-          if (pathToTarget.length > 0) {
-            // console.warn('bot moving to shoot...')
-            await game.MOVE(unit, pathToTarget)
-
-            await game.ATTACK(unit, ennemy)  
+          if (nearestBuilding) {
+            // Is the building in the move zone?
+            const path = game.map.findPath(
+              unit.type,
+              unit.hex, 
+              nearestBuilding.hex,
+              true,
+              getUnitsHexes(),
+              unit.movement
+            )
+            if (path) {
+              // Move to a building and conquer it
+              await game.MOVE(unit, path)
+              game.CONQUER(unit)
+              isUnitTurnFinished = true
+            } else {
+              // Get close to a distant building
+              await moveUnitTowards(unit, nearestBuilding.hex)
+              mustStayInPlace = true
+            }
           }
-        } else {
-          console.error('no path to attack target!!!')
+
+        }
+      }
+
+      // MOVE AND ATTACK
+
+      if (!isUnitTurnFinished) {
+
+        let targets = getEnnemiesInAttackZone(unit)
+        const pacificMode = false
+  
+        if (mustStayInPlace) {
+          // Only attack targets close to us (no move required)
+          targets = targets.filter(
+            (target) => {
+              const distance = HEXLIB.hexDistance(target.hex, unit.hex)
+              // console.log('distance', distance, unit.attackRangeMin, unit.attackRangeMax)
+
+              return distance <= unit.attackRangeMax &&
+              distance >= unit.attackRangeMin
+            }
+          )
         }
 
-      // No targets
-      } else {
-        // RANDOM MOVE
-        // console.warn(`No ennemies, RANDOM MOVE`)
+        if (targets.length > 0 && !pacificMode) {
+          console.warn(`${targets.length} ennemies found, MOVE AND ATTACK`)
+  
+          const targetsHexes = []
+          for (const target of targets) {
+            targetsHexes.push(target.hex)
+          }
+          
+          game.ui.moveZone = []
+          game.ui.attackZone = targetsHexes
+          game.updateRenderers('highlights')
+          
+          await wait(500)
+  
+          // Choose the target
+          const ennemy = chooseEnnemy(unit, targets)
+          // Choose a random victim
+          // const ennemy = targets[Math.floor(RNG() * targets.length)]
 
-        game.ui.moveZone = []
-        game.ui.attackZone = []
-        game.updateRenderers(['highlights'])
+          if (mustStayInPlace) {
+            await game.ATTACK(unit, ennemy)
+            console.error('attack and stay in place')
 
-        // await moveUnitRandomly(unit)
-        const base = game.map.data.buildings.filter(
-          (building) => building.ownerId === game.currentPlayer.id &&
-          building.type === 'base'
-        )
-
-        if (base.length > 0) {
-          await moveUnitTowards(unit, base[0].hex)
-        } else {
-          console.error('move toward: no base found!')
+          } else {
+            game.ui.attackZone = [ennemy.hex]
+            game.updateRenderers(['highlights'])
+            
+            await wait(500)
+    
+            const pathToTarget = await findPathToAttack(unit, ennemy)
+    
+            if (pathToTarget) {
+              // console.log('PATH TO TARGET', pathToTarget)
+              mode = 'move'
+      
+              game.ui.cursorPath = pathToTarget
+              game.updateRenderers(['highlights'])
+    
+              await wait(500)
+    
+              if (pathToTarget.length > 0) {
+                // console.warn('bot moving to shoot...')
+                await game.MOVE(unit, pathToTarget)
+    
+                await game.ATTACK(unit, ennemy)  
+              }
+            } else {
+              console.error('no path to attack target!!!')
+            }
+          }
+          
+  
+        // No targets
+        } else if (!mustStayInPlace) {
+          // RANDOM MOVE
+          // console.warn(`No ennemies, RANDOM MOVE`)
+          // await moveUnitRandomly(unit)
+  
+          game.ui.moveZone = []
+          game.ui.attackZone = []
+          game.updateRenderers(['highlights'])
+  
+          const base = game.map.data.buildings.filter(
+            (building) => 
+            building.ownerId === game.currentPlayer.id &&
+            building.type === 'base'
+          )
+  
+          if (base.length > 0) {
+            await moveUnitTowards(unit, base[0].hex)
+          } else {
+            console.error('move toward: no base found!')
+          }
         }
       }
   
+      if (player.money >= 1000) {
+        await botBuildUnits(player)
+      }
+
       // End of turn
       // endUnitTurn() // TODO: this breaks the players change routine
       selectedUnit.hasPlayed = true
@@ -1396,7 +1581,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     return new Promise((resolve) => {
       window.setTimeout(() => {
         resolve()
-      }, time)
+      }, time / CONFIG.game.animationsSpeed)
     })
   }
   

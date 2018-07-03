@@ -17,11 +17,12 @@ const Buildings = (map, RNG) => {
     const building = {
       type: type,
       ownerId: type === 'base' ? playerId : undefined
+      // ownerId: playerId
     }
 
     if (type === 'factory' || type === 'port' || type === 'airport') {
       building.canBuild = true
-      building.hasBuilt = false
+      building.hasBuilt = true
     }
 
     let isValidPosition = false,

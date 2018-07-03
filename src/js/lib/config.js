@@ -116,7 +116,7 @@ const CONFIG = {
   },
 
   players: [
-    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000', colorDesaturated: '#c48444' },
+    { id: 0, name: 'Foo111', isHuman: false, color: '#ff8000', colorDesaturated: '#c48444' },
     { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080', colorDesaturated: '#c44484' },
     { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00', colorDesaturated: '#44c444' },
     { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff', colorDesaturated: '#4484c4' }
@@ -171,6 +171,7 @@ const CONFIG = {
         strength: 4,
         defense: 2,
         movement: 3,
+        attackRangeMin: 1,
         attackRangeMax: 1,
 
         biomesMoveCosts: {
@@ -206,7 +207,8 @@ const CONFIG = {
         strength: 6,
         defense: 3,
         movement: 2,
-        attackRangeMax: 1,
+        attackRangeMin: 1,
+        attackRangeMax: 2,
 
         biomesMoveCosts: {
           whitebeach: 1,
@@ -241,6 +243,7 @@ const CONFIG = {
         strength: 5,
         defense: 3,
         movement: 3,
+        attackRangeMin: 0,
         attackRangeMax: 0,
 
         biomesMoveCosts: {
@@ -276,6 +279,7 @@ const CONFIG = {
         strength: 8,
         defense: 4,
         movement: 6,
+        attackRangeMin: 1,
         attackRangeMax: 1,
 
         biomesMoveCosts: {
@@ -312,6 +316,7 @@ const CONFIG = {
         movement: 4, // http://fireemblem.wikia.com/wiki/Movement
 
         // attackRangeMin: 1, // Not used by now
+        attackRangeMin: 1,
         attackRangeMax: 2,
 
         biomesMoveCosts: {
@@ -336,6 +341,7 @@ const CONFIG = {
         defense: 7, // http://fireemblem.wikia.com/wiki/Defense_(stat)
         movement: 3, // http://fireemblem.wikia.com/wiki/Movement
 
+        attackRangeMin: 1,
         attackRangeMax: 2,
 
         biomesMoveCosts: {
@@ -343,10 +349,6 @@ const CONFIG = {
           beach: 1,
           swamp: 2,
 
-forest: 2,
-deepforest: 2,
-pineforest: 2,
-    
           desert: 1,
           grass: 1,
           plain: 1
@@ -363,6 +365,7 @@ pineforest: 2,
         strength: 9,
         defense: 5,
         movement: 5,
+        attackRangeMin: 2,
         attackRangeMax: 3,
 
         biomesMoveCosts: {
@@ -382,6 +385,7 @@ pineforest: 2,
         strength: 10,
         defense: 7,
         movement: 7,
+        attackRangeMin: 1,
         attackRangeMax: 1,
 
         biomesMoveCosts: {
@@ -400,6 +404,7 @@ pineforest: 2,
         strength: 7,
         defense: 6,
         movement: 10,
+        attackRangeMin: 1,
         attackRangeMax: 2,
 
         biomesMoveCosts: {
@@ -418,6 +423,7 @@ pineforest: 2,
         strength: 7,
         defense: 5,
         movement: 5,
+        attackRangeMin: 1,
         attackRangeMax: 1,
 
         biomesMoveCosts: {
