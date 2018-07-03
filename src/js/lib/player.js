@@ -12,6 +12,7 @@ const Player = (config) => {
     id: config.id,
     name: config.name,
     isHuman: config.isHuman,
+    hasLost: false,
     money: CONFIG.game.playerStartingMoney,
     color: config.color,
     // colorDesaturated: ShadeBlend(0.5, player.color, '#888888'),

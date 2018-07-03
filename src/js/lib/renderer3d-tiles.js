@@ -32,7 +32,7 @@ const Tiles = (map) => {
   renderer.deleteTiles = () => {
     for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
       for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-        if (map.terrain[x][y] && map[x][y].tile) {
+        if (map.terrain[x][y] && map.terrain[x][y].tile) {
           map.terrain[x][y].tile.dispose()
 
           if (map.terrain[x][y].buildingMesh) {

@@ -74,6 +74,7 @@ const Renderer3d = (game, canvas) => {
     teleportUnit: units.teleportUnit,
     attackUnit: units.attackUnit,
     destroyUnit: units.destroyUnit,
+    buildUnit: units.buildUnit,
     updateHealthbar: units.updateHealthbar,
     changeUnitMaterial: units.changeUnitMaterial,
 

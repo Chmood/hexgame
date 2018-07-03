@@ -30,8 +30,6 @@ const Highlight = () => {
     for (const hex of ui.moveZone) {
       hightlightTile(hex, BABYLON.Color3.White(), 1)
     }
-    // Path line
-    highlightLine(ui.line, BABYLON.Color3.Red(), 2)
     // Cursor line
     highlightLine(ui.cursorPath, BABYLON.Color3.Blue(), 2)
     // Cursor tile

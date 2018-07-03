@@ -85,8 +85,6 @@ const Camera = (canvas, game) => {
 
   // UPDATE CAMERA ZOOM
   renderer.updateCameraZoom = (direction) => {
-    game.resetDebounce()
-
     const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
     let delta = 0;
     if (direction === 'in') {
