@@ -72,19 +72,17 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
       if (success) {
         console.warn(`Game generated in ${nTry} tries`)
-        console.log('MAP DATA', game.map.data)
-        console.log('BULDINGS', game.map.data.buildings)
+        console.log('MAP TERRAIN', game.map.data.terrain)
+        console.log('MAP BULDINGS', game.map.data.buildings)
 
-  
         game.renderer3d.createTiles()
         game.renderer3d.createUnits()
-
         game.ui.moveZone = []
         game.ui.attackZone = []
         mode = 'select'
         selectedUnit = undefined
         cameraDirection = 0
-
+        
         // It's first player's turn
         await game.CHANGE_PLAYER(0)
         
@@ -263,11 +261,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     CHANGE_PLAYER(playerId) {
       return new Promise(async (resolve) => {
 
-        if (game.currentPlayer === undefined) {
-          // First call
-          game.currentPlayer = game.players[0]
-    
-        } else if (playerId !== undefined) {
+        if (playerId !== undefined) {
           game.currentPlayer = game.players[playerId]
     
         } else {
@@ -379,21 +373,27 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         // Compute ennemy's damage
         const damage = playerUnit.strength - ennemyUnit.defense
-        ennemyUnit.health -= damage
-        if (ennemyUnit.health < 0) {
-          ennemyUnit.health = 0
-        }
-        // Animate ennemy's health bar
-        const healthbarAnimation = game.renderer3d.updateHealthbar(ennemyUnit)
-        await healthbarAnimation.waitAsync()
+        if (damage < 0) {
+          // No damage
+          console.log(`No damage done to ${ennemyUnit.name}, still ${ennemyUnit.health} HP left`)
 
-        // Is the ennemy dead?
-        if (ennemyUnit.health > 0) {
-          console.log(`${damage} damage done to ${ennemyUnit.name}, ${ennemyUnit.health} HP left`)
         } else {
-          // Destroy ennemy
-          await game.DESTROY(ennemyUnit)
-          console.warn(`${damage} damage done to ${ennemyUnit.name}, unit destroyed!`)
+          ennemyUnit.health -= damage
+          if (ennemyUnit.health < 0) {
+            ennemyUnit.health = 0
+          }
+          // Animate ennemy's health bar
+          const healthbarAnimation = game.renderer3d.updateHealthbar(ennemyUnit)
+          await healthbarAnimation.waitAsync()
+  
+          // Is the ennemy dead?
+          if (ennemyUnit.health > 0) {
+            console.log(`${damage} damage done to ${ennemyUnit.name}, ${ennemyUnit.health} HP left`)
+          } else {
+            // Destroy ennemy
+            await game.DESTROY(ennemyUnit)
+            console.warn(`${damage} damage done to ${ennemyUnit.name}, unit destroyed!`)
+          }
         }
 
         game.ui.attackZone = []
@@ -412,7 +412,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       return new Promise(async (resolve) => {
         const ennemy = game.players[unit.playerId]
         console.warn(`DESTROY() ennemy ${ennemy}`)
-        console.warn(`DESTROY() ennemy units ${ennemy.units}`)
+        // console.warn(`DESTROY() ennemy units ${ennemy.units}`)
         
         const destroyAnimation = game.renderer3d.destroyUnit(unit)
         await destroyAnimation.waitAsync()
@@ -420,9 +420,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         
         const ennemyUnitId = ennemy.units.indexOf(unit)
         if (ennemyUnitId !== -1) {
-          console.warn(`DESTROY() ennemyUnitId: ${ennemyUnitId}`)
+          // console.warn(`DESTROY() ennemyUnitId: ${ennemyUnitId}`)
           ennemy.units.splice(ennemyUnitId, 1)
-          console.warn(`DESTROY() remaining units: ${ennemy.units.length}`)
+          console.log(`DESTROY() remaining units: ${ennemy.units.length}`)
 
           // Does the ennemy has unit left?
           if (ennemy.units.length === 0) {
@@ -479,10 +479,19 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     BUILD_UNIT(player, building, unitType) {
       return new Promise(async (resolve) => {
+        if (!building) {
+          console.error(`BUID UNIT - no building provided!`)
+          resolve()
 
-        if (building.hasBuilt) {
-          console.warn(`${building.name} has already built this turn!`)
+        } else if (building.hasBuilt) {
+          console.warn(`${building.type} has already built this turn!`)
           resolve ()
+
+        } else {
+          if (getUnitByHex(building.hex)) {
+          console.warn(`${building.type} is occupied!`)
+          resolve()
+          }
         }
 
         const unit = player.addUnit(unitType, building.hex)
@@ -526,6 +535,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       selectedTargetId = undefined, // Number
       selectedBuilding = undefined // Building
 
+  // COMMONT TOOLS
+
   const getUnitByHex = (hex) => {
     for (const player of game.players) {
       for (const unit of player.units) {
@@ -537,10 +548,18 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     return false
   }
 
+  const getBuildingsByPlayer = (player) => game.map.data.buildings.filter(
+    (building) => building.ownerId === player.id
+  )
+  
   ////////////////////////////////////////
   // BOT AI (sort of)
 
   const getNearestItem = (unit, items) => {
+    if (!items) {
+      console.error('getClosestItem() - no items provided')
+      return false
+    }
     let nearestItem, nearestItemDistance = 100000
     let isSimpleItem = items[0].hex ? false : true
 
@@ -562,17 +581,31 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       return nearestItem
     } else {
       console.error('getClosestItem() - no clothest item')
+      return false
     }
   }
 
   const getNearestBuilding = (unit) => {
     const conquerableBuildings = game.map.data.buildings.filter(
-      (building) => 
-      building.ownerId === undefined || 
-      building.ownerId !== unit.playerId
+      (building) => ((building.ownerId === undefined) || (building.ownerId !== unit.playerId))
     )
 
-    return getNearestItem(unit, conquerableBuildings)
+    if (conquerableBuildings.length > 0) {
+      const nearestBuilding = getNearestItem(unit, conquerableBuildings)
+
+      if (nearestBuilding) {
+        return nearestBuilding
+
+      } else {
+        console.warn('getNearestBuilding() - no nearest building!')  
+        return false
+      }
+
+    } else {
+      console.warn('getNearestBuilding() - no conquerable buildings!')
+      return false
+    }
+    
   }
 
   const getEnnemiesInAttackZone = (unit) => {
@@ -710,11 +743,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     await wait(500)
     game.ui.cursorPath = []
 
-    let id = 0
     for (const longPathStep of longPath) {
-      // console.log('PATHFIND step', id)
-      id++
-
       game.ui.cursor = longPathStep
       game.updateRenderers(['highlights'])
       await wait(125)
@@ -739,7 +768,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         return path
 
       } else {
-        console.warn('MOVE TOWARDS path not found!')
+        // console.log('MOVE TOWARDS path not found!')
       }
     }
 
@@ -778,7 +807,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       const health = ennemy.health
 
       // Hysterersis!
-      const value = health * 2 + distance * 4
+      // const value = health * 2 + distance * 4
+      const value = health
 
       if (value < bestEnnemyValue) {
         bestEnnemyValue = value
@@ -790,48 +820,68 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   }
 
   const botBuildUnits = async (player) => {
-    // Build things
-    let playerBuildings = game.map.data.buildings.filter(
+
+    // Get the player's buildings that can build
+    let playerBuildings = getBuildingsByPlayer(player).filter(
+      // let playerBuildings = game.map.data.buildings.filter(
       (building) => 
-      building.ownerId === player.id && 
       (
         building.type === 'factory' || 
         building.type === 'port' || 
-        building.type === 'airport') &&
-      !building.hasBuilt
+        building.type === 'airport'
+      ) && !building.hasBuilt
     )
 
     if (playerBuildings.length) {
 
+      // Randomize the order of buildings
       playerBuildings = arrayShuffle(playerBuildings)
 
-      for (const playerBuilding of playerBuildings) {
-        if (player.money >= 1000) {
+      const infantryTypes = ['soldier', 'bazooka', 'healer']
+      const tankTypes = ['jeep', 'tank', 'heavy-tank']
+      const navalTypes = ['boat']
+      const airTypes = ['helicopter', 'fighter', 'bomber']
 
-          // Choose random unit type
-          const unitTypes = Object.keys(CONFIG.game.units)
-          let nMaxTry = 10, unitType
-    
+      for (const playerBuilding of playerBuildings) {
+        if (player.money >= 1000) { // miimal unit price (TODO)
+
+          // CHOOSING UNIT TYPE
+          let unitTypes = Object.keys(CONFIG.game.units)
+          
+          if (playerBuilding.type === 'factory') {
+
+            // Too few buildings owned, build infantry first to conquer
+            if (
+              getBuildingsByPlayer(player).length < 5 || // max owned buildings
+              // Count player's infantry units
+              player.units.filter((unit) => (
+                infantryTypes.indexOf(unit.type) !== -1
+              )).length < 5 // max infantry units
+            ) {
+              unitTypes = infantryTypes
+            } else {
+              unitTypes = tankTypes
+            }
+
+          } else if (playerBuilding.type === 'port') {
+            unitTypes = navalTypes            
+
+          } else if (playerBuilding.type === 'airport') {
+            unitTypes = airTypes
+          }
+
+          // Choose random unit type, the more expensive the better
+          let nMaxTry = 10, minCost = 10000, unitType
+
           while (!unitType && nMaxTry > 0) {
             nMaxTry--
-            const type = unitTypes[Math.floor(RNG() * unitTypes.length)]
-            if (
-              CONFIG.game.units[type].cost <= player.money &&
-              (
-                (
-                  CONFIG.game.units[type].family === 'ground' &&
-                  playerBuilding.type === 'factory'
-                ) || (
-                  CONFIG.game.units[type].family === 'sea' &&
-                  playerBuilding.type === 'port'
-                ) || (
-                  CONFIG.game.units[type].family === 'air' &&
-                  playerBuilding.type === 'airport'
-                )
-              )
-            ) {
+            const type = unitTypes[Math.floor(RNG() * unitTypes.length)],
+                  cost = CONFIG.game.units[type].cost
+
+            if (cost <= player.money && cost >= minCost) {
               unitType = type
             }
+            minCost -= 1000 // Lower the desired price
           }
   
           if (unitType) {
@@ -869,9 +919,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         if (unitCell.building && unitCell.building.ownerId !== player.id) {
           game.CONQUER(unit)
           isUnitTurnFinished = true
-        }
 
-        if (unitCell.building && unitCell.building.type === 'city') {
+        } else if (unitCell.building && unitCell.building.type === 'city') {
           // Defend the city
           mustStayInPlace = true
           console.warn('DEFEND THE CITY!')
@@ -900,7 +949,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
               mustStayInPlace = true
             }
           }
-
         }
       }
 
@@ -925,8 +973,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         }
 
         if (targets.length > 0 && !pacificMode) {
-          console.warn(`${targets.length} ennemies found, MOVE AND ATTACK`)
-  
+          // console.warn(`${targets.length} ennemies found, MOVE AND ATTACK`)
+ 
           const targetsHexes = []
           for (const target of targets) {
             targetsHexes.push(target.hex)
@@ -944,8 +992,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           // const ennemy = targets[Math.floor(RNG() * targets.length)]
 
           if (mustStayInPlace) {
+            // ATTACK N PLACE
             await game.ATTACK(unit, ennemy)
-            console.error('attack and stay in place')
+            console.log('attack and stay in place')
 
           } else {
             game.ui.attackZone = [ennemy.hex]
@@ -953,6 +1002,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
             
             await wait(500)
     
+            // Find path to get close to the target
             const pathToTarget = await findPathToAttack(unit, ennemy)
     
             if (pathToTarget) {
@@ -965,6 +1015,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
               await wait(500)
     
               if (pathToTarget.length > 0) {
+                // MOVE AND ATTACK
                 // console.warn('bot moving to shoot...')
                 await game.MOVE(unit, pathToTarget)
     
@@ -974,8 +1025,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
               console.error('no path to attack target!!!')
             }
           }
-          
   
+        // GO TO BASE
         // No targets
         } else if (!mustStayInPlace) {
           // RANDOM MOVE
@@ -1000,15 +1051,17 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         }
       }
   
-      if (player.money >= 1000) {
-        await botBuildUnits(player)
-      }
+      // Try to build units
+      await botBuildUnits(player)
 
       // End of turn
       // endUnitTurn() // TODO: this breaks the players change routine
       selectedUnit.hasPlayed = true
       game.renderer3d.changeUnitMaterial(selectedUnit, 'colorDesaturated') // WTF?
     }
+
+    // Try to build units (in case of no unit at all)
+    await botBuildUnits(player)
 
     await game.CHANGE_PLAYER()
   }

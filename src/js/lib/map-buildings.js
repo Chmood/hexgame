@@ -12,17 +12,28 @@ const Buildings = (map, RNG) => {
         buildingType = ['base', 'city', 'factory', 'port', 'airport'],
         occupiedhexes = [] // Hexes already taken by buildings
 
+  // Building structure:
+  // {
+  //   type, // String - 'base', 'city', 'factory', 'port' or 'airport'
+  //   ownerId, // Number - player's id
+  //   canBuild, // Boolean - 
+  //   hasBuilt, // Boolean
+  //   hex, // Hex - position hex
+  //   hexOffset, // HexOffset - position offset
+  // }
+
   // SET BUILDING RANDOM POSITION
   const setBuildingRandomPosition = (type, playerId) => {
     const building = {
       type: type,
-      ownerId: type === 'base' ? playerId : undefined
+      ownerId: (type === 'base' || type === 'factory') ? playerId : undefined
       // ownerId: playerId
     }
 
     if (type === 'factory' || type === 'port' || type === 'airport') {
       building.canBuild = true
-      building.hasBuilt = true
+      // building.hasBuilt = building.ownerId ? false : true // this turn
+      building.hasBuilt = true // this turn
     }
 
     let isValidPosition = false,
@@ -124,8 +135,10 @@ const Buildings = (map, RNG) => {
       for (let n = 0; n < CONFIG.game.buildings[type].number; n++) {
 
         const isBuildingPlaced = setBuildingRandomPosition(type, player.id)
+
         if (isBuildingPlaced) {
           nBuildingsPlaced++
+        
         } else {
           console.log(`Buildings placed: ${nBuildingsPlaced}`)
           console.log(`Building #${nBuildingsPlaced + 1} can't be placed!`)

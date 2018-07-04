@@ -127,7 +127,7 @@ const CONFIG = {
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
     playerStartingMoney: 5000,
     moneyEarnedPerBuilding: 1000,
-    animationsSpeed: 1.5,
+    animationsSpeed: 2,
     throttleKeyboardTime: 128, // In milliseconds
     // Buildings
     buildings: {
@@ -136,11 +136,11 @@ const CONFIG = {
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       },
       city: {
-        number: 3, // Per player
+        number: 4, // Per player
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       },
       factory: {
-        number: 1, // Per player
+        number: 2, // Per player
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       },
       port: {
