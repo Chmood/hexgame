@@ -1,6 +1,5 @@
 import CONFIG from './config'
 import HEXLIB from '../vendor/hexlib'
-import seedrandom from 'seedrandom'
 import arrayShuffle from '../vendor/array-shuffle'
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,8 +20,8 @@ const GameBot = (game, RNG) => {
             mustStayInPlace = false
         const unitCell = game.map.getCellFromHex(unit.hex)
 
-        // mode = 'select'
-        game.focusUnit(unit)
+        // game.ui.mode = 'select'
+        game.ui.focusUnit(unit)
         await game.wait(500)
         
         game.selectUnit(unit)
@@ -127,7 +126,7 @@ const GameBot = (game, RNG) => {
       
               if (pathToTarget) {
                 // console.log('PATH TO TARGET', pathToTarget)
-                // mode = 'move'
+                // game.ui.mode = 'move'
         
                 game.ui.cursorPath = pathToTarget
                 game.updateRenderers(['highlights'])

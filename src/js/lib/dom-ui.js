@@ -80,7 +80,7 @@ const DomUI = () => {
     // dom.canvas2d.addEventListener('click', (e) => {
     // })
     dom.canvas3d.addEventListener('click', () => {
-      game.doAction('mouse')
+      game.doAction()
     })
 
     // UI panel buttons
