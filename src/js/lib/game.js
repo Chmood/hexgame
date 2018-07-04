@@ -5,6 +5,7 @@ import arrayShuffle from '../vendor/array-shuffle'
 
 import Map from './map'
 import Players from './players'
+import GameBot from './game-bot'
 import Renderer2d from './renderer2d'
 import Renderer3d from './renderer3d'
 
@@ -12,6 +13,237 @@ import Renderer3d from './renderer3d'
 // GAME
 
 const Game = (ctx2d, canvas3d, dom, main) => {
+
+  ////////////////////////////////////////
+  // PRIVATE
+
+  // RNG seeds
+  let gameSeed = CONFIG.game.seed
+  const RNG = seedrandom(gameSeed)
+
+  let mode = '', // 'passive', 'select', 'move', 'attack', 'game-menu-select', 'game-menu-move'
+      selectedUnit = undefined, // Unit
+      focusedUnit = undefined, // Unit
+      unitsToMove = [], // [Unit]
+      cameraDirection = undefined, // From 0 to 5
+      selectedTargetId = undefined, // Number
+      selectedBuilding = undefined // Building
+
+  // COMMON TOOLS
+
+  const getUnitByHex = (hex) => {
+    for (const player of game.players) {
+      for (const unit of player.units) {
+        if (HEXLIB.hexEqual(hex, unit.hex)) {
+          return unit
+        }
+      }
+    }
+    return false
+  }
+
+  const getBuildingsByPlayer = (player) => game.map.data.buildings.filter(
+    (building) => building.ownerId === player.id
+  )
+
+  // SELECT PLAYER UNIT (step 8)
+  const selectUnit = (unit) => {
+    if (unit.hasPlayed) {
+      console.log(`Unit ${unit.name} has already played!`)
+      return
+    }
+
+    console.log(`Unit selected: ${unit.name}`)
+    // The unit can move
+    mode = 'move'
+    selectedUnit = unit
+    // Backup cursor in case of cancel
+    game.ui.cursorBackup = game.ui.cursor
+    
+    // Highlight the whole movement zone
+    const zones = getZones(unit)
+    game.ui.moveZone = zones.move
+    game.ui.attackZone = zones.attack
+    if (game.ui.moveZone.length === 0) {
+      console.log('Nowhere to go, the unit is blocked!')
+    }
+    game.updateRenderers(['highlights'])
+  }
+
+  // GET ZONES (step 9)
+  // Grab all the tiles with a cost lower than the player movement value
+  const getZones = (unit) => {
+    // TODO: 
+    // * make findPath return an array of cells in that range???
+    
+    const moveZone = [],
+          attackZone = [],
+          friendsHexes = getUnitsHexes('friends')
+
+    // MOVE ZONE
+    // Scan the whole graph to compute cost of each tile
+    // We call map.findPath() without the goal parameter
+    // We also pass a blacklist as last parameter
+    game.map.findPath(
+      unit.type,
+      unit.hex, 
+      undefined, // no goal
+      undefined, // no early exit
+      getUnitsHexes(), // blacklist all units
+      unit.movement // cost higher limit
+    )  
+    game.updateRenderers() // Draw numbers on 2D map
+
+    for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+        const cell = game.map.data.terrain[x][y]
+
+        if (cell.cost <= unit.movement) {
+          moveZone.push(cell.hex)
+        }
+      }
+    }
+    // Add the unit position to the move zone, since it can stay at the same location
+    moveZone.push(unit.hex)
+
+    // ATTACK ZONES
+    // Ugly code omg!
+    for (const moveHex of moveZone) {
+
+      game.map.findPath(
+        'attack',
+        moveHex,
+        undefined, // no goal
+        undefined, // no early exit
+        undefined, // no blacklist
+        unit.attackRangeMax // cost higher limit
+      )
+  
+      for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+        for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+          const cell = game.map.data.terrain[x][y]
+  
+          // Is the cell in the attack range?
+          if (cell.cost <= unit.attackRangeMax) {
+            if (
+              // Unit can't attack its own friends
+              HEXLIB.hexIndexOf(friendsHexes, cell.hex) === -1 &&
+              // Avoid duplicates
+              HEXLIB.hexIndexOf(attackZone, cell.hex) === -1
+            ) {
+              attackZone.push(cell.hex)
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      move: moveZone,
+      attack: attackZone
+    }
+  }
+
+  // GET UNITS
+  // Get all units from an optional group ('friends' or 'ennemies', defaults to all units)
+  // Also have a onlyHexes param, returning matching hexes instead of units
+  const getUnits = (group, onlyHexes = false) => {
+    const items = [] // can be Unit or Hex
+
+    if (!group || group === 'ennemies') {
+      for (const player of game.players) {
+        if (group === 'ennemies') {
+          if (player === game.currentPlayer) {
+            continue
+          }
+        }
+        for (const unit of player.units) {
+          items.push(onlyHexes ? unit.hex : unit)
+        }
+      }
+    } else if (group === 'friends') {
+      for (const unit of game.currentPlayer.units) {
+        items.push(onlyHexes ? unit.hex : unit)
+      }
+    }
+
+    return items
+  }
+
+  // GET UNITS HEXES (step 10)
+  // Return an array of all/friends/ennemies units hexes
+  const getUnitsHexes = (group) => getUnits(group, true)
+
+  // FOCUS UNIT (step 11)
+  // Give focus (camera and cursor) either to the given unit, or next or previous
+  const focusUnit = (param = 'next') => {
+    // Prevents focusing during move or passive mode
+    if (mode !== 'select') {
+      console.log(`Focus can only be used in "select" mode!`)
+      return
+    }
+    // Compute the unit to be focused
+    if (typeof param === 'string') {
+      // Get the list of movable units' ids
+      const unitsRemainingIds = []
+      for (const unit of game.currentPlayer.units) {
+        if (!unit.hasPlayed) {
+          unitsRemainingIds.push(unit.id)
+        }
+      }
+      // Abort if no available unit
+      if (unitsRemainingIds.length === 0) {
+        return
+      }
+
+      let focusedUnitId = 0
+      
+      // Get the current focused unit id, or take the first unit id
+      if (focusedUnit !== undefined) {
+        focusedUnitId = focusedUnit.id
+      }
+
+      // Find the next/previous unit that still can play
+      const idIncrement = param === 'previous' ? -1 : 1
+      let found = false
+      while (!found) {
+        focusedUnitId += idIncrement
+        focusedUnitId = cycleValueInRange(focusedUnitId, game.currentPlayer.units.length)
+        if (!game.currentPlayer.units[focusedUnitId].hasPlayed) {
+          found = true
+        }
+      }
+      focusedUnit = game.currentPlayer.units[focusedUnitId]
+
+    } else {
+      // We passed a unit as param
+      if (param.hasPlayed) {
+        return
+      } else {
+        focusedUnit = param
+      }
+    }
+    // Actually give focus to the unit
+    const hex = focusedUnit.hex
+    game.ui.cursor = hex
+    game.ui.cursorBackup = hex
+    game.updateRenderers(['highlights'])
+    game.renderer3d.updateCameraPosition(hex)
+    console.log(`Focus on unit ${focusedUnit.name}`)
+  }
+
+  // MARK UNIT AS HAVING PLAYED
+  const markUnitAsHavingPlayed = (unit, hasPlayed = true) => {
+    if (!unit) return false
+
+    unit.hasPlayed = hasPlayed
+
+    if (hasPlayed) {
+      game.renderer3d.changeUnitMaterial(unit, 'colorDesaturated')
+    } else {
+      game.renderer3d.changeUnitMaterial(unit, 'color')
+    }
+  }
 
   ////////////////////////////////////////
   // PUBLIC
@@ -75,6 +307,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         console.log('MAP TERRAIN', game.map.data.terrain)
         console.log('MAP BULDINGS', game.map.data.buildings)
 
+        // BOT
+        game.bot = GameBot(game, RNG)
+
         game.renderer3d.createTiles()
         game.renderer3d.createUnits()
         game.ui.moveZone = []
@@ -90,6 +325,19 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         console.error('Game generation has failed!')
       }
     },
+
+    // COMMON FUNCTIONS
+    getUnitByHex,
+    getBuildingsByPlayer, // Used by GameBot
+    selectUnit, // Used by GameBot
+    getZones, // Used by GameBot
+    // getUnits,
+    getUnitsHexes, // Used by GameBot
+    focusUnit, // Used by GameBot
+    markUnitAsHavingPlayed, // Used by GameBot
+  
+    ////////////////////////////////////////
+    // UI
 
     // RESIZE GAME
     resizeGame() {
@@ -268,10 +516,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           // Clean up last player
           console.log(`${game.currentPlayer.name}'s turn is over`)
           for (const unit of game.currentPlayer.units) {
-            unit.hasPlayed = false
+            markUnitAsHavingPlayed(unit, false)
             unit.hasMoved = false
             unit.hasAttacked = false
-            game.renderer3d.changeUnitMaterial(unit, 'color')
           }
           // Reset player buildings
           for (const building of game.map.data.buildings) {
@@ -314,7 +561,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         // Is the next player a bot?
         if (!game.currentPlayer.isHuman) {
           console.log(`Player ${game.currentPlayer.name} is a bot`)
-          playBot()
+          game.bot.playBot(game.currentPlayer)
         }
 
         resolve()
@@ -497,8 +744,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         const unit = player.addUnit(unitType, building.hex)
     
         // New born unit can't play during the first turn
-        unit.hasPlayed = true
+        markUnitAsHavingPlayed(unit)
         building.hasBuilt = true
+
         game.updateRenderers(['players'])
         game.renderer3d.updateCameraPosition(building.hex)
         const buildUnitAnimation = game.renderer3d.buildUnit(unit)
@@ -519,552 +767,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   // GAME RENDERERS
   game.renderer2d = Renderer2d(game, ctx2d)
   game.renderer3d = Renderer3d(game, canvas3d)
-
-  ////////////////////////////////////////
-  // PRIVATE
-
-  // RNG seeds
-  let gameSeed = CONFIG.game.seed
-  const RNG = seedrandom(gameSeed)
-
-  let mode = '', // 'passive', 'select', 'move', 'attack', 'game-menu-select', 'game-menu-move'
-      selectedUnit = undefined, // Unit
-      focusedUnit = undefined, // Unit
-      unitsToMove = [], // [Unit]
-      cameraDirection = undefined, // From 0 to 5
-      selectedTargetId = undefined, // Number
-      selectedBuilding = undefined // Building
-
-  // COMMONT TOOLS
-
-  const getUnitByHex = (hex) => {
-    for (const player of game.players) {
-      for (const unit of player.units) {
-        if (HEXLIB.hexEqual(hex, unit.hex)) {
-          return unit
-        }
-      }
-    }
-    return false
-  }
-
-  const getBuildingsByPlayer = (player) => game.map.data.buildings.filter(
-    (building) => building.ownerId === player.id
-  )
-  
-  ////////////////////////////////////////
-  // BOT AI (sort of)
-
-  const getNearestItem = (unit, items) => {
-    if (!items) {
-      console.error('getClosestItem() - no items provided')
-      return false
-    }
-    let nearestItem, nearestItemDistance = 100000
-    let isSimpleItem = items[0].hex ? false : true
-
-    for (const item of items) {
-      const path = game.map.findPath(
-        unit.type,
-        unit.hex, 
-        isSimpleItem ? item : item.hex,
-        true,
-        getUnitsHexes()
-      )
-      if (path && path.length < nearestItemDistance) {
-        nearestItemDistance = path.length
-        nearestItem = item
-      }
-    }
-
-    if (nearestItem) {
-      return nearestItem
-    } else {
-      console.error('getClosestItem() - no clothest item')
-      return false
-    }
-  }
-
-  const getNearestBuilding = (unit) => {
-    const conquerableBuildings = game.map.data.buildings.filter(
-      (building) => ((building.ownerId === undefined) || (building.ownerId !== unit.playerId))
-    )
-
-    if (conquerableBuildings.length > 0) {
-      const nearestBuilding = getNearestItem(unit, conquerableBuildings)
-
-      if (nearestBuilding) {
-        return nearestBuilding
-
-      } else {
-        console.warn('getNearestBuilding() - no nearest building!')  
-        return false
-      }
-
-    } else {
-      console.warn('getNearestBuilding() - no conquerable buildings!')
-      return false
-    }
-    
-  }
-
-  const getEnnemiesInAttackZone = (unit) => {
-    const ennemies = [],
-          attackZone = getZones(unit).attack
-
-    if (attackZone) {
-      // console.log(`getEnnemiesInAttackZone() - attackZone length: ${attackZone.length}`)
-      for (const hex of attackZone) {
-        const ennemy = getUnitByHex(hex)
-        if (ennemy) {
-          ennemies.push(ennemy)
-        }
-      }
-    } else {
-      console.error(`getEnnemiesInAttackZone() - attackZone is empty!`)
-    }
-
-    // console.log(`getEnnemiesInAttackZone() - found ennemies: ${ennemies.length}`)
-    return ennemies
-  }
-
-  const findPathToAttack = async (unit, ennemy) => {
-    // Get the zone from which the ennemy can be attacked
-    const moveZone = getZones(unit).move
-    const ennemyWeakZone = []
-    
-    // Just to compute cell costs
-    game.map.findPath(
-      'attack',
-      ennemy.hex, 
-      undefined, // no goal
-      undefined, // no early exit
-      getUnitsHexes(), // blacklist all units (TODO remove unit's tile from blacklist??)
-      unit.attackRangeMax // cost higher limit
-    )  
-
-    for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-        const cell = game.map.data.terrain[x][y]
-
-        // Must be at attack range
-        if (cell.cost <= unit.attackRangeMax) {
-          // Must belong to the unit movement zone
-          if (HEXLIB.hexIndexOf(moveZone, cell.hex)) {
-            ennemyWeakZone.push(cell.hex)
-          }
-        }
-      }
-    }
-
-    // console.log('findPathToAttack() - ennemyWeakZone.length', ennemyWeakZone.length)
-    game.ui.attackZone = ennemyWeakZone
-    game.updateRenderers('highlights')
-    await wait(500)
-
-    // Find a path to reach the ennemy weak zone
-    const pathsToTarget = []
-    if (ennemyWeakZone.length > 0) {
-
-      for (const weakHex of ennemyWeakZone) {
-        const pathToTarget = game.map.findPath(
-          unit.type, // graph type
-          unit.hex, // start hex
-          weakHex, // goal hex
-          true, // early exit
-          getUnitsHexes() // blacklist
-        )
-
-        if (pathToTarget) {
-          pathsToTarget.push(pathToTarget)
-        }
-      }
-    } else {
-      console.warn('findPathToAttack() - ennemyWeakZone is empty!')
-    }
-
-    if (pathsToTarget.length > 0) {
-      if (pathsToTarget.length > 1) {
-        // TODO: take terrain defense into account
-        let shortestPath,
-            shortestLength = 100000
-        for (const path of pathsToTarget) {
-          if (path.length < shortestLength) {
-            shortestPath = path
-            shortestLength = path.length
-          }
-        }
-        return shortestPath
-      } else {
-        return pathsToTarget[0]
-      }
-
-    } else {
-      console.error('findPathToAttack() - no path found!!!')
-      return false
-    }
-  }
-
-  const moveUnitTowards = async (unit, goal) => {
-    // console.warn('MOVE TORWARDS', goal)
-
-    let longPath
-    longPath = game.map.findPath(
-      unit.type,
-      unit.hex, 
-      goal,
-      true,
-      getUnitsHexes()
-    )
-
-    if (longPath) {
-      // console.log('PATH TOWARDS - can reach', longPath)
-    // No direct path, use attack graph
-    } else {
-      longPath = game.map.findPath(
-        'attack',
-        unit.hex, 
-        goal,
-        true
-        // getUnitsHexes()
-      )
-      // console.log('PATH TOWARDS - won\'t reach', longPath)
-    }
-
-    if (!longPath || longPath.length === 0) {
-      console.error('moveUnitTowards() - no longPath found!')
-      return false
-    }
-
-    longPath = longPath.reverse()
-    game.ui.cursorPath = longPath
-    game.ui.cursor = longPath[longPath.length - 1]
-    game.updateRenderers(['highlights'])
-    await wait(500)
-    game.ui.cursorPath = []
-
-    for (const longPathStep of longPath) {
-      game.ui.cursor = longPathStep
-      game.updateRenderers(['highlights'])
-      await wait(125)
-  
-      const path = game.map.findPath(
-        unit.type,
-        unit.hex, 
-        longPathStep,
-        true,
-        getUnitsHexes(),
-        unit.movement
-      )
-
-      if (path && path.length > 0) {
-        game.ui.cursorPath = path
-        game.ui.cursor = path[path.length - 1]
-        game.updateRenderers(['highlights'])
-        await wait(500)
-        
-        await game.MOVE(unit, path)
-        
-        return path
-
-      } else {
-        // console.log('MOVE TOWARDS path not found!')
-      }
-    }
-
-    console.error('move towards fail!!!')
-    return false
-  }
-
-  const moveUnitRandomly = async (unit) => {
-    game.ui.moveZone = getZones(unit).move
-
-    if (game.ui.moveZone.length === 1) { return false }
-
-    const target = game.ui.moveZone[Math.floor(RNG() * game.ui.moveZone.length)] 
-    const path = game.map.findPath(
-      unit.type,
-      unit.hex, 
-      target,
-      true,
-      getUnitsHexes()
-    )
-
-    game.ui.cursorPath = path
-    game.ui.cursor = path[path.length - 1]
-    game.updateRenderers(['highlights'])
-    await wait(500)
-
-    await game.MOVE(unit, path)
-  }
-
-  const chooseEnnemy = (unit, ennemies) => {
-    let bestEnnemy, bestEnnemyValue = 10000 // the lesser the better
-    for (const ennemy of ennemies) {
-      // Manhattan distance (attack the closer)
-      const distance = HEXLIB.hexDistance(unit.hex, ennemy.hex)
-      // Ennemy health (attack the weakest)
-      const health = ennemy.health
-
-      // Hysterersis!
-      // const value = health * 2 + distance * 4
-      const value = health
-
-      if (value < bestEnnemyValue) {
-        bestEnnemyValue = value
-        bestEnnemy = ennemy
-      }
-
-      return bestEnnemy
-    }
-  }
-
-  const botBuildUnits = async (player) => {
-
-    // Get the player's buildings that can build
-    let playerBuildings = getBuildingsByPlayer(player).filter(
-      // let playerBuildings = game.map.data.buildings.filter(
-      (building) => 
-      (
-        building.type === 'factory' || 
-        building.type === 'port' || 
-        building.type === 'airport'
-      ) && !building.hasBuilt
-    )
-
-    if (playerBuildings.length) {
-
-      // Randomize the order of buildings
-      playerBuildings = arrayShuffle(playerBuildings)
-
-      const infantryTypes = ['soldier', 'bazooka', 'healer']
-      const tankTypes = ['jeep', 'tank', 'heavy-tank']
-      const navalTypes = ['boat']
-      const airTypes = ['helicopter', 'fighter', 'bomber']
-
-      for (const playerBuilding of playerBuildings) {
-        if (player.money >= 1000) { // miimal unit price (TODO)
-
-          // CHOOSING UNIT TYPE
-          let unitTypes = Object.keys(CONFIG.game.units)
-          
-          if (playerBuilding.type === 'factory') {
-
-            // Too few buildings owned, build infantry first to conquer
-            if (
-              getBuildingsByPlayer(player).length < 5 || // max owned buildings
-              // Count player's infantry units
-              player.units.filter((unit) => (
-                infantryTypes.indexOf(unit.type) !== -1
-              )).length < 5 // max infantry units
-            ) {
-              unitTypes = infantryTypes
-            } else {
-              unitTypes = tankTypes
-            }
-
-          } else if (playerBuilding.type === 'port') {
-            unitTypes = navalTypes            
-
-          } else if (playerBuilding.type === 'airport') {
-            unitTypes = airTypes
-          }
-
-          // Choose random unit type, the more expensive the better
-          let nMaxTry = 10, minCost = 10000, unitType
-
-          while (!unitType && nMaxTry > 0) {
-            nMaxTry--
-            const type = unitTypes[Math.floor(RNG() * unitTypes.length)],
-                  cost = CONFIG.game.units[type].cost
-
-            if (cost <= player.money && cost >= minCost) {
-              unitType = type
-            }
-            minCost -= 1000 // Lower the desired price
-          }
-  
-          if (unitType) {
-            await game.BUILD_UNIT(game.currentPlayer, playerBuilding, unitType)
-          }
-        }
-      }
-    }
-  }
-
-  // PLAY BOT (step 3)
-  // The current player is bot, auto-play it
-  const playBot = async () => {
-    const player = game.currentPlayer
-    
-    for (const unit of game.currentPlayer.units) {
-      let isUnitTurnFinished = false,
-          mustStayInPlace = false
-      const unitCell = game.map.getCellFromHex(unit.hex)
-
-      mode = 'select'
-      focusUnit(unit)
-      await wait(500)
-      
-      selectPlayerUnit(unit)
-      // mode is 'move' now
-      await wait(500)
-      
-      // GROUND UNIT ROUTINE
-      // Conquer and defend
-
-      // Can the unit conquer a building?
-      if (unit.canConquer) {
-
-        if (unitCell.building && unitCell.building.ownerId !== player.id) {
-          game.CONQUER(unit)
-          isUnitTurnFinished = true
-
-        } else if (unitCell.building && unitCell.building.type === 'city') {
-          // Defend the city
-          mustStayInPlace = true
-          console.warn('DEFEND THE CITY!')
-
-        } else {
-          const nearestBuilding = getNearestBuilding(unit)
-
-          if (nearestBuilding) {
-            // Is the building in the move zone?
-            const path = game.map.findPath(
-              unit.type,
-              unit.hex, 
-              nearestBuilding.hex,
-              true,
-              getUnitsHexes(),
-              unit.movement
-            )
-            if (path) {
-              // Move to a building and conquer it
-              await game.MOVE(unit, path)
-              game.CONQUER(unit)
-              isUnitTurnFinished = true
-            } else {
-              // Get close to a distant building
-              await moveUnitTowards(unit, nearestBuilding.hex)
-              mustStayInPlace = true
-            }
-          }
-        }
-      }
-
-      // MOVE AND ATTACK
-
-      if (!isUnitTurnFinished) {
-
-        let targets = getEnnemiesInAttackZone(unit)
-        const pacificMode = false
-  
-        if (mustStayInPlace) {
-          // Only attack targets close to us (no move required)
-          targets = targets.filter(
-            (target) => {
-              const distance = HEXLIB.hexDistance(target.hex, unit.hex)
-              // console.log('distance', distance, unit.attackRangeMin, unit.attackRangeMax)
-
-              return distance <= unit.attackRangeMax &&
-              distance >= unit.attackRangeMin
-            }
-          )
-        }
-
-        if (targets.length > 0 && !pacificMode) {
-          // console.warn(`${targets.length} ennemies found, MOVE AND ATTACK`)
- 
-          const targetsHexes = []
-          for (const target of targets) {
-            targetsHexes.push(target.hex)
-          }
-          
-          game.ui.moveZone = []
-          game.ui.attackZone = targetsHexes
-          game.updateRenderers('highlights')
-          
-          await wait(500)
-  
-          // Choose the target
-          const ennemy = chooseEnnemy(unit, targets)
-          // Choose a random victim
-          // const ennemy = targets[Math.floor(RNG() * targets.length)]
-
-          if (mustStayInPlace) {
-            // ATTACK N PLACE
-            await game.ATTACK(unit, ennemy)
-            console.log('attack and stay in place')
-
-          } else {
-            game.ui.attackZone = [ennemy.hex]
-            game.updateRenderers(['highlights'])
-            
-            await wait(500)
-    
-            // Find path to get close to the target
-            const pathToTarget = await findPathToAttack(unit, ennemy)
-    
-            if (pathToTarget) {
-              // console.log('PATH TO TARGET', pathToTarget)
-              mode = 'move'
-      
-              game.ui.cursorPath = pathToTarget
-              game.updateRenderers(['highlights'])
-    
-              await wait(500)
-    
-              if (pathToTarget.length > 0) {
-                // MOVE AND ATTACK
-                // console.warn('bot moving to shoot...')
-                await game.MOVE(unit, pathToTarget)
-    
-                await game.ATTACK(unit, ennemy)  
-              }
-            } else {
-              console.error('no path to attack target!!!')
-            }
-          }
-  
-        // GO TO BASE
-        // No targets
-        } else if (!mustStayInPlace) {
-          // RANDOM MOVE
-          // console.warn(`No ennemies, RANDOM MOVE`)
-          // await moveUnitRandomly(unit)
-  
-          game.ui.moveZone = []
-          game.ui.attackZone = []
-          game.updateRenderers(['highlights'])
-  
-          const base = game.map.data.buildings.filter(
-            (building) => 
-            building.ownerId === game.currentPlayer.id &&
-            building.type === 'base'
-          )
-  
-          if (base.length > 0) {
-            await moveUnitTowards(unit, base[0].hex)
-          } else {
-            console.error('move toward: no base found!')
-          }
-        }
-      }
-  
-      // Try to build units
-      await botBuildUnits(player)
-
-      // End of turn
-      // endUnitTurn() // TODO: this breaks the players change routine
-      selectedUnit.hasPlayed = true
-      game.renderer3d.changeUnitMaterial(selectedUnit, 'colorDesaturated') // WTF?
-    }
-
-    // Try to build units (in case of no unit at all)
-    await botBuildUnits(player)
-
-    await game.CHANGE_PLAYER()
-  }
 
   // MOVE PHASE
 
@@ -1199,7 +901,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
           if (player === game.currentPlayer) {
             // The player selected one of its own units
-            selectPlayerUnit(unit)
+            selectUnit(unit)
 
           } else {
             // The player selected one of another player's unit
@@ -1244,185 +946,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     }
   }
 
-  // SELECT PLAYER UNIT (step 8)
-  const selectPlayerUnit = (unit) => {
-    if (unit.hasPlayed) {
-      console.log(`Unit ${unit.name} has already played!`)
-      return
-    }
-
-    console.log(`Unit selected: ${unit.name}`)
-    // The unit can move
-    mode = 'move'
-    selectedUnit = unit
-    // Backup cursor in case of cancel
-    game.ui.cursorBackup = game.ui.cursor
-    
-    // Highlight the whole movement zone
-    const zones = getZones(unit)
-    game.ui.moveZone = zones.move
-    game.ui.attackZone = zones.attack
-    if (game.ui.moveZone.length === 0) {
-      console.log('Nowhere to go, the unit is blocked!')
-    }
-    game.updateRenderers(['highlights'])
-  }
-
-  // GET ZONES (step 9)
-  // Grab all the tiles with a cost lower than the player movement value
-  const getZones = (unit) => {
-    // TODO: 
-    // * make findPath return an array of cells in that range???
-    
-    const moveZone = [],
-          attackZone = [],
-          friendsHexes = getUnitsHexes('friends')
-
-    // MOVE ZONE
-    // Scan the whole graph to compute cost of each tile
-    // We call map.findPath() without the goal parameter
-    // We also pass a blacklist as last parameter
-    game.map.findPath(
-      unit.type,
-      unit.hex, 
-      undefined, // no goal
-      undefined, // no early exit
-      getUnitsHexes(), // blacklist all units
-      unit.movement // cost higher limit
-    )  
-    game.updateRenderers() // Draw numbers on 2D map
-
-    for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-        const cell = game.map.data.terrain[x][y]
-
-        if (cell.cost <= unit.movement) {
-          moveZone.push(cell.hex)
-        }
-      }
-    }
-    // Add the unit position to the move zone, since it can stay at the same location
-    moveZone.push(unit.hex)
-
-    // ATTACK ZONES
-    // Ugly code omg!
-    for (const moveHex of moveZone) {
-
-      game.map.findPath(
-        'attack',
-        moveHex,
-        undefined, // no goal
-        undefined, // no early exit
-        undefined, // no blacklist
-        unit.attackRangeMax // cost higher limit
-      )
-  
-      for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-        for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-          const cell = game.map.data.terrain[x][y]
-  
-          // Is the cell in the attack range?
-          if (cell.cost <= unit.attackRangeMax) {
-            if (
-              // Unit can't attack its own friends
-              HEXLIB.hexIndexOf(friendsHexes, cell.hex) === -1 &&
-              // Avoid duplicates
-              HEXLIB.hexIndexOf(attackZone, cell.hex) === -1
-            ) {
-              attackZone.push(cell.hex)
-            }
-          }
-        }
-      }
-    }
-
-    return {
-      move: moveZone,
-      attack: attackZone
-    }
-  }
-
-  // GET UNITS HEXES (step 10)
-  // Return an array of all/friends/ennemies units hexes
-  const getUnitsHexes = (group) => {
-    const unitsHexes = []
-    if (!group || group === 'ennemies') {
-      for (const player of game.players) {
-        if (group === 'ennemies') {
-          if (player === game.currentPlayer) {
-            continue
-          }
-        }
-        for (const unit of player.units) {
-          unitsHexes.push(unit.hex)
-        }
-      }
-    } else if (group === 'friends') {
-      for (const unit of game.currentPlayer.units) {
-        unitsHexes.push(unit.hex)
-      }
-  }
-    return unitsHexes
-  }
-
-  // FOCUS UNIT (step 11)
-  // Give focus (camera and cursor) either to the given unit, or next or previous
-  const focusUnit = (param = 'next') => {
-    // Prevents focusing during move or passive mode
-    if (mode !== 'select') {
-      console.log(`Focus can only be used in "select" mode!`)
-      return
-    }
-    // Compute the unit to be focused
-    if (typeof param === 'string') {
-      // Get the list of movable units' ids
-      const unitsRemainingIds = []
-      for (const unit of game.currentPlayer.units) {
-        if (!unit.hasPlayed) {
-          unitsRemainingIds.push(unit.id)
-        }
-      }
-      // Abort if no available unit
-      if (unitsRemainingIds.length === 0) {
-        return
-      }
-
-      let focusedUnitId = 0
-      
-      // Get the current focused unit id, or take the first unit id
-      if (focusedUnit !== undefined) {
-        focusedUnitId = focusedUnit.id
-      }
-
-      // Find the next/previous unit that still can play
-      const idIncrement = param === 'previous' ? -1 : 1
-      let found = false
-      while (!found) {
-        focusedUnitId += idIncrement
-        focusedUnitId = cycleValueInRange(focusedUnitId, game.currentPlayer.units.length)
-        if (!game.currentPlayer.units[focusedUnitId].hasPlayed) {
-          found = true
-        }
-      }
-      focusedUnit = game.currentPlayer.units[focusedUnitId]
-
-    } else {
-      // We passed a unit as param
-      if (param.hasPlayed) {
-        return
-      } else {
-        focusedUnit = param
-      }
-    }
-    // Actually give focus to the unit
-    const hex = focusedUnit.hex
-    game.ui.cursor = hex
-    game.ui.cursorBackup = hex
-    game.updateRenderers(['highlights'])
-    game.renderer3d.updateCameraPosition(hex)
-    console.log(`Focus on unit ${focusedUnit.name}`)
-  }
-  
   // CURSOR LINE (step 12)
   const getCursorLine = (cursor, target, type) => {
     if (game.map.getCellFromHex(cursor) && game.map.getCellFromHex(cursor).isInGraph) {
@@ -1492,33 +1015,38 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   // CAN UNIT ATTACK (step 16)
   const canUnitAttack = (unit) => {
-    game.ui.attackZone = getAttackZone(unit)
+    game.ui.attackZone = getEnnemiesInAttackRange(unit, true) // true for 'only hexes' mode
+
     // Does the unit can attack any ennemy?
     return game.ui.attackZone.length > 0
   }
 
   // GET ATTACK ZONE (step 17)
-  const getAttackZone = (unit) => {
-    const attackTargets = []
+  const getEnnemiesInAttackRange = (unit, onlyHexes = false) => {
+    let ennemies
 
-    game.map.findPath(
-      'attack',
-      unit.hex,
-      undefined, // no goal
-      undefined, // no early exit
-      undefined, // blacklist
-      unit.attackRangeMax // cost higher limit
-    )
+    const filterFn = (ennemy) => {
+      const distance = HEXLIB.hexDistance(
+        onlyHexes ? ennemy : ennemy.hex, 
+        unit.hex
+      )
+      // console.log('distance', distance, unit.attackRangeMin, unit.attackRangeMax)
 
-    for (const ennemyHex of getUnitsHexes('ennemies')) {
-      const ennemyCell = game.map.getCellFromHex(ennemyHex)
-      // Is the nnemy in the attack range?
-      if (ennemyCell.cost <= unit.attackRangeMax) {
-        attackTargets.push(ennemyHex)
-      }
+      return (
+        distance <= unit.attackRangeMax &&
+        distance >= unit.attackRangeMin
+      )
     }
-    return attackTargets
+
+    if (!onlyHexes) {
+      ennemies = getUnits('ennemies').filter(filterFn)
+    } else { // Only hexes needed
+      ennemies = getUnitsHexes('ennemies').filter(filterFn)
+    }
+
+    return ennemies
   }
+  game.getEnnemiesInAttackRange = getEnnemiesInAttackRange // Not used by now
 
   // CAN UNIT CONQUER (step 18)
   const canUnitConquer = (unit) => {
@@ -1558,7 +1086,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     game.ui.cursor = game.ui.cursorBackup
     game.ui.cursorPath = []
     game.renderer3d.updateCameraPosition(game.ui.cursor)
-    selectPlayerUnit(selectedUnit)
+    selectUnit(selectedUnit)
   }
 
   // VALIDATE TARGET (step 21)
@@ -1637,6 +1165,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       }, time / CONFIG.game.animationsSpeed)
     })
   }
+  game.wait = wait
   
   return game
 }
