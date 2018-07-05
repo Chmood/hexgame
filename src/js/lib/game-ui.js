@@ -188,6 +188,15 @@ const GameUI = (game) => {
     game.selectUnit(ui.selectedUnit)
   }
 
+  // FOCUS CELL
+  // cursor and camera updates
+  const focusHex = (hex) => {
+    ui.cursor = hex
+    ui.cursorBackup = hex
+    game.updateRenderers(['highlights'])
+    game.renderer3d.updateCameraPosition(hex)
+  }
+
   // FOCUS UNIT
   // Give focus (camera and cursor) either to the given unit, or next or previous
   const focusUnit = (param = 'next') => {
@@ -237,12 +246,10 @@ const GameUI = (game) => {
         ui.focusedUnit = param
       }
     }
+
     // Actually give focus to the unit
     const hex = ui.focusedUnit.hex
-    ui.cursor = hex
-    ui.cursorBackup = hex
-    game.updateRenderers(['highlights'])
-    game.renderer3d.updateCameraPosition(hex)
+    focusHex(hex)
     console.log(`Focus on unit ${ui.focusedUnit.name}`)
   }
 
@@ -319,10 +326,22 @@ const GameUI = (game) => {
     
         game.dom.updateTopPanel(game.currentPlayer)
     
+        // Focus on the first base
+        const base = game.getBuildingsByPlayer(game.currentPlayer).filter(
+          (building) => building.type === 'base'
+        )
+
+        if (base.length > 0) {
+          focusHex(base[0].hex)
+        }
+
         ui.mode = 'select'
         ui.unitsToMove = game.currentPlayer.units
-        ui.focusedUnit = ui.unitsToMove[0] 
-        ui.focusUnit(ui.focusedUnit)
+
+        if (ui.unitsToMove.length > 0) {
+          ui.focusedUnit = ui.unitsToMove[0] 
+          ui.focusUnit(ui.focusedUnit)
+        }
     
         // Is the next player a bot?
         if (!game.currentPlayer.isHuman) {

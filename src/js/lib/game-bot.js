@@ -16,6 +16,9 @@ const GameBot = (game, RNG) => {
     async playBot(player) {
       
       for (const unit of player.units) {
+        // In case of newly created unit??
+        if (unit.hasPlayed) { continue }
+        
         let isUnitTurnFinished = false,
             mustStayInPlace = false
         const unitCell = game.map.getCellFromHex(unit.hex)

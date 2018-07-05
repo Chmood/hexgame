@@ -114,7 +114,7 @@ const Renderer3d = (game, canvas) => {
   
         if (camera.getCameraFreeAutorotate()) {
           // Make the camera rotate around the island
-          camera.cameraFree.alpha += 0.01
+          camera.cameraFree.alpha += 0.002
         }
       })
     },

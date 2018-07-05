@@ -178,6 +178,38 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   // MISC
 
+  const getNextPlayerId = (id) => {
+    id++
+    id = cycleValueInRange(id, game.players.length)
+
+    return id
+  }
+
+  const getNextPlayingPlayer = (player) => {
+    // Get the next player
+    let hasFound = false,
+        nMaxTry = game.players.length,
+        newPlayerId = getNextPlayerId(player.id)
+
+    while (nMaxTry > 0) {
+      nMaxTry--
+
+      if (!game.players[newPlayerId].hasLost) {
+        hasFound = true
+        break
+      }
+
+      newPlayerId = getNextPlayerId(newPlayerId)
+    }
+    
+    if (hasFound) {
+      return game.players[newPlayerId]
+    } else {
+      console.warn('Get next playing player : not found!')
+      return false
+    }
+  }
+
   // HELPER FUNCTIONS
   const clampValueInRange = (value, max, min = 0) => {
     if (value < min) { return min }
@@ -378,10 +410,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     async ACTION_DO(action) {
              if (action.type === 'CHANGE_PLAYER') {
 
-        if (action.playerId !== undefined) {
+        const playerId = action.playerId
+        if (playerId !== undefined) {
 
           // MUTATE game.currentPlayer
-          game.currentPlayer = game.players[action.playerId]
+          game.currentPlayer = game.players[playerId]
     
         } else {
           // Clean up last player
@@ -407,20 +440,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
             }
           }
 
-          // Set the next player
-          let nMaxTry = game.players.length
-          let playerId = game.currentPlayer.id
-          playerId++
-          playerId = cycleValueInRange(playerId, game.players.length)
-
-          while (nMaxTry > 0 && !game.players[playerId].hasLost) {
-            nMaxTry--
-            playerId++
-            playerId = cycleValueInRange(playerId, game.players.length)
-          }
-
           // MUTATE game.currentPlayer
-          game.currentPlayer = game.players[playerId]
+          game.currentPlayer = getNextPlayingPlayer(game.currentPlayer)
 
           console.warn(`*** It's player ${game.currentPlayer.name}'s turn ***`)
         }
@@ -479,16 +500,16 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         if (!building) {
           console.error(`BUID UNIT - no building provided!`)
-          resolve()
+          return // early exit
 
         } else if (building.hasBuilt) {
           console.warn(`${building.type} has already built this turn!`)
-          resolve ()
+          return // early exit
 
         } else {
           if (getUnitByHex(building.hex)) {
           console.warn(`${building.type} is occupied!`)
-          resolve()
+          return // early exit
           }
         }
 
