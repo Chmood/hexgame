@@ -32,8 +32,7 @@ const Buildings = (map, RNG) => {
 
     if (type === 'factory' || type === 'port' || type === 'airport') {
       building.canBuild = true
-      // building.hasBuilt = building.ownerId ? false : true // this turn
-      building.hasBuilt = true // this turn
+      building.hasBuilt = building.ownerId !== undefined ? false : true // for the first turn
     }
 
     let isValidPosition = false,

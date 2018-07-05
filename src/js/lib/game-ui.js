@@ -566,7 +566,8 @@ const GameUI = (game) => {
               ui.selectedBuilding = building
               actions.unshift('BuildUnits')
             } else {
-              // TODO: infos on the unit that will be built
+              // TODO: infos on the player factory/port/airport
+              console.warnr('Selected building', building)
             }
           } else {
             // TODO: infos on player city/base
