@@ -523,6 +523,15 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         await game.ui.BUILD_UNIT(player, building, unit)
 
+        if (game.currentPlayer.isHuman) {
+          if (isTurnEnded()) {
+            // No more units or buildings to play with
+            await game.ACTION_DO({
+              type: 'CHANGE_PLAYER'
+            })
+          }
+        }
+
       } else if (action.type === 'ATTACK') {
 
         const playerUnit = action.playerUnit
@@ -657,12 +666,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   game.renderer2d = Renderer2d(game, ctx2d)
   game.renderer3d = Renderer3d(game, canvas3d)
 
-  // END UNIT TURN
-  const endUnitTurn = async () => {
-    // Mark the unit as having played
-    game.ui.selectedUnit.hasPlayed = true
-    game.renderer3d.changeUnitMaterial(game.ui.selectedUnit, 'colorDesaturated')
-
+  const isTurnEnded = () => {
     // Automatic end of turn (ala Fire Emblem)
     const nUnitsRemaining = game.currentPlayer.units.filter(
       (unit) => !unit.hasPlayed
@@ -675,21 +679,30 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       !building.hasBuilt 
     ).length
 
-    if (nUnitsRemaining === 0 && nBuildingsRemaining === 0) {
-      // No more unit to play with
-      // await game.CHANGE_PLAYER()
+    if (nUnitsRemaining > 0) {
+      console.log(`Still ${nUnitsRemaining} unit(s) to play`)
+    }
+    if (nBuildingsRemaining > 0) {
+      console.log(`Still ${nBuildingsRemaining} building(s) to play`)
+    }
+
+    return (nUnitsRemaining === 0 && nBuildingsRemaining === 0)
+  }
+
+  // END UNIT TURN
+  const endUnitTurn = async () => {
+    // Mark the unit as having played
+    game.ui.selectedUnit.hasPlayed = true
+    game.renderer3d.changeUnitMaterial(game.ui.selectedUnit, 'colorDesaturated')
+
+    // Automatic end of turn (ala Fire Emblem)
+    if (isTurnEnded()) {
+      // No more units or buildings to play with
       await game.ACTION_DO({
         type: 'CHANGE_PLAYER'
       })
 
     } else {
-      if (nUnitsRemaining > 0) {
-        console.log(`Still ${nUnitsRemaining} unit(s) to play`)
-      }
-      if (nBuildingsRemaining > 0) {
-        console.log(`Still ${nBuildingsRemaining} building(s) to play`)
-      }
-
       game.ui.mode = 'select'
       game.ui.focusUnit('next')
     }
