@@ -2,14 +2,16 @@
 
 ## Known bugs
 
-* units can be built on occupied factories / port / airport!!!
-* choosing target hysteresis looks inverted (or plain broken)
+* Units can be built on occupied factories / port / airport??? [TO BE CONFIRMED]
+* Sometimes (!) keybord is broken, cursor moves on all keys
+* Choosing target hysteresis looks inverted (or plain broken)
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
-* Switching post-processing ('multi'/'ssao') cause lignting issues (too dark / too bright)
+* Switching post-processing ('multi'/'ssao') cause lighting issues (too dark / too bright)
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too, it shouldn't lean with its unit, but stay stricly above it)
 
 ## Improvements
 
+* Healing for bot units too
 * A real state
 * Focus buildings with potential action too (factories, ports and airports)
 * Flying units must be able to pass over ground unit (less strict A* blacklist)
@@ -31,7 +33,6 @@
 
 ## New features
 
-* Healing allied units
 * New DOM element: unit/terrain/building info panel
 * Roads and bridges???
 * Terrain defense bonus/malus

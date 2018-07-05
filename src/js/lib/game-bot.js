@@ -27,7 +27,7 @@ const GameBot = (game, RNG) => {
         game.ui.focusUnit(unit)
         await game.wait(500)
         
-        game.selectUnit(unit)
+        game.ui.selectUnit(unit)
         // mode is 'move' now
         await game.wait(500)
         

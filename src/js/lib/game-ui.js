@@ -131,15 +131,16 @@ const GameUI = (game) => {
 
     } else if (ui.mode === 'attack') {
       if (validateTarget(ui.cursor)) {
-        // Get the ennemy
+        // Get the target
         const targetHex = ui.attackZone[ui.selectedTargetId],
-              ennemyUnit = game.getUnitByHex(targetHex)
+              targetUnit = game.getUnitByHex(targetHex)
 
         await game.ACTION_DO({
-          type: 'ATTACK',
+          type: ui.selectedUnit.canHeal ? 'HEAL' : 'ATTACK',
           playerUnit: ui.selectedUnit,
-          ennemyUnit: ennemyUnit
+          ennemyUnit: targetUnit
         })
+
       } else {
         endUnitTurn()
       }
@@ -185,7 +186,7 @@ const GameUI = (game) => {
     ui.cursorPath = []
 
     game.renderer3d.updateCameraPosition(ui.cursor)
-    game.selectUnit(ui.selectedUnit)
+    selectUnit(ui.selectedUnit)
   }
 
   // FOCUS CELL
@@ -253,7 +254,38 @@ const GameUI = (game) => {
     console.log(`Focus on unit ${ui.focusedUnit.name}`)
   }
 
+  // SELECT UNIT
+  const selectUnit = (unit) => {
+    if (unit.hasPlayed) {
+      console.log(`Unit ${unit.name} has already played!`)
+      return
+    }
+
+    console.log(`Unit selected: ${unit.name}`)
+    // The unit can move
+    ui.mode = 'move'
+    ui.selectedUnit = unit
+    // Backup cursor in case of cancel
+    ui.cursorBackup = game.ui.cursor
+    
+    // Highlight the whole movement zone
+    const zones = game.getZones(unit)
+    ui.moveZone = zones.move
+    if (ui.moveZone.length === 0) {
+      console.log('Nowhere to go, the unit is blocked!')
+    }
+
+    // Attack and heal zones
+    if (!unit.canHeal) {
+      ui.attackZone = zones.attack
+    } else {
+      ui.attackZone = zones.heal
+    }
+    game.updateRenderers(['highlights'])
+  }
+
   // SELECT ATTACK
+  // And heal, too
   const selectAttack = () => {
     ui.mode = 'attack'
     // Target the first ennemy
@@ -300,13 +332,13 @@ const GameUI = (game) => {
     // cancelMove,
     // cancelFinishedMove,
     // selectDestination,
+    // validateTarget,
     onKeyDown,
     updateCursor,
     doAction,
     focusUnit,
-
+    selectUnit,
     selectAttack, // Called via game menu
-    // validateTarget,
 
     resetUI() {
       ui.moveZone = []
@@ -407,6 +439,19 @@ const GameUI = (game) => {
         // Animate ennemy's health bar
         const healthbarAnimation = game.renderer3d.updateHealthbar(unit)
         await healthbarAnimation.waitAsync()
+
+        resolve()
+      })
+    },
+
+    HEAL(player, playerUnit, friend, friendUnit) {
+      return new Promise(async (resolve) => {
+
+        // Do the heal
+        ui.mode = 'passive'
+        console.log(`${player.name}'s ${playerUnit.name} heals ${friend.name}'s ${friendUnit.name}`)
+        const healAnimation = game.renderer3d.attackUnit(playerUnit, friendUnit) // TODO: different animation
+        await healAnimation.waitAsync()
 
         resolve()
       })
@@ -559,7 +604,7 @@ const GameUI = (game) => {
 
           if (player === game.currentPlayer) {
             // The player selected one of its own units
-            game.selectUnit(unit)
+            selectUnit(unit)
 
           } else {
             // The player selected one of another player's unit
@@ -626,11 +671,15 @@ const GameUI = (game) => {
         path: path
       })
     }
+
     // Next menu
     ui.mode = 'game-menu-move'
     const actions = ['Wait']
     if (canUnitAttack(ui.selectedUnit)) {
       actions.unshift('Attack')
+    }
+    if (canUnitHeal(ui.selectedUnit)) {
+      actions.unshift('Heal')
     }
     if (canUnitConquer(ui.selectedUnit)) {
       actions.unshift('Conquer')
@@ -664,6 +713,7 @@ const GameUI = (game) => {
   }
 
   // CAN UNIT ATTACK
+  // ui.attackZone will be used later to choose target
   const canUnitAttack = (unit) => {
     ui.attackZone = getEnnemiesInAttackRange(unit, true) // true for 'only hexes' mode
 
@@ -671,7 +721,17 @@ const GameUI = (game) => {
     return ui.attackZone.length > 0
   }
 
-  // GET ATTACK ZONE
+  // CAN UNIT HEAL
+  const canUnitHeal = (unit) => {
+    if (!unit.canHeal) return false
+
+    ui.attackZone = getFriendsInHealRange(unit, true) // true for 'only hexes' mode
+
+    // Does the unit can heal any friend?
+    return ui.attackZone.length > 0
+  }
+
+  // GET ENNEMIES IN ATTACK RANGE
   const getEnnemiesInAttackRange = (unit, onlyHexes = false) => {
     let ennemies
 
@@ -697,9 +757,40 @@ const GameUI = (game) => {
     return ennemies
   }
 
+  // GET FRIENDS IN HEAL RANGE
+  const getFriendsInHealRange = (unit, onlyHexes = false) => {
+    let friends
+
+    const filterFn = (friend) => {
+      const friendUnit = onlyHexes ? game.getUnitByHex(friend) : friend
+      const distance = HEXLIB.hexDistance(
+        onlyHexes ? friend : friend.hex, 
+        unit.hex
+      )
+      // console.log('distance', distance, unit.attackRangeMin, unit.attackRangeMax)
+
+      return (
+        friendUnit.health < friendUnit.maxHealth && 
+        distance <= unit.attackRangeMax &&
+        distance >= unit.attackRangeMin
+      )
+    }
+
+    if (!onlyHexes) {
+      friends = game.getUnits('friends').filter(filterFn)
+    } else { // Only hexes needed
+      friends = game.getUnitsHexes('friends').filter(filterFn)
+    }
+
+    return friends
+  }
+
   // CAN UNIT CONQUER
   const canUnitConquer = (unit) => {
+    if (!unit.canConquer) return false
+
     const cell = game.map.getCellFromHex(unit.hex)
+
     return (
       cell.building && 
       cell.building.ownerId !== game.currentPlayer.id &&

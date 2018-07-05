@@ -33,30 +33,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     (building) => building.ownerId === player.id
   )
 
-  // SELECT UNIT
-  const selectUnit = (unit) => {
-    if (unit.hasPlayed) {
-      console.log(`Unit ${unit.name} has already played!`)
-      return
-    }
-
-    console.log(`Unit selected: ${unit.name}`)
-    // The unit can move
-    game.ui.mode = 'move'
-    game.ui.selectedUnit = unit
-    // Backup cursor in case of cancel
-    game.ui.cursorBackup = game.ui.cursor
-    
-    // Highlight the whole movement zone
-    const zones = getZones(unit)
-    game.ui.moveZone = zones.move
-    game.ui.attackZone = zones.attack
-    if (game.ui.moveZone.length === 0) {
-      console.log('Nowhere to go, the unit is blocked!')
-    }
-    game.updateRenderers(['highlights'])
-  }
-
   // GET ZONES
   // Grab all the tiles with a cost lower than the player movement value
   const getZones = (unit) => {
@@ -65,6 +41,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     
     const moveZone = [],
           attackZone = [],
+          healZone = [],
           friendsHexes = getUnitsHexes('friends')
 
     // MOVE ZONE
@@ -93,7 +70,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Add the unit position to the move zone, since it can stay at the same location
     moveZone.push(unit.hex)
 
-    // ATTACK ZONES
+    // ATTACK ZONE
     // Ugly code omg!
     for (const moveHex of moveZone) {
 
@@ -125,9 +102,46 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       }
     }
 
+    // HEAL ZONE
+    // Ugly code omg!
+    for (const moveHex of moveZone) {
+
+      game.map.findPath(
+        'attack',
+        moveHex,
+        undefined, // no goal
+        undefined, // no early exit
+        undefined, // no blacklist
+        unit.attackRangeMax // cost higher limit
+      )
+  
+      for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+        for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+          const cell = game.map.data.terrain[x][y]
+  
+          const friendUnit = game.getUnitByHex(cell.hex)
+
+          // Is the cell in the attack range?
+          if (cell.cost <= unit.attackRangeMax) {
+            if (
+              // Unit can't only heal friends
+              HEXLIB.hexIndexOf(friendsHexes, cell.hex) !== -1 &&
+              // Friend musn't be maxed HP
+              friendUnit.health < friendUnit.maxHealth &&
+              // Avoid duplicates
+              HEXLIB.hexIndexOf(healZone, cell.hex) === -1
+            ) {
+              healZone.push(cell.hex)
+            }
+          }
+        }
+      }
+    }
+
     return {
       move: moveZone,
-      attack: attackZone
+      attack: attackZone,
+      heal: healZone
     }
   }
 
@@ -315,9 +329,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     // Used by GameBot
     getBuildingsByPlayer,
-    selectUnit,
     getZones,
-    // getUnits,
+    getUnits,
     getUnitsHexes,
     markUnitAsHavingPlayed,
     
@@ -362,6 +375,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     gameMenuAttack() {
       dom.closeGameMenu()
       // Attack phase
+      game.ui.selectAttack()
+    },
+    gameMenuHeal() {
+      dom.closeGameMenu()
+      // Heal phase
       game.ui.selectAttack()
     },
     gameMenuWait() {
@@ -546,7 +564,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         // Compute ennemy's damage
         const damage = playerUnit.strength - ennemyUnit.defense
-        if (damage < 0) {
+        if (damage <= 0) {
           // No damage
           console.log(`No damage done to ${ennemyUnit.name}, still ${ennemyUnit.health} HP left`)
 
@@ -575,6 +593,39 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         game.ui.attackZone = []
 
         // TODO: 'attack-n-run' units can move again here
+
+        if (player.isHuman) {
+          endUnitTurn()
+        }
+
+      } else if (action.type === 'HEAL') {
+
+        const playerUnit = action.playerUnit
+        const friendUnit = action.ennemyUnit
+
+        const player = game.players[playerUnit.playerId]
+        const friend = game.players[friendUnit.playerId]
+
+        await game.ui.HEAL(player, playerUnit, friend, friendUnit)
+
+        playerUnit.hasAttacked = true
+
+        // Compute ally's heal
+        const healValue = playerUnit.strength * 2 // Magic value
+        let realHealValue = healValue
+        friendUnit.health += healValue
+
+        if (friendUnit.health > friendUnit.maxHealth) {
+          // Maxed out health
+          realHealValue -= friendUnit.health - friendUnit.maxHealth
+          friendUnit.health = friendUnit.maxHealth
+        }
+        
+        await game.ui.DEAL_DAMAGE(friendUnit) // Only updates the healthbar
+
+        console.log(`Unit ${friendUnit.name} restored ${realHealValue} HP`)
+
+        game.ui.attackZone = []
 
         if (player.isHuman) {
           endUnitTurn()

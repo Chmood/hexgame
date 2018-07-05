@@ -238,13 +238,14 @@ const CONFIG = {
         family: 'ground',
         cost: 4000,
         canConquer: true,
+        canHeal: true,
 
         maxHealth: 5,
         strength: 5,
         defense: 3,
         movement: 3,
-        attackRangeMin: 0,
-        attackRangeMax: 0,
+        attackRangeMin: 1, // Heal range in fact
+        attackRangeMax: 1,
 
         biomesMoveCosts: {
           whitebeach: 1,
