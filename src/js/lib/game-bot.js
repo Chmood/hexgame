@@ -35,7 +35,11 @@ const GameBot = (game, RNG) => {
         if (unit.canConquer) {
 
           if (unitCell.building && unitCell.building.ownerId !== player.id) {
-            game.CONQUER(unit)
+            await game.ACTION_DO({
+              type: 'CONQUER',
+              unit: unit
+            })
+
             isUnitTurnFinished = true
 
           } else if (unitCell.building && unitCell.building.type === 'city') {
@@ -58,9 +62,18 @@ const GameBot = (game, RNG) => {
               )
               if (path) {
                 // Move to a building and conquer it
-                await game.MOVE(unit, path)
-                game.CONQUER(unit)
+                await game.ACTION_DO({
+                  type: 'MOVE',
+                  unit: unit,
+                  path: path
+                })
+            
+                await game.ACTION_DO({
+                  type: 'CONQUER',
+                  unit: unit
+                })
                 isUnitTurnFinished = true
+
               } else {
                 // Get close to a distant building
                 await moveUnitTowards(unit, nearestBuilding.hex)
@@ -112,7 +125,11 @@ const GameBot = (game, RNG) => {
 
             if (mustStayInPlace) {
               // ATTACK N PLACE
-              await game.ATTACK(unit, ennemy)
+              await game.ACTION_DO({
+                type: 'ATTACK',
+                playerUnit: unit,
+                ennemyUnit: ennemy
+              })
               console.log('attack and stay in place')
 
             } else {
@@ -136,9 +153,17 @@ const GameBot = (game, RNG) => {
                 if (pathToTarget.length > 0) {
                   // MOVE AND ATTACK
                   // console.warn('bot moving to shoot...')
-                  await game.MOVE(unit, pathToTarget)
-      
-                  await game.ATTACK(unit, ennemy)  
+                  await game.ACTION_DO({
+                    type: 'MOVE',
+                    unit: unit,
+                    path: pathToTarget
+                  })
+        
+                  await game.ACTION_DO({
+                    type: 'ATTACK',
+                    playerUnit: unit,
+                    ennemyUnit: ennemy
+                  })
                 }
               } else {
                 console.error('no path to attack target!!!')
@@ -181,7 +206,11 @@ const GameBot = (game, RNG) => {
       // Try to build units (in case of no unit at all)
       await botBuildUnits(player)
 
-      await game.CHANGE_PLAYER()
+      // await game.CHANGE_PLAYER()
+      await game.ACTION_DO({
+        type: 'CHANGE_PLAYER'
+      })
+
     } // End of playBot()
 
   }
@@ -397,8 +426,12 @@ const GameBot = (game, RNG) => {
         game.updateRenderers(['highlights'])
         await game.wait(500)
         
-        await game.MOVE(unit, path)
-        
+        await game.ACTION_DO({
+          type: 'MOVE',
+          unit: unit,
+          path: path
+        })
+
         return path
 
       } else {
@@ -429,7 +462,11 @@ const GameBot = (game, RNG) => {
     game.updateRenderers(['highlights'])
     await game.wait(500)
 
-    await game.MOVE(unit, path)
+    await game.ACTION_DO({
+      type: 'MOVE',
+      unit: unit,
+      path: path
+    })
   }
 
   const chooseEnnemy = (unit, ennemies) => {
@@ -519,7 +556,12 @@ const GameBot = (game, RNG) => {
           }
   
           if (unitType) {
-            await game.BUILD_UNIT(player, playerBuilding, unitType)
+            await game.ACTION_DO({
+              type: 'BUILD_UNIT',
+              player: player, 
+              building: playerBuilding, 
+              unitType: unitType
+            })
           }
         }
       }

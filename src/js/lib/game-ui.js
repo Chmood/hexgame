@@ -6,6 +6,64 @@ import HEXLIB from '../vendor/hexlib'
 
 const GameUI = (game) => {
   
+  // ON KEY CHANGE
+  const onKeyDown = (keys) => {
+    // Only catch key events if the standard camera is active
+    if (game.renderer3d.getActiveCamera().name === 'camera') {
+
+      // Keys in game menus
+      if (ui.mode === 'game-menu-select' || ui.mode === 'game-menu-move') {
+                if (keys['ArrowUp']) {    game.dom.moveGameMenu('up')
+        } else if (keys['ArrowDown']) {   game.dom.moveGameMenu('down')
+        } else if (keys['x']) {           game.dom.selectGameMenu()
+        }
+
+        if (ui.mode === 'game-menu-select') {
+          // Player can only close menu (with no item selected) during selection phase
+                if (keys['c']) {          game.dom.closeGameMenu()
+                                          ui.mode = 'select'
+          }
+        } else if (ui.mode === 'game-menu-move') {
+          // Closing the menu in move phase cancel the move
+                if (keys['c']) {          game.dom.closeGameMenu()
+                                          // ui.mode = 'move'
+                                          cancelFinishedMove()
+          }
+        }
+
+      // Keys in game
+      } else {
+                if (keys['ArrowRight'] && 
+                  keys['ArrowUp']) {      moveCursor('right-up')
+        } else if (keys['ArrowRight'] && 
+                  keys['ArrowDown']) {    moveCursor('right-down')
+        } else if (keys['ArrowLeft'] && 
+                  keys['ArrowUp']) {      moveCursor('left-up')
+        } else if (keys['ArrowLeft'] && 
+                  keys['ArrowDown']) {    moveCursor('left-down')
+        } else if (keys['ArrowRight']) {  moveCursor('right')
+        } else if (keys['ArrowLeft']) {   moveCursor('left')
+        } else if (keys['ArrowUp']) {     moveCursor('up')
+        } else if (keys['ArrowDown']) {   moveCursor('down')
+          
+        } else if (keys['x']) {           doAction()
+        } else if (keys['c']) {           cancelAction()
+        } else if (keys['v']) {           focusUnit('previous')
+        } else if (keys['b']) {           focusUnit('next')
+
+        } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
+        } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
+        } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
+                                          ui.cameraDirection--
+                                          ui.cameraDirection = game.cycleValueInRange(ui.cameraDirection, 6)
+        } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
+                                          ui.cameraDirection++
+                                          ui.cameraDirection = game.cycleValueInRange(ui.cameraDirection, 6)
+        }
+      }
+    }
+  }
+
   // UPDATE CURSOR
   const updateCursor = (hex) => {
     if (hex) { // May be called with invalid cursor hex
@@ -66,7 +124,7 @@ const GameUI = (game) => {
 
     } else if (ui.mode === 'move') {
       if (validateMove(ui.cursor)) {
-        ui.selectDestination()
+        selectDestination()
       } else {
         ui.cancelMove()
       }
@@ -77,8 +135,11 @@ const GameUI = (game) => {
         const targetHex = ui.attackZone[ui.selectedTargetId],
               ennemyUnit = game.getUnitByHex(targetHex)
 
-              console.error('ATTACK ennemy unit', ennemyUnit)
-        await game.ATTACK(ui.selectedUnit, ennemyUnit)
+        await game.ACTION_DO({
+          type: 'ATTACK',
+          playerUnit: ui.selectedUnit,
+          ennemyUnit: ennemyUnit
+        })
       } else {
         endUnitTurn()
       }
@@ -185,34 +246,6 @@ const GameUI = (game) => {
     console.log(`Focus on unit ${ui.focusedUnit.name}`)
   }
 
-  // SELECT DESTINATION
-  // Then open the move menu
-  const selectDestination = async function() {
-    const path = ui.cursorPath // Use the cursor path as movement path
-    
-    // Avoid the user to move cursor or do other actions during movement
-    ui.mode = 'passive'
-    // Reset the move mode UI
-    ui.moveZone = []
-    ui.attackZone = []
-    ui.cursorPath = []
-    game.updateRenderers(['highlights'])
-
-    // Make the unit travel the path
-    await game.MOVE(ui.selectedUnit, path)
-
-    // Next menu
-    ui.mode = 'game-menu-move'
-    const actions = ['Wait']
-    if (canUnitAttack(ui.selectedUnit)) {
-      actions.unshift('Attack')
-    }
-    if (canUnitConquer(ui.selectedUnit)) {
-      actions.unshift('Conquer')
-    }
-    game.dom.openGameMenu(actions)
-  }
-
   // SELECT ATTACK
   const selectAttack = () => {
     ui.mode = 'attack'
@@ -249,22 +282,176 @@ const GameUI = (game) => {
     mode: 'passive', // 'passive', 'select', 'move', 'attack', 'game-menu-select', 'game-menu-move'
     selectedUnit: undefined, // Unit
     focusedUnit: undefined, // Unit
+    unitsToMove: [], // [Unit]
     selectedBuilding: undefined, // Building
     selectedTargetId: undefined, // Number
     cameraDirection: 0, // From 0 to 5
 
     // PUBLIC METHODS
+    // moveCursor,
+    // cancelAction, // Called via keyboard cancel boutton
+    // cancelMove,
+    // cancelFinishedMove,
+    // selectDestination,
+    onKeyDown,
     updateCursor,
-    moveCursor,
-    cancelAction,
-    cancelMove,
-    cancelFinishedMove,
+    doAction,
     focusUnit,
-    selectAttack,
-    validateTarget,
-    selectDestination,
-    doAction
-  }
+
+    selectAttack, // Called via game menu
+    // validateTarget,
+
+    resetUI() {
+      ui.moveZone = []
+      ui.attackZone = []
+      ui.mode = 'select'
+      ui.selectedUnit = undefined
+      ui.cameraDirection = 0
+    },
+
+    // MAIN UI ACTIONS
+    // Those updates the renderers, UI and animations
+
+    CHANGE_PLAYER(playerId) {
+      return new Promise(async (resolve) => {
+
+        // await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
+    
+        game.dom.updateTopPanel(game.currentPlayer)
+    
+        ui.mode = 'select'
+        ui.unitsToMove = game.currentPlayer.units
+        ui.focusedUnit = ui.unitsToMove[0] 
+        ui.focusUnit(ui.focusedUnit)
+    
+        // Is the next player a bot?
+        if (!game.currentPlayer.isHuman) {
+          console.log(`Player ${game.currentPlayer.name} is a bot`)
+          game.bot.playBot(game.currentPlayer)
+        }
+
+        resolve()
+      })
+    },
+
+    EARN_MONEY(player) {
+      return new Promise(async (resolve) => {
+
+        const buildings = game.map.data.buildings.filter((building) => 
+          building.ownerId === player.id
+        )
+
+        for (const building of buildings) {
+          // 'Forbidden' mutation that may be canceled in ACTION_DO
+          player.money += CONFIG.game.moneyEarnedPerBuilding
+      
+          game.dom.updateTopPanel(player)
+          game.renderer3d.updateCameraPosition(building.hex)
+  
+          await game.wait()
+        }
+        resolve()
+      })
+    },
+
+    MOVE(unit, path) {
+      return new Promise(async (resolve) => {
+        path.shift() // Remove the first element (that is unit/starting cell)
+
+        if (path.length > 0) {
+          await game.renderer3d.moveUnitOnPath(unit, path)
+          console.log(`Unit moved: ${unit.name}`)
+
+        } else {
+          console.warn('MOVE() - didn\'t move, stay on place!')
+        }
+        resolve()
+      })
+    },
+
+    ATTACK(player, playerUnit, ennemy, ennemyUnit) {
+      return new Promise(async (resolve) => {
+
+        // Do the attack
+        ui.mode = 'passive'
+        console.log(`${player.name}'s ${playerUnit.name} attacks ${ennemy.name}'s ${ennemyUnit.name}`)
+        const attackAnimation = game.renderer3d.attackUnit(playerUnit, ennemyUnit)
+        await attackAnimation.waitAsync()
+
+        resolve()
+      })
+    },
+
+    DEAL_DAMAGE(unit) {
+      return new Promise(async (resolve) => {
+
+        // Animate ennemy's health bar
+        const healthbarAnimation = game.renderer3d.updateHealthbar(unit)
+        await healthbarAnimation.waitAsync()
+
+        resolve()
+      })
+    },
+
+    DESTROY(unit) {
+      return new Promise(async (resolve) => {
+        const destroyAnimation = game.renderer3d.destroyUnit(unit)
+        await destroyAnimation.waitAsync()
+        game.renderer3d.deleteUnit(unit)
+        
+        resolve()
+      })  
+    },
+
+    LOOSE(player, loseType) {
+      return new Promise(async (resolve) => {
+
+        // TODO: lose banner?
+
+        resolve()
+      })
+    },
+
+    WIN(player, winType) {
+      return new Promise(async (resolve) => {
+
+        // TODO: winner banner?
+
+        resolve()
+      })
+    },
+
+    CONQUER(unit, cell) {
+      return new Promise(async (resolve) => {
+
+        // TODO: conquer animation!
+        game.renderer3d.changeBuildingColor(cell, game.currentPlayer.id)
+
+        resolve()
+      })
+
+    },
+
+    BUILD_UNIT(player, building, unit) {
+      return new Promise(async (resolve) => {
+        game.updateRenderers(['players'])
+        game.renderer3d.updateCameraPosition(building.hex)
+        const buildUnitAnimation = game.renderer3d.buildUnit(unit)
+        await buildUnitAnimation.waitAsync()
+    
+        // Less money
+        game.dom.updateTopPanel(player)
+    
+        // Go back to select mode
+        ui.mode = 'select'
+
+        resolve()
+      })
+    }
+
+  } // End ui{}
+
+  // PRIVATE
 
   // CURSOR LINE
   const getCursorLine = (cursor, target, type) => {
@@ -396,6 +583,39 @@ const GameUI = (game) => {
       ui.mode = 'game-menu-select'
       game.dom.openGameMenu(actions)
     }
+  }
+
+  // SELECT DESTINATION
+  // Then open the move menu
+  const selectDestination = async function() {
+    const path = ui.cursorPath // Use the cursor path as movement path
+    
+    // Avoid the user to move cursor or do other actions during movement
+    ui.mode = 'passive'
+    // Reset the move mode UI
+    ui.moveZone = []
+    ui.attackZone = []
+    ui.cursorPath = []
+    game.updateRenderers(['highlights'])
+
+    if (path.length > 0) {
+      // Make the unit travel the path
+      await game.ACTION_DO({
+        type: 'MOVE',
+        unit: ui.selectedUnit,
+        path: path
+      })
+    }
+    // Next menu
+    ui.mode = 'game-menu-move'
+    const actions = ['Wait']
+    if (canUnitAttack(ui.selectedUnit)) {
+      actions.unshift('Attack')
+    }
+    if (canUnitConquer(ui.selectedUnit)) {
+      actions.unshift('Conquer')
+    }
+    game.dom.openGameMenu(actions)
   }
 
   // VALIDATE MOVE

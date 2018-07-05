@@ -22,8 +22,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   let gameSeed = CONFIG.game.seed
   const RNG = seedrandom(gameSeed)
 
-  let unitsToMove = [] // [Unit]
-      
   // COMMON TOOLS
   // Functions that are also needed from game-bot.js
 
@@ -202,7 +200,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     })
   }
   
-
   ////////////////////////////////////////
   // PUBLIC
   const game = {
@@ -267,14 +264,15 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         game.renderer3d.createTiles()
         game.renderer3d.createUnits()
 
-        game.ui.moveZone = []
-        game.ui.attackZone = []
-        game.ui.mode = 'select'
-        game.ui.selectedUnit = undefined
-        game.ui.cameraDirection = 0
+        game.ui.resetUI()
         
         // It's first player's turn
-        await game.CHANGE_PLAYER(0)
+        // await game.CHANGE_PLAYER(0)
+        await game.ACTION_DO({
+          type: 'CHANGE_PLAYER',
+          playerId: 0
+        })
+
         
       } else {
         console.error('Game generation has failed!')
@@ -282,16 +280,18 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     },
 
     // COMMON FUNCTIONS
-    getUnitByHex,
-    getBuildingsByPlayer, // Used by GameBot
-    selectUnit, // Used by GameBot
-    getZones, // Used by GameBot
-    // getUnits,
-    getUnitsHexes, // Used by GameBot
-    markUnitAsHavingPlayed, // Used by GameBot
-    cycleValueInRange, // Gamebot & UI
 
-    // Used by UI
+    // Used by GameBot
+    getBuildingsByPlayer,
+    selectUnit,
+    getZones,
+    // getUnits,
+    getUnitsHexes,
+    markUnitAsHavingPlayed,
+    
+    // Used by GameBot and UI
+    getUnitByHex,
+    cycleValueInRange,
     wait,
   
     ////////////////////////////////////////
@@ -302,61 +302,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       main.setSize()
 
       game.updateRenderers(['resize'])
-    },
-
-    // ON KEY CHANGE
-    onKeyDown(keys) {
-      // Only catch key events if the standard camera is active
-      if (game.renderer3d.getActiveCamera().name === 'camera') {
-        if (game.ui.mode === 'game-menu-select' || game.ui.mode === 'game-menu-move') {
-                  if (keys['ArrowUp']) {    dom.moveGameMenu('up')
-          } else if (keys['ArrowDown']) {   dom.moveGameMenu('down')
-          } else if (keys['x']) {           dom.selectGameMenu()
-          }
-
-          if (game.ui.mode === 'game-menu-select') {
-            // Player can only close menu (with no item selected) during selection phase
-                  if (keys['c']) {          dom.closeGameMenu()
-                                            game.ui.mode = 'select'
-            }
-          } else if (game.ui.mode === 'game-menu-move') {
-            // Closing the menu in move phase cancel the move
-                  if (keys['c']) {          dom.closeGameMenu()
-                                            // game.ui.mode = 'move'
-                                            game.ui.cancelFinishedMove()
-            }
-          }
-
-        } else {
-                  if (keys['ArrowRight'] && 
-                    keys['ArrowUp']) {      game.ui.moveCursor('right-up')
-          } else if (keys['ArrowRight'] && 
-                    keys['ArrowDown']) {    game.ui.moveCursor('right-down')
-          } else if (keys['ArrowLeft'] && 
-                    keys['ArrowUp']) {      game.ui.moveCursor('left-up')
-          } else if (keys['ArrowLeft'] && 
-                    keys['ArrowDown']) {    game.ui.moveCursor('left-down')
-          } else if (keys['ArrowRight']) {  game.ui.moveCursor('right')
-          } else if (keys['ArrowLeft']) {   game.ui.moveCursor('left')
-          } else if (keys['ArrowUp']) {     game.ui.moveCursor('up')
-          } else if (keys['ArrowDown']) {   game.ui.moveCursor('down')
-            
-          } else if (keys['x']) {           game.ui.doAction()
-          } else if (keys['c']) {           game.ui.cancelAction()
-          } else if (keys['v']) {           game.ui.focusUnit('previous')
-          } else if (keys['b']) {           game.ui.focusUnit('next')
-
-          } else if (keys['e']) {           game.renderer3d.updateCameraZoom('in')
-          } else if (keys['r']) {           game.renderer3d.updateCameraZoom('out')
-          } else if (keys['t']) {           game.renderer3d.updateCameraAlpha('counterclockwise')
-                                            game.ui.cameraDirection--
-                                            game.ui.cameraDirection = cycleValueInRange(game.ui.cameraDirection, 6)
-          } else if (keys['y']) {           game.renderer3d.updateCameraAlpha('clockwise')
-                                            game.ui.cameraDirection++
-                                            game.ui.cameraDirection = cycleValueInRange(game.ui.cameraDirection, 6)
-          }
-        }
-      }
     },
 
     // UPDATE RENDERERS
@@ -398,23 +343,30 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     },
 
     // ACTION GAME MENU ITEMS
-    gameMenuConquer() { // ACTION
+    async gameMenuConquer() { // ACTION
       dom.closeGameMenu()
-      game.CONQUER(game.ui.selectedUnit)
+      await game.ACTION_DO({
+        type: 'CONQUER',
+        unit: game.ui.selectedUnit
+      })
       // End the unit turn
       endUnitTurn()
     },
     async gameMenuEndTurn() { // ACTION
       dom.closeGameMenu()
-      await game.CHANGE_PLAYER()
-    },
+      // await game.CHANGE_PLAYER()
+      await game.ACTION_DO({
+        type: 'CHANGE_PLAYER'
+      })
+  },
     async gameMenuBuildUnit(unitType) { // ACTION
       dom.closeGameMenu()
-      await game.BUILD_UNIT(
-        game.currentPlayer, 
-        game.ui.selectedBuilding, 
-        unitType
-      )
+      await game.ACTION_DO({
+        type: 'BUILD_UNIT',
+        player: game.currentPlayer, 
+        building: game.ui.selectedBuilding, 
+        unitType: unitType
+      })
     },
     gameMenuQuitGame() {
       // TODO
@@ -423,21 +375,25 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // MAIN ACTIONS
     // Those mutates the game state
 
-    // (step 1)
-    CHANGE_PLAYER(playerId) {
-      return new Promise(async (resolve) => {
+    async ACTION_DO(action) {
+             if (action.type === 'CHANGE_PLAYER') {
 
-        if (playerId !== undefined) {
-          game.currentPlayer = game.players[playerId]
+        if (action.playerId !== undefined) {
+
+          // MUTATE game.currentPlayer
+          game.currentPlayer = game.players[action.playerId]
     
         } else {
           // Clean up last player
           console.log(`${game.currentPlayer.name}'s turn is over`)
           for (const unit of game.currentPlayer.units) {
+
+            // MUTATE player's units
             markUnitAsHavingPlayed(unit, false)
             unit.hasMoved = false
             unit.hasAttacked = false
           }
+
           // Reset player buildings
           for (const building of game.map.data.buildings) {
             if (building.ownerId === game.currentPlayer.id) {
@@ -450,6 +406,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
               }
             }
           }
+
           // Set the next player
           let nMaxTry = game.players.length
           let playerId = game.currentPlayer.id
@@ -461,189 +418,65 @@ const Game = (ctx2d, canvas3d, dom, main) => {
             playerId++
             playerId = cycleValueInRange(playerId, game.players.length)
           }
+
+          // MUTATE game.currentPlayer
           game.currentPlayer = game.players[playerId]
+
           console.warn(`*** It's player ${game.currentPlayer.name}'s turn ***`)
         }
+
+        await game.ACTION_DO({
+          type: 'EARN_MONEY'
+        })
     
-        // await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
-    
-        dom.updateTopPanel(game.currentPlayer)
-    
-        await game.EARN_MONEY(game.currentPlayer)
-    
-        game.ui.mode = 'select'
-        unitsToMove = game.currentPlayer.units
-        game.ui.focusedUnit = unitsToMove[0] 
-        game.ui.focusUnit(game.ui.focusedUnit)
-    
-        // Is the next player a bot?
-        if (!game.currentPlayer.isHuman) {
-          console.log(`Player ${game.currentPlayer.name} is a bot`)
-          game.bot.playBot(game.currentPlayer)
-        }
+        game.ui.CHANGE_PLAYER(action.playerId)
 
-        resolve()
-      })
-    },
+      } else if (action.type === 'EARN_MONEY') {
 
-    // (step 2)
-    EARN_MONEY(player) {
-      return new Promise(async (resolve) => {
-
-        for (const building of game.map.data.buildings) {
-          if (building.ownerId === player.id) {
-    
-            player.money += CONFIG.game.moneyEarnedPerBuilding
-            dom.updateTopPanel(player)
-            game.renderer3d.updateCameraPosition(building.hex)
-    
-            await wait()
-          }
-        }
-        resolve()
-      })
-    },
-
-    // (step 15)
-    MOVE(unit, path) {
-      return new Promise(async (resolve) => {
-        path.shift() // Remove the first element (that is unit/starting cell)
-
-        if (path.length > 0) {
-          // Update unit's position
-          const pathEnd = path[path.length - 1]
-          unit.moveToHex(pathEnd, CONFIG.map.mapTopped, CONFIG.map.mapParity)
-
-          unit.hasMoved = true
-
-          await game.renderer3d.moveUnitOnPath(unit, path)
-          console.log(`Unit moved: ${unit.name}`)
-        }
-        resolve()
-      })
-    },
-
-    // (step 22)
-    ATTACK(playerUnit, ennemyUnit) {
-      return new Promise(async (resolve) => {
-
-        const player = game.players[playerUnit.playerId]
-        const ennemy = game.players[ennemyUnit.playerId]
-        // Do the attack
-        game.ui.mode = 'passive'
-        console.log(`${player.name}'s ${playerUnit.name} attacks ${ennemy.name}'s ${ennemyUnit.name}`)
-        const attackAnimation = game.renderer3d.attackUnit(playerUnit, ennemyUnit)
-        await attackAnimation.waitAsync()
-        playerUnit.hasAttacked = true
-
-        // Compute ennemy's damage
-        const damage = playerUnit.strength - ennemyUnit.defense
-        if (damage < 0) {
-          // No damage
-          console.log(`No damage done to ${ennemyUnit.name}, still ${ennemyUnit.health} HP left`)
-
-        } else {
-          ennemyUnit.health -= damage
-          if (ennemyUnit.health < 0) {
-            ennemyUnit.health = 0
-          }
-          // Animate ennemy's health bar
-          const healthbarAnimation = game.renderer3d.updateHealthbar(ennemyUnit)
-          await healthbarAnimation.waitAsync()
-  
-          // Is the ennemy dead?
-          if (ennemyUnit.health > 0) {
-            console.log(`${damage} damage done to ${ennemyUnit.name}, ${ennemyUnit.health} HP left`)
-          } else {
-            // Destroy ennemy
-            await game.DESTROY(ennemyUnit)
-            console.warn(`${damage} damage done to ${ennemyUnit.name}, unit destroyed!`)
-          }
-        }
-
-        game.ui.attackZone = []
-
-        // TODO: 'attack-n-run' units can move again here
-
-        if (player.isHuman) {
-          endUnitTurn()
-        }
-
-        resolve()
-      })
-    },
-
-    DESTROY(unit) {
-      return new Promise(async (resolve) => {
-        const ennemy = game.players[unit.playerId]
-        console.warn(`DESTROY() ennemy ${ennemy}`)
-        // console.warn(`DESTROY() ennemy units ${ennemy.units}`)
+        const player = game.currentPlayer
         
-        const destroyAnimation = game.renderer3d.destroyUnit(unit)
-        await destroyAnimation.waitAsync()
-        game.renderer3d.deleteUnit(unit)
+        const nBuildings = game.map.data.buildings.filter((building) => 
+          building.ownerId === player.id
+        ).length
+
+        // Backup money, because earning UI animation will increase it
+        const realPlayerMoney = player.money
         
-        const ennemyUnitId = ennemy.units.indexOf(unit)
-        if (ennemyUnitId !== -1) {
-          // console.warn(`DESTROY() ennemyUnitId: ${ennemyUnitId}`)
-          ennemy.units.splice(ennemyUnitId, 1)
-          console.log(`DESTROY() remaining units: ${ennemy.units.length}`)
+        await game.ui.EARN_MONEY(player)
 
-          // Does the ennemy has unit left?
-          if (ennemy.units.length === 0) {
-            game.LOOSE(ennemy, 'all-units-dead')
-          }
-          resolve()
+        // MUTATE player
+        // Shouldn't change money amount
+        player.money = realPlayerMoney + nBuildings * CONFIG.game.moneyEarnedPerBuilding
+
+      } else if (action.type === 'MOVE') {
+
+        const pathEnd = action.path[action.path.length - 1]
+        // MUTATE unit
+        action.unit.moveToHex(pathEnd, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+        action.unit.hasMoved = true
+
+        await game.ui.MOVE(action.unit, action.path)
+
+      } else if (action.type === 'CONQUER') {
+
+        const cell = game.map.getCellFromHex(action.unit.hex)
+        const building = cell.building
+    
+        // MUTATE Building
+        building.ownerId = game.currentPlayer.id
+
+        if (building.canBuild) {
+          building.hasBuilt = true
         }
-      })  
-    },
 
-    LOOSE(player, loseType) {
-      console.warn(`${player.name} has lost (${loseType})!!!`)
+        await game.ui.CONQUER(action.unit, cell)
   
-      // Make the ennemy player inactive
-      // const ennemyId = game.players.indexOf(ennemy)
-      // game.players.splice(ennemyId, 1)
-      player.hasLost = true
-      game.renderer3d.deleteUnits(player) // In case the loser still has units left
-      player.units = []
+      } else if (action.type === 'BUILD_UNIT') {
 
-      for (let building of game.map.data.buildings) {
-        if (building.ownerId === player.id) {
-          building.ownerId = undefined
-        }
-      }
+        const player = action.player
+        const building = action.building
+        const unitType = action.unitType
 
-      // Do we have a winner?
-      let nActivePlayers = 0
-          lastPlayer = undefined
-      for (const player of game.players) {
-        if (!player.hasLost) {
-          nActivePlayers++
-          lastPlayer = player
-        }
-      }
-      if (nActivePlayers === 1) {
-        // END GAME
-        game.WIN(lastPlayer, 'last-man-standing')
-      }
-    },
-
-    WIN(player, winType) {
-      // TODO
-      console.warn(`Player ${player.name} has won the game (${winType})!!!`)
-    },
-
-    CONQUER(unit) {
-      const cell = game.map.getCellFromHex(unit.hex)
-      const building = cell.building
-  
-      building.ownerId = game.currentPlayer.id
-      game.renderer3d.changeBuildingColor(cell, game.currentPlayer.id)
-    },
-
-    BUILD_UNIT(player, building, unitType) {
-      return new Promise(async (resolve) => {
         if (!building) {
           console.error(`BUID UNIT - no building provided!`)
           resolve()
@@ -664,26 +497,140 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         // New born unit can't play during the first turn
         markUnitAsHavingPlayed(unit)
         building.hasBuilt = true
-
-        game.updateRenderers(['players'])
-        game.renderer3d.updateCameraPosition(building.hex)
-        const buildUnitAnimation = game.renderer3d.buildUnit(unit)
-        await buildUnitAnimation.waitAsync()
-    
         // Remove unit cost from player's money
         player.money -= unit.cost
-        dom.updateTopPanel(player)
-    
-        // Go back to select mode
-        game.ui.mode = 'select'
 
-        resolve()
-      })
+        await game.ui.BUILD_UNIT(player, building, unit)
+
+      } else if (action.type === 'ATTACK') {
+
+        const playerUnit = action.playerUnit
+        const ennemyUnit = action.ennemyUnit
+
+        const player = game.players[playerUnit.playerId]
+        const ennemy = game.players[ennemyUnit.playerId]
+
+        await game.ui.ATTACK(player, playerUnit, ennemy, ennemyUnit)
+
+        playerUnit.hasAttacked = true
+
+        // Compute ennemy's damage
+        const damage = playerUnit.strength - ennemyUnit.defense
+        if (damage < 0) {
+          // No damage
+          console.log(`No damage done to ${ennemyUnit.name}, still ${ennemyUnit.health} HP left`)
+
+        } else {
+          ennemyUnit.health -= damage
+          if (ennemyUnit.health < 0) {
+            ennemyUnit.health = 0
+          }
+        
+          await game.ui.DEAL_DAMAGE(ennemyUnit)
+
+          // Is the ennemy dead?
+          if (ennemyUnit.health > 0) {
+            console.log(`${damage} damage done to ${ennemyUnit.name}, ${ennemyUnit.health} HP left`)
+          } else {
+            // Destroy ennemy
+            await game.ACTION_DO({
+              type: 'DESTROY',
+              unit: ennemyUnit
+            })
+                
+            console.warn(`${damage} damage done to ${ennemyUnit.name}, unit destroyed!`)
+          }
+        }
+
+        game.ui.attackZone = []
+
+        // TODO: 'attack-n-run' units can move again here
+
+        if (player.isHuman) {
+          endUnitTurn()
+        }
+
+      } else if (action.type === 'DESTROY') {
+        const unit = action.unit
+
+        const ennemy = game.players[unit.playerId]
+        console.warn(`DESTROY() ennemy ${ennemy}`)
+        // console.warn(`DESTROY() ennemy units ${ennemy.units}`)
+        
+        await game.ui.DESTROY(unit)
+
+        const ennemyUnitId = ennemy.units.indexOf(unit)
+        if (ennemyUnitId !== -1) {
+          // console.warn(`DESTROY() ennemyUnitId: ${ennemyUnitId}`)
+          ennemy.units.splice(ennemyUnitId, 1)
+          console.log(`DESTROY() remaining units: ${ennemy.units.length}`)
+
+          // Does the ennemy has unit left?
+          if (ennemy.units.length === 0) {
+
+            await game.ACTION_DO({
+              type: 'LOOSE',
+              looseType: 'all-units-dead'
+            })
+          }
+        }
+      } else if (action.type === 'LOOSE') {
+
+        const player = action.player,
+              loseType = action.loseType
+
+        console.warn(`${player.name} has lost (${loseType})!!!`)
+  
+        // Make the ennemy player inactive
+        // const ennemyId = game.players.indexOf(ennemy)
+        // game.players.splice(ennemyId, 1)
+        player.hasLost = true
+        game.renderer3d.deleteUnits(player) // In case the loser still has units left
+        player.units = []
+
+        for (let building of game.map.data.buildings) {
+          if (building.ownerId === player.id) {
+            building.ownerId = undefined
+          }
+        }
+
+        await game.ui.LOOSE(player, loseType)
+
+        // Do we have a winner?
+        let nActivePlayers = 0
+            lastPlayer = undefined
+        for (const player of game.players) {
+          if (!player.hasLost) {
+            nActivePlayers++
+            lastPlayer = player
+          }
+        }
+        if (nActivePlayers === 1) {
+          // END GAME
+          await game.ACTION_DO({
+            type: 'WIN',
+            player: lastPlayer,
+            winType: 'last-man-standing'
+          })
+      }
+
+      } else if (action.type === 'WIN') {
+        const player = action.player,
+              winType = action.winType
+
+        console.warn(`Player ${player.name} has won the game (${winType})!!!`)
+        game.ui.WIN(player, winType)
+      }
     }
   }
 
+  // We need Game to be ready from now
+  // GAME UI
   game.ui = GameUI(game)
+
+  // Alias functions
   game.doAction = game.ui.doAction
+  game.onKeyDown = game.ui.onKeyDown
 
   // GAME RENDERERS
   game.renderer2d = Renderer2d(game, ctx2d)
@@ -700,20 +647,33 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       (unit) => !unit.hasPlayed
     ).length
 
-    // TODO: also check of buildings
-    if (nUnitsRemaining === 0) {
+    const nBuildingsRemaining = game.map.data.buildings.filter(
+      (building) => 
+      building.ownerId === game.currentPlayer.id &&
+      building.canBuild &&
+      !building.hasBuilt 
+    ).length
+
+    if (nUnitsRemaining === 0 && nBuildingsRemaining === 0) {
       // No more unit to play with
-      await game.CHANGE_PLAYER()
+      // await game.CHANGE_PLAYER()
+      await game.ACTION_DO({
+        type: 'CHANGE_PLAYER'
+      })
 
     } else {
-      console.log(`Still ${nUnitsRemaining} unit(s) to play`)
+      if (nUnitsRemaining > 0) {
+        console.log(`Still ${nUnitsRemaining} unit(s) to play`)
+      }
+      if (nBuildingsRemaining > 0) {
+        console.log(`Still ${nBuildingsRemaining} building(s) to play`)
+      }
+
       game.ui.mode = 'select'
       game.ui.focusUnit('next')
     }
   }
 
-  game.wait = wait
-  
   return game
 }
 

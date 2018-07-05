@@ -2,13 +2,17 @@
 
 ## Known bugs
 
-* damage done can be negative (weak attack VS stronger defense)
+* players can build units on the first turn
+* units can be built on occupied factories / port / airport!!!
+* choosing target hysteresis looks inverted (or plain broken)
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
 * Switching post-processing ('multi'/'ssao') cause lignting issues (too dark / too bright)
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too, it shouldn't lean with its unit, but stay stricly above it)
 
 ## Improvements
 
+* A real state
+* Flying units must be able to pass over ground unit (less strict A* blacklist)
 * Camera moves too much, following the action: make it follow a "box" to dampen it
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Tank orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)

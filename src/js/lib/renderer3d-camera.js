@@ -121,7 +121,6 @@ const Camera = (canvas, game) => {
 
   // UPDATE CAMERA ALPHA
   renderer.updateCameraAlpha = (direction) => {
-    game.resetDebounce()
 
     const alphaStep = Math.PI * 2 / 6 // 60°
     let delta = 0
