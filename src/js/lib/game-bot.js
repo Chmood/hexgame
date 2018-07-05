@@ -18,7 +18,7 @@ const GameBot = (game, RNG) => {
       for (const unit of player.units) {
         // In case of newly created unit??
         if (unit.hasPlayed) { continue }
-        
+
         let isUnitTurnFinished = false,
             mustStayInPlace = false
         const unitCell = game.map.getCellFromHex(unit.hex)
@@ -511,7 +511,7 @@ const GameBot = (game, RNG) => {
       // Randomize the order of buildings
       playerBuildings = arrayShuffle(playerBuildings)
 
-      const infantryTypes = ['soldier', 'bazooka', 'healer']
+      const infantryTypes = ['soldier', 'bazooka'/*, 'healer'*/]
       const tankTypes = ['jeep', 'tank', 'heavy-tank']
       const navalTypes = ['boat']
       const airTypes = ['helicopter', 'fighter', 'bomber']
