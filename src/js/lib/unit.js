@@ -31,7 +31,7 @@ const Unit = (config) => {
       color: config.color,
       name: `${config.type}-${config.id}`,
       hasPlayed: false,
-      health: CONFIG.game.units[config.type].maxHealth
+      health: CONFIG.game.units[config.type].maxHealth - 3
     }
   )
 

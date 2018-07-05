@@ -435,10 +435,13 @@ const GameUI = (game) => {
 
     DEAL_DAMAGE(unit) {
       return new Promise(async (resolve) => {
-
+        focusHex(unit.hex)
+        
         // Animate ennemy's health bar
         const healthbarAnimation = game.renderer3d.updateHealthbar(unit)
         await healthbarAnimation.waitAsync()
+
+        ui.attackZone = []
 
         resolve()
       })

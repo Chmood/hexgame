@@ -33,6 +33,15 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     (building) => building.ownerId === player.id
   )
 
+  // GET HEXES FROM ITEMS
+  const getHexesFromItems = (items) => {
+    const hexes = []
+    for (const item of items) {
+      hexes.push(item.hex)
+    }
+    return hexes
+  }
+
   // GET ZONES
   // Grab all the tiles with a cost lower than the player movement value
   const getZones = (unit) => {
@@ -464,10 +473,34 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           console.warn(`*** It's player ${game.currentPlayer.name}'s turn ***`)
         }
 
+        // EARN MONEY
+
         await game.ACTION_DO({
           type: 'EARN_MONEY'
         })
-    
+
+        // HEAL UNITS ON CONQUERED BUILDINGS
+        
+        const playerBuildingsHexes = getHexesFromItems(
+          game.getBuildingsByPlayer(game.currentPlayer)
+        )
+
+        for (const unit of game.currentPlayer.units) {
+          // Is the unit on a conquered building?
+          if (HEXLIB.hexIndexOf(playerBuildingsHexes, unit.hex) !== -1) {
+            // Has the unit spare room for extra health?
+            if (unit.health < unit.maxHealth) {
+              console.log(`Unit ${unit.name} healed from building by 2 HP`)
+
+              await game.ACTION_DO({
+                type: 'DEAL_HEAL',
+                unit: unit,
+                healValue: 2 // Magic value
+              })
+            }
+          }
+        }
+
         game.ui.CHANGE_PLAYER(action.playerId)
 
       } else if (action.type === 'EARN_MONEY') {
@@ -610,26 +643,33 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         playerUnit.hasAttacked = true
 
-        // Compute ally's heal
-        const healValue = playerUnit.strength * 2 // Magic value
-        let realHealValue = healValue
-        friendUnit.health += healValue
-
-        if (friendUnit.health > friendUnit.maxHealth) {
-          // Maxed out health
-          realHealValue -= friendUnit.health - friendUnit.maxHealth
-          friendUnit.health = friendUnit.maxHealth
-        }
+        await game.ACTION_DO({
+          type: 'DEAL_HEAL',
+          unit: friendUnit,
+          healValue: playerUnit.strength * 2 // Magic value
+        })
         
-        await game.ui.DEAL_DAMAGE(friendUnit) // Only updates the healthbar
-
-        console.log(`Unit ${friendUnit.name} restored ${realHealValue} HP`)
-
-        game.ui.attackZone = []
-
         if (player.isHuman) {
           endUnitTurn()
         }
+
+      } else if (action.type === 'DEAL_HEAL') {
+
+        const unit = action.unit,
+              healValue = action.healValue
+
+        let realHealValue = healValue
+        unit.health += healValue
+
+        if (unit.health > unit.maxHealth) {
+          // Maxed out health
+          realHealValue -= unit.health - unit.maxHealth
+          unit.health = unit.maxHealth
+        }
+
+        console.log(`Unit ${unit.name} restored ${realHealValue} HP`)
+
+        await game.ui.DEAL_DAMAGE(unit) // Only updates the healthbar
 
       } else if (action.type === 'DESTROY') {
         const unit = action.unit
