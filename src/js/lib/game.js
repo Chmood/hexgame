@@ -431,8 +431,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         game.ui.resetUI()
         
-        game.ui.CHANGE_TURN(game.turn)
-        
+        // game.ui.CHANGE_TURN(game.turn)
+
         // It's first player's turn
         // await game.CHANGE_PLAYER(0)
         await game.ACTION_DO({

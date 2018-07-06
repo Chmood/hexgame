@@ -483,7 +483,7 @@ const GameBot = (game, RNG) => {
 
       const infantryTypes = ['soldier', 'bazooka'/*, 'healer'*/]
       const tankTypes = ['jeep', 'tank', 'heavy-tank']
-      const navalTypes = ['boat']
+      const navalTypes = ['cruiser', 'battleship', 'submarine']
       const airTypes = ['helicopter', 'fighter', 'bomber']
 
       for (const playerBuilding of playerBuildings) {

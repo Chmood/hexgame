@@ -64,20 +64,14 @@ const Players = (PLAYERS, map, RNG) => {
         }
       }
 
-      // Check if boats can move to ALL other boats
+      // Check if sea units can move to ALL other sea units
       let isConnectedToOthers = true
       for (const placedUnit of placedUnits) {
-        if (unit.type === 'boat' && placedUnit.type === 'boat') {
-          const path = map.findPath('boat', unit.hex, placedUnit.hex)
+        if (unit.family === 'sea' && placedUnit.family === 'sea') {
+          const path = map.findPath('cruiser', unit.hex, placedUnit.hex)
           if (path === undefined) {
             isConnectedToOthers = false
           }
-        // } else if ((unit.type === 'tank' || unit.type === 'jeep') && 
-        //   (placedUnit.type === 'tank' || unit.type === 'jeep')) {
-        //   const path = map.findPath('jeep', unit.hex, placedUnit.hex)
-        //   if (path === undefined) {
-        //     isConnectedToOthers = false
-        //   }
         }
       }
 

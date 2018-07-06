@@ -110,7 +110,7 @@ const CONFIG = {
       distanceRatioMax: 2,
       distanceRatioStep: 0.25,
       beta: Math.PI / 6, // 0 : top-down / Math.PI / 2 : side view 
-      activeCamera: 'camera', // 'camera' or 'cameraFree'
+      activeCamera: 'cameraFree', // 'camera' or 'cameraFree'
       cameraFreeAutoRotate: false,
       cameraDampbox: true, // Make the camera less shaky
       cameraDampboxRatio: 3 // Relates to number of visible cells on screen
@@ -322,7 +322,7 @@ const CONFIG = {
         family: 'ground',
         cost: 4000,
         canAttack: true,
-        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat', 'helicopter'],
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'cruiser', 'helicopter'],
         canConquer: false,
 
         maxHealth: 12,
@@ -362,7 +362,7 @@ const CONFIG = {
         type: 'tank',
         family: 'ground',
         cost: 7000,
-        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat', 'helicopter'],
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'cruiser', 'helicopter'],
         canAttack: true,
         canConquer: false,
         // level: 1,
@@ -410,7 +410,7 @@ const CONFIG = {
         family: 'ground',
         cost: 15000,
         canAttack: true,
-        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat', 'helicopter'],
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'cruiser', 'helicopter'],
         canConquer: false,
 
         maxHealth: 30, // http://fireemblem.wikia.com/wiki/HP
@@ -444,18 +444,43 @@ const CONFIG = {
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
-      'boat': {
-        type: 'boat',
+      'cruiser': {
+        type: 'cruiser',
         family: 'sea',
-        cost: 10000,
+        cost: 8000,
         canAttack: true,
-        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat'],
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'cruiser', 'submarine'],
+        canConquer: false,
+
+        maxHealth: 10,
+        strength: 7,
+        defense: 4,
+        movement: 4,
+        attackRangeMin: 1,
+        attackRangeMax: 1,
+
+        biomesMoveCosts: {
+          deepsea: 0.5,
+          sea: 0.75,
+          shore: 1
+        },
+        modifiers: {
+          'cruiser': { defense: -1 }
+        },
+        buildingsMoveCosts: {port: 0.5}
+      },
+      'battleship': {
+        type: 'cruiser',
+        family: 'sea',
+        cost: 12000,
+        canAttack: true,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'cruiser', 'battleship'],
         canConquer: false,
 
         maxHealth: 15,
         strength: 9,
         defense: 5,
-        movement: 5,
+        movement: 4,
         attackRangeMin: 2,
         attackRangeMax: 3,
 
@@ -465,7 +490,33 @@ const CONFIG = {
           shore: 1
         },
         modifiers: {
-          'boat': { defense: -1 }
+          'cruiser': { defense: -1 }
+        },
+        buildingsMoveCosts: {port: 0.5}
+      },
+      'submarine': {
+        type: 'cruiser',
+        family: 'sea',
+        cost: 10000,
+        canAttack: true,
+        canAttackTypes: ['cruiser', 'battleship, submarine'],
+        canConquer: false,
+
+        maxHealth: 12,
+        strength: 8,
+        defense: 5,
+        movement: 6,
+        attackRangeMin: 1,
+        attackRangeMax: 2,
+
+        biomesMoveCosts: {
+          deepsea: 0.5,
+          sea: 0.75,
+          shore: 1
+        },
+        modifiers: {
+          'cruiser': { strength: +2, defense: -2 },
+          'battleship': { strength: +3 }
         },
         buildingsMoveCosts: {port: 0.5}
       },
@@ -474,7 +525,7 @@ const CONFIG = {
         family: 'air',
         cost: 15000,
         canAttack: true,
-        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat'],
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'cruiser'],
         canConquer: false,
 
         maxHealth: 20,
@@ -498,7 +549,7 @@ const CONFIG = {
         family: 'air',
         cost: 12000,
         canAttack: true,
-        canAttackTypes: ['jeep', 'tank', 'heavy-tank', 'boat', 'bomber', 'fighter', 'helicopter'],
+        canAttackTypes: ['jeep', 'tank', 'heavy-tank', 'cruiser', 'bomber', 'fighter', 'helicopter'],
         canConquer: false,
 
         maxHealth: 15,
@@ -523,7 +574,7 @@ const CONFIG = {
         family: 'air',
         cost: 6000,
         canAttack: true,
-        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat', 'bomber', 'helicopter'],
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'cruiser', 'bomber', 'helicopter'],
         canConquer: false,
 
         maxHealth: 12,

@@ -254,7 +254,33 @@ const unitsParts = {
       material: 'unitBlack'
     }
   ],
-  'boat': [
+  'cruiser': [
+    {
+      name: 'base',
+      size: {height: 2/8, length: 8/8, width: 3/8},
+      position: {x: 0, y: 1/4, z: 0},
+      material: 'player'
+    },
+    {
+      name: 'sides',
+      size: {height: 2/8, length: 6/8, width: 4/8},
+      position: {x: 0, y: 1/4, z: 0},
+      material: 'player'
+    },
+    {
+      name: 'cabin',
+      size: {height: 2/8, length: 3/8, width: 3/8},
+      position: {x: 1/8, y: 4/8, z: 0},
+      material: 'unitGrey'
+    },
+    {
+      name: 'cannon',
+      size: {height: 1/8, length: 1/4, width: 1/8},
+      position: {x: -1/8, y: 1/2, z: 0},
+      material: 'unitBlack'
+    }
+  ],
+  'battleship': [
     {
       name: 'base',
       size: {height: 2/8, length: 12/8, width: 4/8},
@@ -285,6 +311,38 @@ const unitsParts = {
       position: {x: -1/4, y: 1/2, z: -1/8},
       material: 'unitBlack'
     }
+  ],
+  'submarine': [
+    {
+      name: 'base',
+      size: {height: 2/8, length: 10/8, width: 2/8},
+      position: {x: 0, y: 0, z: 0},
+      material: 'player'
+    },
+    {
+      name: 'sides',
+      size: {height: 3/8, length: 8/8, width: 3/8},
+      position: {x: 0, y: 0, z: 0},
+      material: 'player'
+    },
+    {
+      name: 'blade1',
+      size: {height: 1/16, length: 1/16, width: 3/8},
+      position: {x: -11/16, y: 0, z: 0},
+      material: 'unitGrey'
+    },
+    {
+      name: 'blade2',
+      size: {height: 3/8, length: 1/16, width: 1/16},
+      position: {x: -11/16, y: 0, z: 0},
+      material: 'unitGrey'
+    },
+    {
+      name: 'cabin',
+      size: {height: 1/8, length: 2/8, width: 1/8},
+      position: {x: 0, y: 2/8, z: 0},
+      material: 'unitBlack'
+    },
   ],
   'bomber': [
     {
