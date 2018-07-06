@@ -129,7 +129,7 @@ const GameBot = (game, RNG) => {
             if (mustStayInPlace) {
               // ATTACK N PLACE
               await game.ACTION_DO({
-                type: 'ATTACK',
+                type: 'ATTACKS',
                 playerUnit: unit,
                 ennemyUnit: ennemy
               })
@@ -163,7 +163,7 @@ const GameBot = (game, RNG) => {
                   })
         
                   await game.ACTION_DO({
-                    type: 'ATTACK',
+                    type: 'ATTACKS',
                     playerUnit: unit,
                     ennemyUnit: ennemy
                   })

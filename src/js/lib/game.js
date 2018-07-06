@@ -583,6 +583,41 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           }
         }
 
+      } else if (action.type === 'ATTACKS') {
+
+        const playerUnit = action.playerUnit
+        const ennemyUnit = action.ennemyUnit
+
+        // Attack
+        if (validateAttack(playerUnit, ennemyUnit)) {
+
+          await game.ACTION_DO({
+            type: 'ATTACK',
+            playerUnit: playerUnit,
+            ennemyUnit: ennemyUnit
+          })
+  
+          if (validateAttack(ennemyUnit, playerUnit)) {
+            // Counter attack
+            await game.ACTION_DO({
+              type: 'ATTACK',
+              playerUnit: ennemyUnit,
+              ennemyUnit: playerUnit
+            })
+          } else {
+            // console.error(`ATTACKS - invalid counter-attack from ${ennemyUnit.name} to ${playerUnit.name}`)
+          }
+        } else {
+          // console.error(`ATTACKS - invalid attack from ${playerUnit.name} to ${ennemyUnit.name}`)
+        }
+
+        // TODO: 'attack-n-run' units can move again here
+
+        if (game.players[playerUnit.playerId].isHuman) {
+          console.error('HUMAN END UNIT TURN')
+          endUnitTurn()
+        }
+
       } else if (action.type === 'ATTACK') {
 
         const playerUnit = action.playerUnit
@@ -612,6 +647,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           // Is the ennemy dead?
           if (ennemyUnit.health > 0) {
             console.log(`${damage} damage done to ${ennemyUnit.name}, ${ennemyUnit.health} HP left`)
+            
           } else {
             // Destroy ennemy
             await game.ACTION_DO({
@@ -624,12 +660,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         }
 
         game.ui.attackZone = []
-
-        // TODO: 'attack-n-run' units can move again here
-
-        if (player.isHuman) {
-          endUnitTurn()
-        }
 
       } else if (action.type === 'HEAL') {
 
@@ -675,8 +705,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         const unit = action.unit
 
         const ennemy = game.players[unit.playerId]
-        console.warn(`DESTROY() ennemy ${ennemy}`)
-        // console.warn(`DESTROY() ennemy units ${ennemy.units}`)
+        // console.warn(`DESTROY() ennemy ${ennemy}`)
         
         await game.ui.DESTROY(unit)
 
@@ -756,6 +785,20 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   // GAME RENDERERS
   game.renderer2d = Renderer2d(game, ctx2d)
   game.renderer3d = Renderer3d(game, canvas3d)
+
+  const validateAttack = (playerUnit, ennemyUnit) => {
+    const distance = HEXLIB.hexDistance(ennemyUnit.hex, playerUnit.hex)
+
+    return (
+      // Is the ennemy unit still alive?
+      playerUnit.health > 0 &&
+      ennemyUnit.health > 0 &&
+      playerUnit.canAttack &&
+      distance <= playerUnit.attackRangeMax &&
+      distance >= playerUnit.attackRangeMin
+    )
+
+  }
 
   const isTurnEnded = () => {
     // Automatic end of turn (ala Fire Emblem)

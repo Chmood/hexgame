@@ -136,7 +136,7 @@ const GameUI = (game) => {
               targetUnit = game.getUnitByHex(targetHex)
 
         await game.ACTION_DO({
-          type: ui.selectedUnit.canHeal ? 'HEAL' : 'ATTACK',
+          type: ui.selectedUnit.canHeal ? 'HEAL' : 'ATTACKS',
           playerUnit: ui.selectedUnit,
           ennemyUnit: targetUnit
         })
@@ -203,7 +203,7 @@ const GameUI = (game) => {
   const focusUnit = (param = 'next') => {
     // Prevents focusing during move or passive mode
     if (ui.mode !== 'select') {
-      console.log(`Focus can only be used in "select" mode!`)
+      // console.log(`Focus can only be used in "select" mode!`)
       return
     }
     // Compute the unit to be focused
@@ -414,7 +414,7 @@ const GameUI = (game) => {
           console.log(`Unit moved: ${unit.name}`)
 
         } else {
-          console.warn('MOVE() - didn\'t move, stay on place!')
+          console.log('Unit didn\'t move, stay on place!')
         }
         resolve()
       })
@@ -436,7 +436,7 @@ const GameUI = (game) => {
     DEAL_DAMAGE(unit) {
       return new Promise(async (resolve) => {
         focusHex(unit.hex)
-        
+
         // Animate ennemy's health bar
         const healthbarAnimation = game.renderer3d.updateHealthbar(unit)
         await healthbarAnimation.waitAsync()

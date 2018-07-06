@@ -2,6 +2,7 @@
 
 ## Known bugs
 
+* bot units sometimes move an incredibly long path to attack (validate move)
 * Units can be built on occupied factories / port / airport??? [TO BE CONFIRMED]
 * Sometimes (!) keybord is broken, cursor moves on all keys
 * Choosing target hysteresis looks inverted (or plain broken)
@@ -36,7 +37,6 @@
 * New DOM element: unit/terrain/building info panel
 * Roads and bridges???
 * Terrain defense bonus/malus
-* Conquered cities mush heal units
 * Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
 * Unit parts animations (idle, shoot, move...)
 * 2D map: different icons for units???

@@ -165,6 +165,7 @@ const CONFIG = {
         type: 'soldier',
         family: 'ground',
         cost: 1000,
+        canAttack: true,
         canConquer: true,
 
         maxHealth: 5,
@@ -201,6 +202,7 @@ const CONFIG = {
         type: 'bazooka',
         family: 'ground',
         cost: 3000,
+        canAttack: true,
         canConquer: true,
 
         maxHealth: 8,
@@ -237,6 +239,7 @@ const CONFIG = {
         type: 'healer',
         family: 'ground',
         cost: 4000,
+        canAttack: false,
         canConquer: true,
         canHeal: true,
 
@@ -274,6 +277,7 @@ const CONFIG = {
         type: 'jeep',
         family: 'ground',
         cost: 4000,
+        canAttack: true,
         canConquer: false,
 
         maxHealth: 12,
@@ -302,6 +306,7 @@ const CONFIG = {
         type: 'tank',
         family: 'ground',
         cost: 7000,
+        canAttack: true,
         canConquer: false,
         // level: 1,
 
@@ -335,6 +340,7 @@ const CONFIG = {
         type: 'heavy-tank',
         family: 'ground',
         cost: 15000,
+        canAttack: true,
         canConquer: false,
 
         maxHealth: 30, // http://fireemblem.wikia.com/wiki/HP
@@ -360,6 +366,7 @@ const CONFIG = {
         type: 'boat',
         family: 'sea',
         cost: 10000,
+        canAttack: true,
         canConquer: false,
 
         maxHealth: 15,
@@ -380,6 +387,7 @@ const CONFIG = {
         type: 'bomber',
         family: 'air',
         cost: 15000,
+        canAttack: true,
         canConquer: false,
 
         maxHealth: 20,
@@ -399,6 +407,7 @@ const CONFIG = {
         type: 'fighter',
         family: 'air',
         cost: 12000,
+        canAttack: true,
         canConquer: false,
 
         maxHealth: 15,
@@ -418,6 +427,7 @@ const CONFIG = {
         type: 'helicopter',
         family: 'air',
         cost: 6000,
+        canAttack: true,
         canConquer: false,
 
         maxHealth: 12,
