@@ -112,6 +112,8 @@ const CONFIG = {
       beta: Math.PI / 6, // 0 : top-down / Math.PI / 2 : side view 
       activeCamera: 'camera', // 'camera' or 'cameraFree'
       cameraFreeAutoRotate: false,
+      cameraDampbox: true, // Make the camera less shaky
+      cameraDampboxRatio: 3 // Relates to number of visible cells on screen
     }
   },
 

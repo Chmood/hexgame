@@ -7,6 +7,15 @@ import CONFIG from './config.js'
 
 const Camera = (canvas, game) => {
   
+  const dampbox = {
+    width: 8,
+    height: 8,
+    position: { // Position of the center of the box
+      x: 13,
+      y: 13
+    }
+  }
+
   const renderer = {}
 
   ////////////////////////////////////////
@@ -17,6 +26,43 @@ const Camera = (canvas, game) => {
   // UPDATE CAMERA POSITION
   // Makes the camera look at the given hex
   renderer.updateCameraPosition = (hex) => {
+    
+    // Dampbox
+    if (CONFIG.render3d.camera.cameraDampbox) {
+      const offset = HEXLIB.hex2Offset(hex)
+      // Box AABB from position and size
+      const box = {
+        min: {
+          x: dampbox.position.x - Math.floor(dampbox.width / 2),
+          y: dampbox.position.y - Math.floor(dampbox.height / 2)
+        },
+        max: {
+          x: dampbox.position.x + Math.floor(dampbox.width / 2),
+          y: dampbox.position.y + Math.floor(dampbox.height / 2)
+        }
+      }
+
+      // Make the box include the hex
+      if (offset.col < box.min.x ) {
+        dampbox.position.x -= box.min.x - offset.col
+      } else if (offset.col > box.max.x ) {
+        dampbox.position.x -= box.max.x - offset.col
+      }
+      if (offset.row < box.min.y) {
+        dampbox.position.y -= box.min.y - offset.row
+      } else if (offset.row > box.max.y) {
+        dampbox.position.y -= box.max.y - offset.row
+      }
+
+      // Make the camera focus the center of the box
+      const dampboxHex = HEXLIB.offset2Hex(
+        HEXLIB.hexOffset(dampbox.position.x, dampbox.position.y)
+      )
+
+      // Mutate the hex param :(
+      hex = dampboxHex
+    }
+
     const position = HEXLIB.hex2Pixel(layout, hex),
           cell = game.map.getCellFromHex(hex),
           height = cell.height * CONFIG.render3d.cellStepHeight
@@ -91,6 +137,12 @@ const Camera = (canvas, game) => {
       delta = -ratioBaseSize * CONFIG.render3d.camera.distanceRatioStep
     } else if (direction === 'out') {
       delta = ratioBaseSize * CONFIG.render3d.camera.distanceRatioStep
+    }
+
+    // DAMPBOX SIZE UPDATE
+    if (CONFIG.render3d.camera.cameraDampbox) {
+      dampbox.width = Math.round((renderer.camera.radius + delta) / CONFIG.render3d.camera.cameraDampboxRatio) // Sort of magic value...
+      dampbox.height = Math.round((renderer.camera.radius + delta) / CONFIG.render3d.camera.cameraDampboxRatio) // Sort of magic value...
     }
 
     const animationCameraRadius = new BABYLON.Animation(
