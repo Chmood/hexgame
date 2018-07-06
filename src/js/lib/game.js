@@ -54,11 +54,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           friendsHexes = getUnitsHexes('friends')
 
     // MOVE ZONE
-    // Scan the whole graph to compute cost of each tile
+    // Scan the graph to compute the cost of each tile
     // We call map.findPath() without the goal parameter
-    // We also pass a blacklist as last parameter
+    // We also pass a blacklist, ans a cost limit
     game.map.findPath(
-      unit.type,
+      unit.type, // type of graph
       unit.hex, 
       undefined, // no goal
       undefined, // no early exit
@@ -80,31 +80,33 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     moveZone.push(unit.hex)
 
     // ATTACK ZONE
-    // Ugly code omg!
-    for (const moveHex of moveZone) {
+    if (unit.canAttack) {
+      // Ugly code omg!
+      for (const moveHex of moveZone) {
 
-      game.map.findPath(
-        'attack',
-        moveHex,
-        undefined, // no goal
-        undefined, // no early exit
-        undefined, // no blacklist
-        unit.attackRangeMax // cost higher limit
-      )
-  
-      for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-        for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-          const cell = game.map.data.terrain[x][y]
-  
-          // Is the cell in the attack range?
-          if (cell.cost <= unit.attackRangeMax) {
-            if (
-              // Unit can't attack its own friends
-              HEXLIB.hexIndexOf(friendsHexes, cell.hex) === -1 &&
-              // Avoid duplicates
-              HEXLIB.hexIndexOf(attackZone, cell.hex) === -1
-            ) {
-              attackZone.push(cell.hex)
+        game.map.findPath(
+          'attack',
+          moveHex,
+          undefined, // no goal
+          undefined, // no early exit
+          undefined, // no blacklist
+          unit.attackRangeMax // cost higher limit
+        )
+    
+        for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+          for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+            const cell = game.map.data.terrain[x][y]
+    
+            // Is the cell in the attack range?
+            if (cell.cost <= unit.attackRangeMax) {
+              if (
+                // Unit can't attack its own friends
+                HEXLIB.hexIndexOf(friendsHexes, cell.hex) === -1 &&
+                // Avoid duplicates
+                HEXLIB.hexIndexOf(attackZone, cell.hex) === -1
+              ) {
+                attackZone.push(cell.hex)
+              }
             }
           }
         }
@@ -112,35 +114,37 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     }
 
     // HEAL ZONE
-    // Ugly code omg!
-    for (const moveHex of moveZone) {
-
-      game.map.findPath(
-        'attack',
-        moveHex,
-        undefined, // no goal
-        undefined, // no early exit
-        undefined, // no blacklist
-        unit.attackRangeMax // cost higher limit
-      )
+    if (unit.canHeal) {
+      // Ugly code omg!
+      for (const moveHex of moveZone) {
   
-      for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-        for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-          const cell = game.map.data.terrain[x][y]
+        game.map.findPath(
+          'attack',
+          moveHex,
+          undefined, // no goal
+          undefined, // no early exit
+          undefined, // no blacklist
+          unit.attackRangeMax // cost higher limit
+        )
+    
+        for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+          for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+            const cell = game.map.data.terrain[x][y]
+    
+            const friendUnit = game.getUnitByHex(cell.hex)
   
-          const friendUnit = game.getUnitByHex(cell.hex)
-
-          // Is the cell in the attack range?
-          if (cell.cost <= unit.attackRangeMax) {
-            if (
-              // Unit can't only heal friends
-              HEXLIB.hexIndexOf(friendsHexes, cell.hex) !== -1 &&
-              // Friend musn't be maxed HP
-              friendUnit.health < friendUnit.maxHealth &&
-              // Avoid duplicates
-              HEXLIB.hexIndexOf(healZone, cell.hex) === -1
-            ) {
-              healZone.push(cell.hex)
+            // Is the cell in the attack (read 'heal') range?
+            if (cell.cost <= unit.attackRangeMax) {
+              if (
+                // Unit can't only heal friends
+                HEXLIB.hexIndexOf(friendsHexes, cell.hex) !== -1 &&
+                // Friend musn't be maxed HP
+                friendUnit.health < friendUnit.maxHealth &&
+                // Avoid duplicates
+                HEXLIB.hexIndexOf(healZone, cell.hex) === -1
+              ) {
+                healZone.push(cell.hex)
+              }
             }
           }
         }
@@ -199,6 +203,109 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   // UI NEEDED
 
+  // GET ENNEMIES IN ATTACK RANGE
+  const getEnnemiesInAttackRange = (unit) => game.getUnits('ennemies').filter(
+    (ennemy) => game.validateAttack(unit, ennemy)
+  )
+
+  const getEnnemiesInMoveThenAttackRange = (unit) => {
+    const ennemies = [],
+          attackZone = game.getZones(unit).attack
+
+    if (attackZone) {
+      // console.log(`getEnnemiesInMoveThenAttackRange() - attackZone length: ${attackZone.length}`)
+      for (const hex of attackZone) {
+        const ennemy = game.getUnitByHex(hex)
+        if (ennemy) {
+          ennemies.push(ennemy)
+        }
+      }
+    } else {
+      console.error(`getEnnemiesInMoveThenAttackRange() - attackZone is empty!`)
+    }
+
+    // console.log(`getEnnemiesInMoveThenAttackRange() - found ennemies: ${ennemies.length}`)
+    return ennemies
+  }
+
+  // GET FRIENDS IN HEAL RANGE
+  const getFriendsInHealRange = (unit) => game.getUnits('friends').filter(
+    (friend) => game.validateHeal(unit, friend)
+  )
+
+  // VALIDATE MOVE
+  const validateMove = (unit, hex) => {
+    const validationPath = game.map.findPath(
+      unit.type,
+      unit.hex, 
+      hex,
+      true, // early exit
+      game.getUnitsHexes(),
+      unit.movement
+    )
+
+    if (!validationPath) return false
+
+    if (
+      unit.health > 0 &&
+      !unit.hasMoved &&
+      validationPath.length > 0
+    ) {
+      return validationPath
+    }
+  }
+
+  // VALIDATE ATTACK
+  const validateAttack = (playerUnit, ennemyUnit) => {
+    const distance = HEXLIB.hexDistance(ennemyUnit.hex, playerUnit.hex)
+
+    return (
+      // Are the units still alive?
+      playerUnit.health > 0 &&
+      ennemyUnit.health > 0 &&
+
+      // Can the player unit attack?
+      playerUnit.canAttack &&
+      !playerUnit.hasattacked &&
+      playerUnit.canAttackTypes.indexOf(ennemyUnit.type) !== -1 &&
+
+      // Is the ennemy in the attack range?
+      distance <= playerUnit.attackRangeMax &&
+      distance >= playerUnit.attackRangeMin
+    )
+  }
+
+  // VALIDATE HEAL
+  const validateHeal = (playerUnit, friendUnit) => {
+    const distance = HEXLIB.hexDistance(friendUnit.hex, playerUnit.hex)
+
+    return (
+      // Are the units still alive?
+      playerUnit.health > 0 &&
+      friendUnit.health > 0 &&
+
+      // Can the player unit heal?
+      playerUnit.canHeal &&
+      friendUnit.health < friendUnit.maxHealth && 
+
+      // Is the friend in the attack (read 'heal') range?
+      distance <= playerUnit.attackRangeMax &&
+      distance >= playerUnit.attackRangeMin
+    )
+  }
+
+  // VALIDATE CONQUER
+  const validateConquer = (unit) => {
+    const cell = game.map.getCellFromHex(unit.hex)
+
+    return (
+      unit.health > 0 &&
+      unit.canConquer &&
+      cell.building && 
+      cell.building.ownerId !== game.currentPlayer.id
+    )
+  }
+
   // MISC
 
   const getNextPlayerId = (id) => {
@@ -244,6 +351,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     if (value >= max) { return value - (max - min) }
     return value
   }
+
+
 
   // WAIT
   // Simply wait for some time
@@ -342,7 +451,17 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     getUnits,
     getUnitsHexes,
     markUnitAsHavingPlayed,
+    getEnnemiesInMoveThenAttackRange,
     
+    // Used by UI
+    getHexesFromItems,
+    getEnnemiesInAttackRange,
+    getFriendsInHealRange,
+    validateMove,
+    validateAttack,
+    validateHeal,
+    validateConquer,
+
     // Used by GameBot and UI
     getUnitByHex,
     cycleValueInRange,
@@ -786,20 +905,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   game.renderer2d = Renderer2d(game, ctx2d)
   game.renderer3d = Renderer3d(game, canvas3d)
 
-  const validateAttack = (playerUnit, ennemyUnit) => {
-    const distance = HEXLIB.hexDistance(ennemyUnit.hex, playerUnit.hex)
-
-    return (
-      // Is the ennemy unit still alive?
-      playerUnit.health > 0 &&
-      ennemyUnit.health > 0 &&
-      playerUnit.canAttack &&
-      distance <= playerUnit.attackRangeMax &&
-      distance >= playerUnit.attackRangeMin
-    )
-
-  }
-
   const getEnnemyModifiers = (unit, ennemyUnit) => {
     let stats = {}
 
@@ -908,6 +1013,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     return damage
   }
 
+  // IS TURN ENDED
   const isTurnEnded = () => {
     // Automatic end of turn (ala Fire Emblem)
     const nUnitsRemaining = game.currentPlayer.units.filter(

@@ -86,21 +86,33 @@ const GameUI = (game) => {
   // From keyboard arrows to a direction to an hex position
   // Select, move or attack modes
   const moveCursor = (direction) => {
+    // SELECT AND MOVE MODE
     if (ui.mode === 'select' || ui.mode === 'move') {
-      // Get the direction (6 possible)
+      // Get the direction (out of the 6 possible ones)
       const directionIndex = getDirectionIndex(direction, ui.cursor)
   
       if (directionIndex !== undefined) {
         // Get the neighbor in that direction
         const hex = HEXLIB.hexNeighbors(ui.cursor)[directionIndex]
+
         // Don't go outside the map boundaries
         if (game.map.isHexOnMap(hex)) {
-          validateMove(hex)
-  
+
+          // Constrain in unit move zone
+          if (ui.mode === 'move' && !game.validateMove(ui.selectedUnit, hex)) {
+            console.log('Unit cannot go there, out of move range!')
+            return false
+          }
+          
+          // Move the cursor
+          ui.updateCursor(hex)
+          game.renderer3d.updateCameraPosition(hex)
+
         } else {
           console.log('Cannot go there, edge of the map reached!')
         }
       }
+    // ATTACK MODE
     } else if (ui.mode === 'attack') {
       // Left and right cycle between targets
       if (direction === 'left' || direction === 'right') {
@@ -118,15 +130,16 @@ const GameUI = (game) => {
 
   // DO ACTION
   // Fired when user click on something, or use action key('X' by default)
+  // calls ACTION HEAL or ATTACK
   const doAction = async () => {
     if (ui.mode === 'select') {
       selectCell()
 
     } else if (ui.mode === 'move') {
-      if (validateMove(ui.cursor)) {
+      if (game.validateMove(ui.selectedUnit, ui.cursor)) {
         selectDestination()
       } else {
-        ui.cancelMove()
+        cancelMove()
       }
 
     } else if (ui.mode === 'attack') {
@@ -349,7 +362,8 @@ const GameUI = (game) => {
     },
 
     // MAIN UI ACTIONS
-    // Those updates the renderers, UI and animations
+    // Those updates the renderers, UI layers and 3D animations
+    // They are called from game ACTIONS
 
     CHANGE_PLAYER(playerId) {
       return new Promise(async (resolve) => {
@@ -655,6 +669,7 @@ const GameUI = (game) => {
 
   // SELECT DESTINATION
   // Then open the move menu
+  // calls ACTION MOVE
   const selectDestination = async function() {
     const path = ui.cursorPath // Use the cursor path as movement path
     
@@ -690,35 +705,16 @@ const GameUI = (game) => {
     game.dom.openGameMenu(actions)
   }
 
-  // VALIDATE MOVE
-  // Check (in move move) if the hex is in the unit move zone
-  const validateMove = (hex) => {
-    // In move mode, cursor can only move on valid tiles (aka move zone)
-    if (ui.mode === 'move') {
-      let isValidMove = false
-      
-      for(const validHex of ui.moveZone) {
-        if (HEXLIB.hexEqual(hex, validHex)) {
-          isValidMove = true
-          break
-        }
-      }
-      if (!isValidMove) {
-        console.log('Invalid move!')
-        return false
-      }
-    }
-    // Move the cursor
-    ui.updateCursor(hex)
-    game.renderer3d.updateCameraPosition(hex)
-
-    return true
-  }
+  // END OF MOVE ACTIONS
 
   // CAN UNIT ATTACK
   // ui.attackZone will be used later to choose target
   const canUnitAttack = (unit) => {
-    ui.attackZone = getEnnemiesInAttackRange(unit, true) // true for 'only hexes' mode
+    if (!unit.canAttack) return false
+
+    ui.attackZone = game.getHexesFromItems(
+      game.getEnnemiesInAttackRange(unit)
+    )
 
     // Does the unit can attack any ennemy?
     return ui.attackZone.length > 0
@@ -728,77 +724,18 @@ const GameUI = (game) => {
   const canUnitHeal = (unit) => {
     if (!unit.canHeal) return false
 
-    ui.attackZone = getFriendsInHealRange(unit, true) // true for 'only hexes' mode
+    ui.attackZone = game.getHexesFromItems(
+      game.getFriendsInHealRange(unit)
+    )
 
     // Does the unit can heal any friend?
     return ui.attackZone.length > 0
   }
 
-  // GET ENNEMIES IN ATTACK RANGE
-  const getEnnemiesInAttackRange = (unit, onlyHexes = false) => {
-    let ennemies
-
-    const filterFn = (ennemy) => {
-      const distance = HEXLIB.hexDistance(
-        onlyHexes ? ennemy : ennemy.hex, 
-        unit.hex
-      )
-      // console.log('distance', distance, unit.attackRangeMin, unit.attackRangeMax)
-
-      return (
-        distance <= unit.attackRangeMax &&
-        distance >= unit.attackRangeMin
-      )
-    }
-
-    if (!onlyHexes) {
-      ennemies = game.getUnits('ennemies').filter(filterFn)
-    } else { // Only hexes needed
-      ennemies = game.getUnitsHexes('ennemies').filter(filterFn)
-    }
-
-    return ennemies
-  }
-
-  // GET FRIENDS IN HEAL RANGE
-  const getFriendsInHealRange = (unit, onlyHexes = false) => {
-    let friends
-
-    const filterFn = (friend) => {
-      const friendUnit = onlyHexes ? game.getUnitByHex(friend) : friend
-      const distance = HEXLIB.hexDistance(
-        onlyHexes ? friend : friend.hex, 
-        unit.hex
-      )
-      // console.log('distance', distance, unit.attackRangeMin, unit.attackRangeMax)
-
-      return (
-        friendUnit.health < friendUnit.maxHealth && 
-        distance <= unit.attackRangeMax &&
-        distance >= unit.attackRangeMin
-      )
-    }
-
-    if (!onlyHexes) {
-      friends = game.getUnits('friends').filter(filterFn)
-    } else { // Only hexes needed
-      friends = game.getUnitsHexes('friends').filter(filterFn)
-    }
-
-    return friends
-  }
-
   // CAN UNIT CONQUER
   const canUnitConquer = (unit) => {
-    if (!unit.canConquer) return false
 
-    const cell = game.map.getCellFromHex(unit.hex)
-
-    return (
-      cell.building && 
-      cell.building.ownerId !== game.currentPlayer.id &&
-      ui.selectedUnit.canConquer
-    )
+    return game.validateConquer(unit)
   }
 
   return ui

@@ -19,8 +19,8 @@ const GameBot = (game, RNG) => {
         // In case of newly created unit??
         if (unit.hasPlayed) { continue }
 
-        let isUnitTurnFinished = false,
-            mustStayInPlace = false
+        let isUnitTurnFinished = false, // aka 'hasPlayed'
+            mustStayInPlace = false // aka 'hasMoved'
         const unitCell = game.map.getCellFromHex(unit.hex)
 
         // game.ui.mode = 'select'
@@ -32,12 +32,16 @@ const GameBot = (game, RNG) => {
         await game.wait(500)
         
         // GROUND UNIT ROUTINE
-        // Conquer and defend
+        // Heal, conquer and defend
+
+        if (!isUnitTurnFinished && unit.canHeal) {
+          
+        }
 
         // Can the unit conquer a building?
-        if (unit.canConquer) {
+        if (!isUnitTurnFinished && unit.canConquer) {
 
-          if (unitCell.building && unitCell.building.ownerId !== player.id) {
+          if (game.validateConquer(unit)) {
             await game.ACTION_DO({
               type: 'CONQUER',
               unit: unit
@@ -48,21 +52,14 @@ const GameBot = (game, RNG) => {
           } else if (unitCell.building && unitCell.building.type === 'city') {
             // Defend the city
             mustStayInPlace = true
-            console.warn('DEFEND THE CITY!')
+            console.warn(`${unit.name} defends the city!`)
 
           } else {
             const nearestBuilding = getNearestBuilding(unit)
 
             if (nearestBuilding) {
-              // Is the building in the move zone?
-              const path = game.map.findPath(
-                unit.type,
-                unit.hex, 
-                nearestBuilding.hex,
-                true,
-                game.getUnitsHexes(),
-                unit.movement
-              )
+
+              const path = game.validateMove(unit, nearestBuilding.hex)
               if (path) {
                 // Move to a building and conquer it
                 await game.ACTION_DO({
@@ -90,30 +87,20 @@ const GameBot = (game, RNG) => {
 
         if (!isUnitTurnFinished) {
 
-          let targets = getEnnemiesInAttackZone(unit)
+          let targets = game.getEnnemiesInMoveThenAttackRange(unit)
           const pacificMode = false
     
           if (mustStayInPlace) {
             // Only attack targets close to us (no move required)
-            // TODO: use a game function for this!
             targets = targets.filter(
-              (target) => {
-                const distance = HEXLIB.hexDistance(target.hex, unit.hex)
-                // console.log('distance', distance, unit.attackRangeMin, unit.attackRangeMax)
-
-                return distance <= unit.attackRangeMax &&
-                distance >= unit.attackRangeMin
-              }
+              (target) => game.validateAttack(unit, target)
             )
           }
 
           if (targets.length > 0 && !pacificMode) {
             // console.warn(`${targets.length} ennemies found, MOVE AND ATTACK`)
   
-            const targetsHexes = []
-            for (const target of targets) {
-              targetsHexes.push(target.hex)
-            }
+            const targetsHexes = game.getHexesFromItems(targets)
             
             game.ui.moveZone = []
             game.ui.attackZone = targetsHexes
@@ -274,24 +261,25 @@ const GameBot = (game, RNG) => {
     
   }
 
-  const getEnnemiesInAttackZone = (unit) => {
-    const ennemies = [],
-          attackZone = game.getZones(unit).attack
+  const chooseEnnemy = (unit, ennemies) => {
+    let bestEnnemy, bestEnnemyValue = 10000 // the lesser the better
+    for (const ennemy of ennemies) {
+      // Manhattan distance (attack the closer)
+      const distance = HEXLIB.hexDistance(unit.hex, ennemy.hex)
+      // Ennemy health (attack the weakest)
+      const health = ennemy.health
 
-    if (attackZone) {
-      // console.log(`getEnnemiesInAttackZone() - attackZone length: ${attackZone.length}`)
-      for (const hex of attackZone) {
-        const ennemy = game.getUnitByHex(hex)
-        if (ennemy) {
-          ennemies.push(ennemy)
-        }
+      // Hysterersis!
+      // const value = health * 2 + distance * 4
+      const value = health
+
+      if (value < bestEnnemyValue) {
+        bestEnnemyValue = value
+        bestEnnemy = ennemy
       }
-    } else {
-      console.error(`getEnnemiesInAttackZone() - attackZone is empty!`)
-    }
 
-    // console.log(`getEnnemiesInAttackZone() - found ennemies: ${ennemies.length}`)
-    return ennemies
+      return bestEnnemy
+    }
   }
 
   const findPathToAttack = async (unit, ennemy) => {
@@ -299,6 +287,7 @@ const GameBot = (game, RNG) => {
     const moveZone = game.getZones(unit).move
     const ennemyWeakZone = []
     
+    // ENNEMY WEAK ZONE
     // Just to compute cell costs
     game.map.findPath(
       'attack',
@@ -370,6 +359,8 @@ const GameBot = (game, RNG) => {
       return false
     }
   }
+
+  // Those below call ACTIONS
 
   const moveUnitTowards = async (unit, goal) => {
     // console.warn('MOVE TORWARDS', goal)
@@ -470,27 +461,6 @@ const GameBot = (game, RNG) => {
       unit: unit,
       path: path
     })
-  }
-
-  const chooseEnnemy = (unit, ennemies) => {
-    let bestEnnemy, bestEnnemyValue = 10000 // the lesser the better
-    for (const ennemy of ennemies) {
-      // Manhattan distance (attack the closer)
-      const distance = HEXLIB.hexDistance(unit.hex, ennemy.hex)
-      // Ennemy health (attack the weakest)
-      const health = ennemy.health
-
-      // Hysterersis!
-      // const value = health * 2 + distance * 4
-      const value = health
-
-      if (value < bestEnnemyValue) {
-        bestEnnemyValue = value
-        bestEnnemy = ennemy
-      }
-
-      return bestEnnemy
-    }
   }
 
   const botBuildUnits = async (player) => {
