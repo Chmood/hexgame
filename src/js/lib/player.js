@@ -13,6 +13,7 @@ const Player = (config) => {
     name: config.name,
     isHuman: config.isHuman,
     hasLost: false,
+    hasPlayed: false,
     money: CONFIG.game.playerStartingMoney,
     color: config.color,
     // colorDesaturated: ShadeBlend(0.5, player.color, '#888888'),
@@ -68,7 +69,7 @@ const Player = (config) => {
 
   // UNITS
   for (let n = 0; n < 7; n++) {
-    // player.addUnit(setUnitRandomType())
+    player.addUnit(setUnitRandomType())
     // player.addUnit('boat')
   }
 

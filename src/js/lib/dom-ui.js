@@ -240,6 +240,7 @@ const DomUI = () => {
 
   // BIG BANNER
   dom.displayBigBanner = (message) => {
+    const delay = 500
     return new Promise((resolve) => {
 
       dom.bigBannerContent.textContent = message
@@ -272,11 +273,11 @@ const DomUI = () => {
                 dom.bigBanner.classList.add('text-left')
     
                 resolve()
-              }, 750)
-            }, 750)
-          }, 1500)
-        }, 750)
-      }, 750)
+              }, delay)
+            }, delay)
+          }, delay * 2)
+        }, delay)
+      }, delay)
     })
   }
 

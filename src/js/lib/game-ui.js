@@ -365,6 +365,15 @@ const GameUI = (game) => {
     // Those updates the renderers, UI layers and 3D animations
     // They are called from game ACTIONS
 
+    CHANGE_TURN(turn) {
+      return new Promise(async (resolve) => {
+
+        await game.dom.displayBigBanner(`TURN ${turn}`)
+
+        resolve()
+      })
+    },
+
     CHANGE_PLAYER(playerId) {
       return new Promise(async (resolve) => {
 

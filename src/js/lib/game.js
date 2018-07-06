@@ -375,6 +375,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     // Players
     players: [],
+    turn: 1, // elapsed game turns
 
     // UI overlay
     ui: undefined,
@@ -430,13 +431,14 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         game.ui.resetUI()
         
+        game.ui.CHANGE_TURN(game.turn)
+        
         // It's first player's turn
         // await game.CHANGE_PLAYER(0)
         await game.ACTION_DO({
           type: 'CHANGE_PLAYER',
           playerId: 0
         })
-
         
       } else {
         console.error('Game generation has failed!')
@@ -554,9 +556,22 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Those mutates the game state
 
     async ACTION_DO(action) {
-             if (action.type === 'CHANGE_PLAYER') {
+      if (action.type === 'CHANGE_TURN') {
 
-        const playerId = action.playerId
+        // New turn
+        game.turn++
+        // Reset players status
+        game.players = game.players.map(
+          (player) => {
+            player.hasPlayed = false
+            return player
+        })
+
+        game.ui.CHANGE_TURN(game.turn)
+
+        // Banner?
+      } else if (action.type === 'CHANGE_PLAYER') {
+              const playerId = action.playerId
         if (playerId !== undefined) {
 
           // MUTATE game.currentPlayer
@@ -564,7 +579,9 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     
         } else {
           // Clean up last player
+          game.currentPlayer.hasPlayed = true
           console.log(`${game.currentPlayer.name}'s turn is over`)
+
           for (const unit of game.currentPlayer.units) {
 
             // MUTATE player's units
@@ -584,6 +601,19 @@ const Game = (ctx2d, canvas3d, dom, main) => {
                 building.hasBuilt = false
               }
             }
+          }
+
+          // Check if the game turn is over
+          const nPlayersLeftThisTurn = game.players.filter(
+            (player) => 
+            !player.hasLost &&
+            !player.hasPlayed
+          ).length
+
+          if (nPlayersLeftThisTurn === 0) {
+            await game.ACTION_DO({
+              type: 'CHANGE_TURN',
+            })
           }
 
           // MUTATE game.currentPlayer

@@ -17,7 +17,6 @@
 * A real state
 * Focus buildings with potential action too (factories, ports and airports)
 * Flying units must be able to pass over ground unit (less strict A* blacklist)
-* Camera moves too much, following the action: make it follow a "box" to dampen it
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Unit orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
