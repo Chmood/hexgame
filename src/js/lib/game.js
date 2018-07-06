@@ -1006,7 +1006,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     }
             
     const damage = Math.round(
-      playerTotalStrength - ennemyTotalDefense * 
+      (playerTotalStrength - ennemyTotalDefense) * 
       (playerUnit.health / playerUnit.maxHealth) // Use attacker's health as a damage modifier
     )
 

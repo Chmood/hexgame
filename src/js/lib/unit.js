@@ -32,7 +32,7 @@ const Unit = (config) => {
       name: `${config.type}-${config.id}`,
       hasPlayed: false,
       hasMoved: false,
-      health: CONFIG.game.units[config.type].maxHealth - 2
+      health: CONFIG.game.units[config.type].maxHealth
     }
   )
 
