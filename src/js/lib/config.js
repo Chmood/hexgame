@@ -165,6 +165,7 @@ const CONFIG = {
         family: 'ground',
         cost: 1000,
         canAttack: true,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank'],
         canConquer: true,
 
         maxHealth: 5,
@@ -195,7 +196,7 @@ const CONFIG = {
     
           ice: 3
         },
-        terrainModifiers: {
+        modifiers: {
           buildings: { defense: +2, strength: +2},
           swamp: { defense: -1 },
           forest: { defense: +1 },
@@ -206,6 +207,8 @@ const CONFIG = {
           scorched: { defense: +2, strength: +1 },
           snow: { defense: +2, strength: +2 },
           ice: { defense: +2, strength: +2 },
+
+          'healer': { strength: -1 }
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
@@ -214,6 +217,7 @@ const CONFIG = {
         family: 'ground',
         cost: 3000,
         canAttack: true,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank'],
         canConquer: true,
 
         maxHealth: 8,
@@ -244,7 +248,7 @@ const CONFIG = {
     
           ice: 3
         },
-        terrainModifiers: {
+        modifiers: {
           buildings: { defense: +2, strength: +2},
           swamp: { defense: -1 },
           forest: { defense: +1 },
@@ -255,6 +259,8 @@ const CONFIG = {
           scorched: { defense: +2, strength: +1 },
           snow: { defense: +2, strength: +2 },
           ice: { defense: +2, strength: +2 },
+
+          'healer': { strength: -1 }
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
@@ -263,6 +269,7 @@ const CONFIG = {
         family: 'ground',
         cost: 4000,
         canAttack: false,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank'],
         canConquer: true,
         canHeal: true,
 
@@ -294,7 +301,7 @@ const CONFIG = {
     
           ice: 3
         },
-        terrainModifiers: {
+        modifiers: {
           buildings: { defense: +2, strength: +2},
           swamp: { defense: -1 },
           forest: { defense: +1 },
@@ -303,6 +310,8 @@ const CONFIG = {
           scorched: { defense: +2 },
           snow: { defense: +2 },
           ice: { defense: +2 },
+
+          'healer': { strength: -1 }
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
@@ -311,6 +320,7 @@ const CONFIG = {
         family: 'ground',
         cost: 4000,
         canAttack: true,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat', 'helicopter'],
         canConquer: false,
 
         maxHealth: 12,
@@ -333,12 +343,16 @@ const CONFIG = {
           deepforest: 2,
           pineforest: 2
         },
-        terrainModifiers: {
+        modifiers: {
           buildings: { defense: +2, strength: +2},
           swamp: { defense: -1 },
           forest: { defense: +1 },
           deepforest: { defense: +1 },
           pineforest: { defense: +1 },
+
+          'soldier': { strength: +2 },
+          'bazooka': { strength: +2 },
+          'healer': { strength: +1 }
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
@@ -346,6 +360,7 @@ const CONFIG = {
         type: 'tank',
         family: 'ground',
         cost: 7000,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat', 'helicopter'],
         canAttack: true,
         canConquer: false,
         // level: 1,
@@ -374,13 +389,17 @@ const CONFIG = {
           grass: 1,
           plain: 1
         },
-        terrainModifiers: {
+        modifiers: {
           buildings: { defense: +2, strength: +2},
           swamp: { defense: -2 },
           forest: { defense: +1 },
           desert: { strength: +1 },
           grass: { strength: +1 },
-          plain: {strength: +1 }
+          plain: { strength: +1 },
+
+          'soldier': { strength: -2 },
+          'bazooka': { strength: -2 },
+          'healer': { strength: -2 }
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
@@ -389,6 +408,7 @@ const CONFIG = {
         family: 'ground',
         cost: 15000,
         canAttack: true,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat', 'helicopter'],
         canConquer: false,
 
         maxHealth: 30, // http://fireemblem.wikia.com/wiki/HP
@@ -408,13 +428,17 @@ const CONFIG = {
           grass: 1,
           plain: 1
         },
-        terrainModifiers: {
+        modifiers: {
           buildings: { defense: +2, strength: +2},
           swamp: { defense: -2 },
           forest: { defense: +1 },
           desert: { strength: +1 },
           grass: { strength: +1 },
-          plain: {strength: +1 }
+          plain: { strength: +1 },
+
+          'soldier': { strength: -2 },
+          'bazooka': { strength: -2 },
+          'healer': { strength: -2 }
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
@@ -423,6 +447,7 @@ const CONFIG = {
         family: 'sea',
         cost: 10000,
         canAttack: true,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat'],
         canConquer: false,
 
         maxHealth: 15,
@@ -437,6 +462,9 @@ const CONFIG = {
           sea: 0.75,
           shore: 1
         },
+        modifiers: {
+          'boat': { defense: -1 }
+        },
         buildingsMoveCosts: {port: 0.5}
       },
       'bomber': {
@@ -444,6 +472,7 @@ const CONFIG = {
         family: 'air',
         cost: 15000,
         canAttack: true,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat'],
         canConquer: false,
 
         maxHealth: 20,
@@ -457,6 +486,9 @@ const CONFIG = {
           // Air unit: all biomes, cost is always 1
           deepsea: 1, sea: 1, shore: 1, whitebeach: 1, beach: 1, swamp: 1, desert: 1, grass: 1, plain: 1, forest: 1, deepforest: 1, pineforest: 1, mountain: 1, highmountain: 1, scorched: 1, snow: 1, ice: 1
         },
+        modifiers: {
+          'tank': { strength: +2 }
+        },
         buildingsMoveCosts: {base: 1, city: 1, factory: 1, port: 1, airport: 1}
       },
       'fighter': {
@@ -464,6 +496,7 @@ const CONFIG = {
         family: 'air',
         cost: 12000,
         canAttack: true,
+        canAttackTypes: ['jeep', 'tank', 'heavy-tank', 'boat', 'bomber', 'fighter', 'helicopter'],
         canConquer: false,
 
         maxHealth: 15,
@@ -477,6 +510,10 @@ const CONFIG = {
           // Air unit: all biomes, cost is always 1
           deepsea: 1, sea: 1, shore: 1, whitebeach: 1, beach: 1, swamp: 1, desert: 1, grass: 1, plain: 1, forest: 1, deepforest: 1, pineforest: 1, mountain: 1, highmountain: 1, scorched: 1, snow: 1, ice: 1
         },
+        modifiers: {
+          'helicopter': { strength: +2 },
+          'bomber': { strength: +3, defense: +1 }
+        },
         buildingsMoveCosts: {base: 1, city: 1, factory: 1, port: 1, airport: 1}
       },
       'helicopter': {
@@ -484,6 +521,7 @@ const CONFIG = {
         family: 'air',
         cost: 6000,
         canAttack: true,
+        canAttackTypes: ['soldier', 'bazooka', 'healer', 'jeep', 'tank', 'heavy-tank', 'boat', 'bomber', 'helicopter'],
         canConquer: false,
 
         maxHealth: 12,
@@ -496,6 +534,14 @@ const CONFIG = {
         biomesMoveCosts: {
           // Air unit: all biomes, cost is always 1
           deepsea: 1, sea: 1, shore: 1, whitebeach: 1, beach: 1, swamp: 1, desert: 1, grass: 1, plain: 1, forest: 1, deepforest: 1, pineforest: 1, mountain: 1, highmountain: 1, scorched: 1, snow: 1, ice: 1
+        },
+        modifiers: {
+          'soldier': { strength: +2 },
+          'bazooka': { strength: +2 },
+          'healer': { strength: +1 },
+          'jeep': { defense: +1 },
+          'tank': { defense: +2 },
+          'heavy-tank': { defense: +3 },
         },
         buildingsMoveCosts: {base: 1, city: 1, factory: 1, port: 1, airport: 1}
       }

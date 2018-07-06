@@ -614,7 +614,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         // TODO: 'attack-n-run' units can move again here
 
         if (game.players[playerUnit.playerId].isHuman) {
-          console.error('HUMAN END UNIT TURN')
+          // console.log('HUMAN END UNIT TURN')
           endUnitTurn()
         }
 
@@ -800,6 +800,26 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   }
 
+  const getEnnemyModifiers = (unit, ennemyUnit) => {
+    let stats = {}
+
+    if (
+      unit.modifiers && 
+      unit.modifiers[ennemyUnit.type]
+    ) {
+      for (const stat of ['strength', 'defense']) {
+        if (unit.modifiers[ennemyUnit.type][stat]) {
+          stats[stat] = unit.modifiers[ennemyUnit.type][stat]
+
+          // console.log(`unit ${unit.name} versus unit ${ennemyUnit.name}`, )
+          // console.log(`${stat}: ${unit.modifiers[ennemyUnit.type][stat]}`)
+        }
+      }
+    }
+
+    return stats
+  }
+
   const getTerrainModifiers = (unit) => {
     const cell = game.map.getCellFromHex(unit.hex)
 
@@ -809,15 +829,15 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       if (cell.building) {
         const ownerBonus = cell.building.ownerId === unit.playerId ? 1 : 0
         if (
-          unit.terrainModifiers && 
-          unit.terrainModifiers['buildings']
+          unit.modifiers && 
+          unit.modifiers['buildings']
         ) {
 
-          if (unit.terrainModifiers['buildings'][stat]) {
-            stats[stat] = unit.terrainModifiers['buildings'][stat] + ownerBonus
+          if (unit.modifiers['buildings'][stat]) {
+            stats[stat] = unit.modifiers['buildings'][stat] + ownerBonus
 
             // console.log(`unit ${unit.name} terrain: buildings`, )
-            // console.log(`${stat}: ${unit.terrainModifiers['buildings'][stat]} + ${ownerBonus}`)
+            // console.log(`${stat}: ${unit.modifiers['buildings'][stat]} + ${ownerBonus}`)
           }
         }
 
@@ -826,14 +846,14 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         const biome = cell.biome
 
         if (
-          unit.terrainModifiers && 
-          unit.terrainModifiers[biome]
+          unit.modifiers && 
+          unit.modifiers[biome]
         ) {
-          if (unit.terrainModifiers[biome][stat]) {
-            stats[stat] = unit.terrainModifiers[biome][stat]
+          if (unit.modifiers[biome][stat]) {
+            stats[stat] = unit.modifiers[biome][stat]
 
             // console.log(`unit ${unit.name} terrain: ${biome}`, )
-            // console.log(`${stat}: ${unit.terrainModifiers[biome][stat]}`)
+            // console.log(`${stat}: ${unit.modifiers[biome][stat]}`)
           }
         }
       }
@@ -842,22 +862,48 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     return stats
   }
 
+  const getModifiers = (unit, ennemyUnit) => {
+    const stats = {}
+
+    const terrainMods = getTerrainModifiers(unit),
+          ennemyMods = getEnnemyModifiers(unit, ennemyUnit)
+
+    for (const stat of ['strength', 'defense']) {
+      
+      if (terrainMods[stat] || ennemyMods[stat]) {
+        let statValue = 0
+
+        if (terrainMods[stat]) {
+          statValue += terrainMods[stat]
+        }
+        if (ennemyMods[stat]) {
+          statValue += ennemyMods[stat]
+        }
+        stats[stat] = statValue
+      }
+
+    }
+  }
+
   const getDamage = (playerUnit, ennemyUnit) => {
     let playerTotalStrength = playerUnit.strength,
         ennemyTotalDefense = ennemyUnit.defense
 
     // Terrain modifiers
-    const playerMods = getTerrainModifiers(playerUnit),
-          ennemyMods = getTerrainModifiers(ennemyUnit)
+    const playerMods = getModifiers(playerUnit, ennemyUnit),
+          ennemyMods = getModifiers(ennemyUnit, playerUnit)
 
-    if (playerMods.strength) {
+    if (playerMods && playerMods.strength) {
       playerTotalStrength += playerMods.strength
     }
-    if (ennemyMods.defense) {
+    if (ennemyMods && ennemyMods.defense) {
       ennemyTotalDefense += ennemyMods.defense
     }
             
-    const damage = playerTotalStrength - ennemyTotalDefense
+    const damage = Math.round(
+      playerTotalStrength - ennemyTotalDefense * 
+      (playerUnit.health / playerUnit.maxHealth) // Use attacker's health as a damage modifier
+    )
 
     return damage
   }
