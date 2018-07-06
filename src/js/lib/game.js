@@ -631,7 +631,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         playerUnit.hasAttacked = true
 
         // Compute ennemy's damage
-        const damage = playerUnit.strength - ennemyUnit.defense
+        const damage = getDamage(playerUnit, ennemyUnit)
         if (damage <= 0) {
           // No damage
           console.log(`No damage done to ${ennemyUnit.name}, still ${ennemyUnit.health} HP left`)
@@ -798,6 +798,68 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       distance >= playerUnit.attackRangeMin
     )
 
+  }
+
+  const getTerrainModifiers = (unit) => {
+    const cell = game.map.getCellFromHex(unit.hex)
+
+    let stats = {}
+
+    for (const stat of ['strength', 'defense']) {
+      if (cell.building) {
+        const ownerBonus = cell.building.ownerId === unit.playerId ? 1 : 0
+        if (
+          unit.terrainModifiers && 
+          unit.terrainModifiers['buildings']
+        ) {
+
+          if (unit.terrainModifiers['buildings'][stat]) {
+            stats[stat] = unit.terrainModifiers['buildings'][stat] + ownerBonus
+
+            // console.log(`unit ${unit.name} terrain: buildings`, )
+            // console.log(`${stat}: ${unit.terrainModifiers['buildings'][stat]} + ${ownerBonus}`)
+          }
+        }
+
+      } else {
+        // Other biomes than buildings
+        const biome = cell.biome
+
+        if (
+          unit.terrainModifiers && 
+          unit.terrainModifiers[biome]
+        ) {
+          if (unit.terrainModifiers[biome][stat]) {
+            stats[stat] = unit.terrainModifiers[biome][stat]
+
+            // console.log(`unit ${unit.name} terrain: ${biome}`, )
+            // console.log(`${stat}: ${unit.terrainModifiers[biome][stat]}`)
+          }
+        }
+      }
+    }
+
+    return stats
+  }
+
+  const getDamage = (playerUnit, ennemyUnit) => {
+    let playerTotalStrength = playerUnit.strength,
+        ennemyTotalDefense = ennemyUnit.defense
+
+    // Terrain modifiers
+    const playerMods = getTerrainModifiers(playerUnit),
+          ennemyMods = getTerrainModifiers(ennemyUnit)
+
+    if (playerMods.strength) {
+      playerTotalStrength += playerMods.strength
+    }
+    if (ennemyMods.defense) {
+      ennemyTotalDefense += ennemyMods.defense
+    }
+            
+    const damage = playerTotalStrength - ennemyTotalDefense
+
+    return damage
   }
 
   const isTurnEnded = () => {

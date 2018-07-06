@@ -158,7 +158,6 @@ const CONFIG = {
       // * can attack ground/sea/air
       // * can move AND attack
       // * can carry
-      // * can heal
       // * can dive (submarine)
 
       'soldier': {
@@ -196,6 +195,18 @@ const CONFIG = {
     
           ice: 3
         },
+        terrainModifiers: {
+          buildings: { defense: +2, strength: +2},
+          swamp: { defense: -1 },
+          forest: { defense: +1 },
+          deepforest: { defense: +1 },
+          pineforest: { defense: +1 },
+          mountain: { strength: +1 },
+          highmountain: { strength: +1 },
+          scorched: { defense: +2, strength: +1 },
+          snow: { defense: +2, strength: +2 },
+          ice: { defense: +2, strength: +2 },
+        },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
       'bazooka': {
@@ -232,6 +243,18 @@ const CONFIG = {
           snow: 2,
     
           ice: 3
+        },
+        terrainModifiers: {
+          buildings: { defense: +2, strength: +2},
+          swamp: { defense: -1 },
+          forest: { defense: +1 },
+          deepforest: { defense: +1 },
+          pineforest: { defense: +1 },
+          mountain: { strength: +1 },
+          highmountain: { strength: +1 },
+          scorched: { defense: +2, strength: +1 },
+          snow: { defense: +2, strength: +2 },
+          ice: { defense: +2, strength: +2 },
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
@@ -271,6 +294,16 @@ const CONFIG = {
     
           ice: 3
         },
+        terrainModifiers: {
+          buildings: { defense: +2, strength: +2},
+          swamp: { defense: -1 },
+          forest: { defense: +1 },
+          deepforest: { defense: +1 },
+          pineforest: { defense: +1 },
+          scorched: { defense: +2 },
+          snow: { defense: +2 },
+          ice: { defense: +2 },
+        },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
       'jeep': {
@@ -299,6 +332,13 @@ const CONFIG = {
           forest: 2,
           deepforest: 2,
           pineforest: 2
+        },
+        terrainModifiers: {
+          buildings: { defense: +2, strength: +2},
+          swamp: { defense: -1 },
+          forest: { defense: +1 },
+          deepforest: { defense: +1 },
+          pineforest: { defense: +1 },
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
@@ -334,6 +374,14 @@ const CONFIG = {
           grass: 1,
           plain: 1
         },
+        terrainModifiers: {
+          buildings: { defense: +2, strength: +2},
+          swamp: { defense: -2 },
+          forest: { defense: +1 },
+          desert: { strength: +1 },
+          grass: { strength: +1 },
+          plain: {strength: +1 }
+        },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },
       'heavy-tank': {
@@ -359,6 +407,14 @@ const CONFIG = {
           desert: 1,
           grass: 1,
           plain: 1
+        },
+        terrainModifiers: {
+          buildings: { defense: +2, strength: +2},
+          swamp: { defense: -2 },
+          forest: { defense: +1 },
+          desert: { strength: +1 },
+          grass: { strength: +1 },
+          plain: {strength: +1 }
         },
         buildingsMoveCosts: {base: 0.5, city: 0.5, factory: 0.5, port: 0.5, airport: 0.5}
       },

@@ -12,6 +12,7 @@
 
 ## Improvements
 
+* Not healing air units in buildings
 * Healing for bot units too
 * A real state
 * Focus buildings with potential action too (factories, ports and airports)
@@ -36,7 +37,6 @@
 
 * New DOM element: unit/terrain/building info panel
 * Roads and bridges???
-* Terrain defense bonus/malus
 * Explosion for unit destruction (see: https://doc.babylonjs.com/how_to/solid_particle_system)
 * Unit parts animations (idle, shoot, move...)
 * 2D map: different icons for units???
