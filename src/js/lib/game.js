@@ -244,8 +244,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       unit.movement
     )
 
-    if (!validationPath) return false
-
+    if (!validationPath) {
+      return false
+    }
+    
+    console.warn('unit.hasMoved', unit.hasMoved)
     if (
       unit.health > 0 &&
       !unit.hasMoved &&

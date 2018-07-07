@@ -177,6 +177,7 @@ const GameUI = (game) => {
     ui.cursorPath = []
     ui.moveZone = []
     ui.attackZone = []
+    ui.selectedUnit.hasMoved = false
 
     game.updateRenderers(['highlights'])
     game.renderer3d.updateCameraPosition(ui.cursor)
@@ -199,6 +200,9 @@ const GameUI = (game) => {
     ui.cursorPath = []
 
     game.renderer3d.updateCameraPosition(ui.cursor)
+
+    ui.selectedUnit.hasMoved = false
+
     selectUnit(ui.selectedUnit)
   }
 
