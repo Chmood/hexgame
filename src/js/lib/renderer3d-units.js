@@ -316,6 +316,15 @@ const Units = (game, map, camera) => {
         baseSize * part.position.y,
         baseSize * part.position.z
       )
+      // Rotation
+      if (part.rotation) {
+        p.rotation = new BABYLON.Vector3(
+          part.rotation.x * 2 * Math.PI,
+          part.rotation.y * 2 * Math.PI,
+          part.rotation.z * 2 * Math.PI,
+        )
+      }
+
       // Parenting
       p.parent = parentMesh
       // Material

@@ -11,7 +11,8 @@
 
 ## Improvements
 
-* Not healing air units in buildings (only in airports)
+* 'move or fire' unit mode
+* Not healing air units in buildings (only in airports), and healing naval units in ports
 * Healing for bot units too
 * Bots target hysteresis looks inverted (or plain broken)
 * Focus buildings with potential action too (factories, ports and airports)
@@ -20,14 +21,6 @@
 * Unit orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work
-
-### More units!
-
-7 more unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
-
-* 1x tanks: anti-air tank
-* 3x distance: artillery (mid range), rocket-launcher (long range, 'move or fire'), anti-air missile launcher
-* 3x transport units: ground transport, sea transport, air transport
 
 ## New features
 
@@ -57,4 +50,5 @@
 * Animated skybox - See: https://www.babylonjs-playground.com/#E6OZX#122 and https://doc.babylonjs.com/extensions/sky
 * Environnement - See: https://doc.babylonjs.com/babylon101/environment
 * Custom GLSL shaders - See: https://www.eternalcoding.com/?p=113
+* Advance wars unit types - See: http://advancewars.wikia.com/wiki/List_of_Units and http://advancewars.wikia.com/wiki/Category:Units
 

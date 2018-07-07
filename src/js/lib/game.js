@@ -930,6 +930,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   // Alias functions
   game.doAction = game.ui.doAction
   game.onKeyDown = game.ui.onKeyDown
+  game.updateCursor = game.ui.updateCursor
 
   // GAME RENDERERS
   game.renderer2d = Renderer2d(game, ctx2d)

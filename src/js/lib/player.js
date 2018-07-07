@@ -69,8 +69,8 @@ const Player = (config) => {
 
   // UNITS
   for (let n = 0; n < 5; n++) {
-    // player.addUnit(setUnitRandomType())
-    player.addUnit('submarine')
+    player.addUnit(setUnitRandomType())
+    // player.addUnit('air-transport')
   }
 
   return player
