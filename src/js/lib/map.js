@@ -40,8 +40,6 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
     // GENERATE MAP
     generateMap() {
-      let generateMapSuccess = false
-
       // Map cells instanciation
       populateMap()
 
@@ -49,19 +47,26 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
       createMapData('height', config.mapValueRange.height)
       createMapData('moisture', config.mapValueRange.moisture)
       createMapBiomes()
-
-      // Buildings
-      // This generation can fail!
-      const buildings = createdMapBuildings()
-
-      generateMapSuccess = buildings
-
-      return generateMapSuccess
     },
 
-    // GENERATE GRAPHS
-    generateGraphs() {
+    generateBuildings() {
+      // Buildings
+      map.clearBuildings()
+
+      // Buildings generation can fail!
+      const generateBuildingsSuccess = createdMapBuildings()
+
       generateGraphs(CONFIG.game.units)
+
+      return generateBuildingsSuccess
+    },
+
+    clearBuildings() {
+      for (let x = 0; x < config.mapSize.width; x++) {
+        for (let y = 0; y < config.mapSize.height; y++) {
+          map.data.terrain[x][y].building = undefined
+        }
+      }
     },
 
     // RANDOMIZE SEED
@@ -86,11 +91,11 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
         if (map.data.terrain[hexOffset.col][hexOffset.row]) {
           return map.data.terrain[hexOffset.col][hexOffset.row]
         } else {
-          console.warn(`Map.getCellFromHex(): unknown row ${hexOffset.row}`)
+          // console.warn(`Map.getCellFromHex(): unknown row ${hexOffset.row}`)
           return undefined
         }
       } else {
-        console.warn(`Map.getCellFromHex(): unknown column ${hexOffset.col}`)
+        // console.warn(`Map.getCellFromHex(): unknown column ${hexOffset.col}`)
         return undefined
       }
     },

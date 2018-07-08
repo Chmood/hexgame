@@ -36,6 +36,7 @@ const Tiles = (map) => {
           map.terrain[x][y].tile.dispose()
 
           if (map.terrain[x][y].buildingMesh) {
+            console.warn('building mesh deleted')
             map.terrain[x][y].buildingMesh.dispose()
           }
         }
@@ -502,6 +503,8 @@ const Tiles = (map) => {
         shadowGenerator.getShadowMap().renderList.push(building)
         building.receiveShadows = true;
       }
+      // Not pickable by mouse
+      building.isPickable = false
 
       building.freezeWorldMatrix()
     }

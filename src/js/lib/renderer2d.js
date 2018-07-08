@@ -158,7 +158,11 @@ const Renderer2d = (game, ctx) => {
 
         // Cursor
         if (HEXLIB.hexEqual(hex, cursor)) {
-          renderer.drawHex(corners, game.currentPlayer.color)
+          if (game.currentPlayer) {
+            renderer.drawHex(corners, game.currentPlayer.color)
+          } else {
+            renderer.drawHex(corners, '#ff0088')
+          }
         }
 
         // Players

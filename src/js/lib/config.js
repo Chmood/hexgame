@@ -119,7 +119,7 @@ const CONFIG = {
       activeCamera: 'camera', // 'camera' or 'cameraFree'
       cameraFreeAutoRotate: false,
       cameraDampbox: true, // Make the camera less shaky
-      cameraDampboxRatio: 3 // Relates to number of visible cells on screen
+      cameraDampboxRatio: 4 // Relates to number of visible cells on screen
     }
   },
 

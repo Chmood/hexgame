@@ -378,7 +378,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     // Players
     players: [],
-    turn: 1, // elapsed game turns
+    turn: 0, // elapsed game turns
 
     // UI overlay
     ui: undefined,
@@ -386,65 +386,160 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Current player
     currentPlayer: undefined, // Player
 
-    // GENERATE GAME (step 0)
+    async init () {
+      game.ui.changeMode('configure')
+
+      game.dom.optionsPanel.classList.add('active')
+      game.renderer3d.setActiveCamera('cameraFree')
+
+      game.generateTerrain()
+      game.generateBuildings()
+      game.generateUnits()
+    },
+
+    isGameReady() {
+      console.warn('buildings', game.map.data.buildings.length, 'players', game.players.length)
+      const isReady = (
+        game.map.data.buildings.length > 0 && 
+        game.players.length > 0
+      )
+
+      if (isReady) {
+        console.error('READY')
+        game.dom.btnPlay.disable = false
+        game.dom.btnPlay.classList.add('btn-highlight')
+      } else {
+        game.dom.btnPlay.disable = true
+        game.dom.btnPlay.classList.remove('btn-highlight')
+      }
+
+      return isReady
+    },
+
+    async startGame () {
+      if (!game.isGameReady) {
+        console.warn('Cannot start game, missing buildings or players')
+        return
+      }
+      console.warn('GAME STARTED')
+      // Close the option panel (brutal way)
+      game.dom.optionsPanel.classList.toggle('active')
+      game.renderer3d.setActiveCamera('camera')
+
+      game.ui.resetUI()
+
+      // BOT
+      game.bot = GameBot(game, RNG)
+
+      // Show banner!
+      await game.ACTION_DO({
+        type: 'CHANGE_TURN',
+      })
+
+      // It's first player's turn
+      // await game.CHANGE_PLAYER(0)
+      await game.ACTION_DO({
+        type: 'CHANGE_PLAYER',
+        playerId: 0
+      })
+    },
+
+    // GENERATE GAME
     // Generate a new map (with or without a fresh seed) and players
-    async generate(randomMapSeed = false) {
+    async generateTerrain(randomMapSeed = false) {
       if (randomMapSeed) {
         game.map.randomizeSeed()
       } else {
         game.map.setSeed(CONFIG.map.seed)
       }
 
-      let success = false,
-          nTry = 0,
+      let generateMapSuccess = false,
+          nTry = 1, // for logging purpose only
           nTryLeft = 100
 
       game.renderer3d.deleteTiles()
       game.renderer3d.deleteUnits()
 
-      while (!success && nTryLeft >= 0) {
+      game.map.data.buildings = []
+      game.players = []
+
+      game.map.generateMap()
+
+      console.log('MAP TERRAIN', game.map.data.terrain)
+
+      game.renderer3d.createTiles()
+      game.updateRenderers() // 2D map updating
+
+      game.isGameReady()
+    },
+
+    generateBuildings(randomMapSeed = false) {
+      let generateBuildingsSuccess = false,
+          nTry = 1, // for logging purpose only
+          nTryLeft = 100
+
+      game.renderer3d.deleteTiles()
+      game.renderer3d.deleteUnits()
+
+      game.players = []
+
+      while (!generateBuildingsSuccess && nTryLeft >= 0) {
         nTryLeft--
         nTry++
 
-        // MAP
-        console.log(`Map generation (#${nTry} try)`)
-        const generateMapSuccess = game.map.generateMap()
+        // BUILDINGS
+        console.log(`Buildings generation (#${nTry} try)`)
+        generateBuildingsSuccess = game.map.generateBuildings()
+      }
 
-        // GRAPHS
-        game.map.generateGraphs()
+      if (generateBuildingsSuccess) {
+        console.warn(`Buildings generated in ${nTry} tries`)
+        console.log('MAP BULDINGS', game.map.data.buildings)
+
+        game.renderer3d.createTiles()
+        game.updateRenderers() // 2D map updating
+
+        game.isGameReady()
+
+        return true
+
+      } else {
+        console.error('Buildings generation has failed!')
+
+        return false
+      }
+    },
+
+    generateUnits() {
+      // Try to place all players' units
+      let generatePlayerSuccess = false,
+          nTry = 1, // for logging purpose only
+          nTryLeft = 100
+
+      game.renderer3d.deleteUnits()
+
+      while (!generatePlayerSuccess && nTryLeft >= 0) {
+        nTryLeft--
+        nTry++
 
         // PLAYERS
+        console.log(`Units placement (#${nTry} try)`)
         game.players = Players(CONFIG.players, game.map, RNG)
 
-        if (generateMapSuccess && game.players) {
-          success = true
+        if (game.players && game.players.length > 0) {
+          generatePlayerSuccess = true
         }
       }
 
-      if (success) {
-        console.warn(`Game generated in ${nTry} tries`)
-        console.log('MAP TERRAIN', game.map.data.terrain)
-        console.log('MAP BULDINGS', game.map.data.buildings)
-
-        // BOT
-        game.bot = GameBot(game, RNG)
-
-        game.renderer3d.createTiles()
+      if (generatePlayerSuccess) {
+        console.warn(`Units placed in ${nTry} tries`)
+        console.log('PLAYERS', game.players)
         game.renderer3d.createUnits()
 
-        game.ui.resetUI()
-        
-        // game.ui.CHANGE_TURN(game.turn)
+        game.isGameReady()
 
-        // It's first player's turn
-        // await game.CHANGE_PLAYER(0)
-        await game.ACTION_DO({
-          type: 'CHANGE_PLAYER',
-          playerId: 0
-        })
-        
       } else {
-        console.error('Game generation has failed!')
+        console.error('Units placement has failed!')
       }
     },
 
@@ -1085,7 +1180,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       })
 
     } else {
-      game.ui.mode = 'select'
+      game.ui.changeMode('select')
       game.ui.focusUnit('next')
     }
   }

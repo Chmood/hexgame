@@ -66,7 +66,7 @@ const Main = () => {
     // CREATE THE GAME
 
     main.game = Game(main.ctx, main.domUI.canvas3d, main.domUI, main)
-    main.game.generate()
+    main.game.init()
     main.domUI.setGame(main.game)
 
     // Set canvas size

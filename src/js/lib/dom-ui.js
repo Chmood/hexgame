@@ -21,6 +21,7 @@ const DomUI = () => {
     // Top panel
     dom.playerName = document.getElementById('player-name')
     dom.playerMoney = document.getElementById('player-money')
+    dom.infoMode = document.getElementById('info-mode')
 
     // Game menu and its items
     dom.gameMenu = document.getElementById('game-menu')
@@ -36,9 +37,14 @@ const DomUI = () => {
     // Config panel elements
     dom.optionsPanel = document.getElementById('options-panel')
     dom.btnOptionsTogglePanel = document.getElementById('options-btn-toggle-panel')
-    dom.btnFullscreen = document.getElementById('options-btn-fullscreen')
+    
     dom.btnUpdate = document.getElementById('options-btn-update')
-    dom.btnNew = document.getElementById('options-btn-new')
+    dom.btnNewTerrain = document.getElementById('options-btn-new-terrain')
+    dom.btnNewBuildings = document.getElementById('options-btn-new-buildings')
+    dom.btnNewUnits = document.getElementById('options-btn-new-units')
+    dom.btnPlay = document.getElementById('options-btn-play')
+    
+    dom.btnFullscreen = document.getElementById('options-btn-fullscreen')
     dom.selectPosprocess = document.getElementById('options-select-postprocess')
     dom.checkboxBetterOcean = document.getElementById('options-checkbox-better-ocean')
     dom.checkboxCameraFree = document.getElementById('options-camera-free')
@@ -114,11 +120,20 @@ const DomUI = () => {
 
       game.resizeGame()
     })
-    dom.btnUpdate.addEventListener('click', () => {
-      game.generate()
+    // dom.btnUpdate.addEventListener('click', () => {
+    //   game.generate()
+    // })
+    dom.btnNewTerrain.addEventListener('click', () => {
+      game.generateTerrain(true) // New random seed
     })
-    dom.btnNew.addEventListener('click', () => {
-      game.generate(true) // New random seed
+    dom.btnNewBuildings.addEventListener('click', () => {
+      game.generateBuildings(true) // New random seed
+    })
+    dom.btnNewUnits.addEventListener('click', () => {
+      game.generateUnits(true) // New random seed
+    })
+    dom.btnPlay.addEventListener('click', () => {
+      game.startGame()
     })
 
     // UI panel settings
@@ -160,6 +175,10 @@ const DomUI = () => {
   dom.updateTopPanel = (player) => {
     dom.playerName.textContent = player.name
     dom.playerMoney.textContent = player.money
+  }
+
+  dom.updateInfoMode = (mode) => {
+    dom.infoMode.textContent = mode
   }
 
   // GAME MENU

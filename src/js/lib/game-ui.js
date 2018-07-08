@@ -5,7 +5,14 @@ import HEXLIB from '../vendor/hexlib'
 // GAME UI
 
 const GameUI = (game) => {
-  
+
+  // CHANGE MODE
+  const changeMode = (mode) => {
+    console.log('Mode changed to ', mode)
+    game.dom.updateInfoMode(mode)
+    ui.mode = mode
+  }
+
   // ON KEY CHANGE
   const onKeyDown = (keys) => {
     // Only catch key events if the standard camera is active
@@ -21,12 +28,12 @@ const GameUI = (game) => {
         if (ui.mode === 'game-menu-select') {
           // Player can only close menu (with no item selected) during selection phase
                 if (keys['c']) {          game.dom.closeGameMenu()
-                                          ui.mode = 'select'
+                                          changeMode('select')
           }
         } else if (ui.mode === 'game-menu-move') {
           // Closing the menu in move phase cancel the move
                 if (keys['c']) {          game.dom.closeGameMenu()
-                                          // ui.mode = 'move'
+                                          // changeMode('move')
                                           cancelFinishedMove()
           }
         }
@@ -132,6 +139,8 @@ const GameUI = (game) => {
   // Fired when user click on something, or use action key('X' by default)
   // calls ACTION HEAL or ATTACK
   const doAction = async () => {
+    if (ui.mode === 'configure') return
+
     if (ui.mode === 'select') {
       selectCell()
 
@@ -172,7 +181,7 @@ const GameUI = (game) => {
  
   // CANCEL MOVE
   const cancelMove = () => {
-    ui.mode = 'select'
+    changeMode('select')
     ui.cursor = ui.cursorBackup
     ui.cursorPath = []
     ui.moveZone = []
@@ -280,7 +289,7 @@ const GameUI = (game) => {
 
     console.log(`Unit selected: ${unit.name}`)
     // The unit can move
-    ui.mode = 'move'
+    changeMode('move')
     ui.selectedUnit = unit
     // Backup cursor in case of cancel
     ui.cursorBackup = game.ui.cursor
@@ -304,7 +313,7 @@ const GameUI = (game) => {
   // SELECT ATTACK
   // And heal, too
   const selectAttack = () => {
-    ui.mode = 'attack'
+    changeMode('attack')
     // Target the first ennemy
     ui.selectedTargetId = 0
     
@@ -335,7 +344,7 @@ const GameUI = (game) => {
     cursorPath: [], // [Hex]
     moveZone: [], // [Hex]
     attackZone: [], // [Hex]
-    mode: 'passive', // 'passive', 'select', 'move', 'attack', 'game-menu-select', 'game-menu-move'
+    mode: 'passive', // 'configure', 'passive', 'select', 'move', 'attack', 'game-menu-select', 'game-menu-move'
     selectedUnit: undefined, // Unit
     focusedUnit: undefined, // Unit
     unitsToMove: [], // [Unit]
@@ -350,6 +359,7 @@ const GameUI = (game) => {
     // cancelFinishedMove,
     // selectDestination,
     // validateTarget,
+    changeMode,
     onKeyDown,
     updateCursor,
     doAction,
@@ -360,7 +370,6 @@ const GameUI = (game) => {
     resetUI() {
       ui.moveZone = []
       ui.attackZone = []
-      ui.mode = 'select'
       ui.selectedUnit = undefined
       ui.cameraDirection = 0
     },
@@ -394,7 +403,7 @@ const GameUI = (game) => {
           focusHex(base[0].hex)
         }
 
-        ui.mode = 'select'
+        changeMode('select')
         ui.unitsToMove = game.currentPlayer.units
 
         if (ui.unitsToMove.length > 0) {
@@ -451,7 +460,7 @@ const GameUI = (game) => {
       return new Promise(async (resolve) => {
 
         // Do the attack
-        ui.mode = 'passive'
+        changeMode('passive')
         console.log(`${player.name}'s ${playerUnit.name} attacks ${ennemy.name}'s ${ennemyUnit.name}`)
         const attackAnimation = game.renderer3d.attackUnit(playerUnit, ennemyUnit)
         await attackAnimation.waitAsync()
@@ -478,7 +487,7 @@ const GameUI = (game) => {
       return new Promise(async (resolve) => {
 
         // Do the heal
-        ui.mode = 'passive'
+        changeMode('passive')
         console.log(`${player.name}'s ${playerUnit.name} heals ${friend.name}'s ${friendUnit.name}`)
         const healAnimation = game.renderer3d.attackUnit(playerUnit, friendUnit) // TODO: different animation
         await healAnimation.waitAsync()
@@ -537,7 +546,7 @@ const GameUI = (game) => {
         game.dom.updateTopPanel(player)
     
         // Go back to select mode
-        ui.mode = 'select'
+        changeMode('select')
 
         resolve()
       })
@@ -675,7 +684,7 @@ const GameUI = (game) => {
     // Empty selection
     if (!isSomethingSelected) {
       // Open the game menu (ala Fire Emblem!)
-      ui.mode = 'game-menu-select'
+      changeMode('game-menu-select')
       game.dom.openGameMenu(actions)
     }
   }
@@ -687,7 +696,7 @@ const GameUI = (game) => {
     const path = ui.cursorPath // Use the cursor path as movement path
     
     // Avoid the user to move cursor or do other actions during movement
-    ui.mode = 'passive'
+    changeMode('passive')
     // Reset the move mode UI
     ui.moveZone = []
     ui.attackZone = []
@@ -704,7 +713,7 @@ const GameUI = (game) => {
     }
 
     // Next menu
-    ui.mode = 'game-menu-move'
+    changeMode('game-menu-move')
     const actions = ['Wait']
     if (canUnitAttack(ui.selectedUnit)) {
       actions.unshift('Attack')

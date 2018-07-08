@@ -75,7 +75,7 @@ const Player = (config) => {
       'jeep',
       'artillery',
       'tank',
-      'heavy-tank',
+      // 'heavy-tank',
       'cruiser',
       'helicopter'
       // 'bomber'
