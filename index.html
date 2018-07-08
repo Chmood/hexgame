@@ -34,30 +34,42 @@
 
     <!-- Top panel -->
     <div id="top-panel">
-      <div class="top-panel-item">Player <span id="player-name"></span></div>
-      <div class="top-panel-item">Money <span id="player-money"></span>$</div>
+      <section class="itembar">
+        <div class="itembar-item">Player <span id="player-name"></span></div>
+        <div class="itembar-item">Money <span id="player-money"></span>$</div>
+      </section>
+      <section class="itembar">
+        <div class="itembar-item">Mode <span id="info-mode"></span></div>
+      </section>
     </div>
 
     <!-- UI panel -->
-    <div id="ui">
-      <p>KEYS: arrows to move cursor, X to do action, C to cancel, E and R to zoom in and out, T and Y to rotate camera</p>
+    <div id="options-panel">
       <p>
-        <button id="ui-btn-update">Perturbate</button>&nbsp;
-        <button id="ui-btn-new">New terrain</button>
+        KEYS: arrows to move cursor, X to do action, C to cancel, E and R to zoom in and out, T and Y to rotate camera&nbsp;&nbsp;
+        <button id="options-btn-toggle-panel">+</button>
       </p>
       <p>
-        <label for="ui-select-postprocess">Post-process</label>
-        <select id="ui-select-postprocess">
+        <!-- <button id="options-btn-update">Perturbate</button>&nbsp;&nbsp; -->
+        <button id="options-btn-new-terrain">New terrain</button>&nbsp;&nbsp;
+        <button id="options-btn-new-buildings">New buildings</button>&nbsp;&nbsp;
+        <button id="options-btn-new-units">New units</button>&nbsp;&nbsp;
+        <button id="options-btn-play" class="btn-strong btn-highlight">Play!</button>
+      </p>
+      <p>
+        <button id="options-btn-fullscreen">Fullscreen</button>
+        <label for="options-select-postprocess">Post-process</label>
+        <select id="options-select-postprocess">
           <option value="none">None</option>
           <option value="ssao">SSAO</option>
           <option value="multi">Multi FX</option>
         </select>
-        <label for="ui-checkbox-better-ocean">Realistic ocean</label>
-        <input id="ui-checkbox-better-ocean" type="checkbox">
-        <label for="ui-camera-free">Free camera</label>
-        <input id="ui-camera-free" type="checkbox">
-        <label for="ui-camera-free-auto-rotate">Auto-rotate</label>
-        <input id="ui-camera-free-auto-rotate" type="checkbox">
+        <label for="options-checkbox-better-ocean">Realistic ocean</label>
+        <input id="options-checkbox-better-ocean" type="checkbox">
+        <label for="options-camera-free">Free camera</label>
+        <input id="options-camera-free" type="checkbox">
+        <label for="options-camera-free-auto-rotate">Auto-rotate</label>
+        <input id="options-camera-free-auto-rotate" type="checkbox">
       </p>
     </div>
 
