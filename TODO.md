@@ -26,7 +26,6 @@
 
 * New DOM element: unit/terrain/building info panel
 * Roads and bridges???
-* Fullscreen mode
 * Fog of war & unit vision range???
 * 2D map: different icons for units???
 

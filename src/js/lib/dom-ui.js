@@ -34,12 +34,13 @@ const DomUI = () => {
     dom.bigBannerContent = document.getElementById('big-banner-content')
 
     // Config panel elements
-    dom.btnUpdate = document.getElementById('ui-btn-update')
-    dom.btnNew = document.getElementById('ui-btn-new')
-    dom.selectPosprocess = document.getElementById('ui-select-postprocess')
-    dom.checkboxBetterOcean = document.getElementById('ui-checkbox-better-ocean')
-    dom.checkboxCameraFree = document.getElementById('ui-camera-free')
-    dom.checkboxCameraFreeAutoRotate = document.getElementById('ui-camera-free-auto-rotate')
+    dom.btnFullscreen = document.getElementById('options-btn-fullscreen')
+    dom.btnUpdate = document.getElementById('options-btn-update')
+    dom.btnNew = document.getElementById('options-btn-new')
+    dom.selectPosprocess = document.getElementById('options-select-postprocess')
+    dom.checkboxBetterOcean = document.getElementById('options-checkbox-better-ocean')
+    dom.checkboxCameraFree = document.getElementById('options-camera-free')
+    dom.checkboxCameraFreeAutoRotate = document.getElementById('options-camera-free-auto-rotate')
   }
 
   // SET ELEMENTS
@@ -84,6 +85,30 @@ const DomUI = () => {
     })
 
     // UI panel buttons
+    dom.btnFullscreen.addEventListener('click', () => {
+      console.warn('FULLSCREEN enabled: ', document.fullscreenEnabled)
+      
+      if ((document.fullScreenElement && document.fullScreenElement !== null) ||
+      (!document.mozFullScreen && !document.webkitIsFullScreen)) {
+        if (document.documentElement.requestFullScreen) {
+          document.documentElement.requestFullScreen()
+        } else if (document.documentElement.mozRequestFullScreen) {
+          document.documentElement.mozRequestFullScreen()
+        } else if (document.documentElement.webkitRequestFullScreen) {
+          document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
+        }
+      } else {
+        if (document.cancelFullScreen) {
+          document.cancelFullScreen()
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen()
+        } else if (document.webkitCancelFullScreen) {
+          document.webkitCancelFullScreen()
+        }
+      }
+
+      game.resizeGame()
+    })
     dom.btnUpdate.addEventListener('click', () => {
       game.generate()
     })
