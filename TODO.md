@@ -2,12 +2,12 @@
 
 ## Known bugs
 
-* bot units sometimes move an incredibly long path to attack (validate move)
-* Units can be built on occupied factories / port / airport??? [TO BE CONFIRMED]
-* Sometimes (!) keybord is broken, cursor moves on all keys
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
+* Sometimes (!) keybord is broken, cursor moves on all keys (keys[] broken?)
 * Switching post-processing ('multi'/'ssao') cause lighting issues (too dark / too bright)
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too, it shouldn't lean with its unit, but stay stricly above it)
+* bot units sometimes move an incredibly long path to attack (validate move) [TO BE CONFIRMED]
+* Units can be built on occupied factories / port / airport??? [TO BE CONFIRMED]
 
 ## Improvements
 

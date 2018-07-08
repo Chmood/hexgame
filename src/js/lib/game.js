@@ -216,7 +216,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       // console.log(`getEnnemiesInMoveThenAttackRange() - attackZone length: ${attackZone.length}`)
       for (const hex of attackZone) {
         const ennemy = game.getUnitByHex(hex)
-        if (ennemy) {
+        if (ennemy && unit.canAttackTypes.indexOf(ennemy.type) !== -1) {
           ennemies.push(ennemy)
         }
       }

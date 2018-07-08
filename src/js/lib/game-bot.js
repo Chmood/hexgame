@@ -35,7 +35,7 @@ const GameBot = (game, RNG) => {
         // Heal, conquer and defend
 
         if (!isUnitTurnFinished && unit.canHeal) {
-          
+          // TODO: HEAL
         }
 
         // Can the unit conquer a building?
@@ -164,24 +164,25 @@ const GameBot = (game, RNG) => {
           // No targets
           } else if (!mustStayInPlace) {
             // RANDOM MOVE
-            // console.warn(`No ennemies, RANDOM MOVE`)
-            // await moveUnitRandomly(unit)
+            console.warn(`No ennemies, RANDOM MOVE`)
+            await moveUnitRandomly(unit)
+
+            // // PROTECT THE BASE
+            // game.ui.moveZone = []
+            // game.ui.attackZone = []
+            // game.updateRenderers(['highlights'])
     
-            game.ui.moveZone = []
-            game.ui.attackZone = []
-            game.updateRenderers(['highlights'])
+            // const base = game.map.data.buildings.filter(
+            //   (building) => 
+            //   building.ownerId === game.currentPlayer.id &&
+            //   building.type === 'base'
+            // )
     
-            const base = game.map.data.buildings.filter(
-              (building) => 
-              building.ownerId === game.currentPlayer.id &&
-              building.type === 'base'
-            )
-    
-            if (base.length > 0) {
-              await moveUnitTowards(unit, base[0].hex)
-            } else {
-              console.error('move toward: no base found!')
-            }
+            // if (base.length > 0) {
+            //   await moveUnitTowards(unit, base[0].hex)
+            // } else {
+            //   console.error('move toward: no base found!')
+            // }
           }
         }
     
