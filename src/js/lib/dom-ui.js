@@ -34,6 +34,8 @@ const DomUI = () => {
     dom.bigBannerContent = document.getElementById('big-banner-content')
 
     // Config panel elements
+    dom.optionsPanel = document.getElementById('options-panel')
+    dom.btnOptionsTogglePanel = document.getElementById('options-btn-toggle-panel')
     dom.btnFullscreen = document.getElementById('options-btn-fullscreen')
     dom.btnUpdate = document.getElementById('options-btn-update')
     dom.btnNew = document.getElementById('options-btn-new')
@@ -85,6 +87,9 @@ const DomUI = () => {
     })
 
     // UI panel buttons
+    dom.btnOptionsTogglePanel.addEventListener('click', () => {
+      dom.optionsPanel.classList.toggle('active')
+    })
     dom.btnFullscreen.addEventListener('click', () => {
       console.warn('FULLSCREEN enabled: ', document.fullscreenEnabled)
       
