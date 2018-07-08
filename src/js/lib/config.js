@@ -411,7 +411,7 @@ const CONFIG = {
         maxHealth: 12,
         strength: 8,
         defense: 6,
-        movement: 4,
+        movement: 3,
         attackRangeMin: 2,
         attackRangeMax: 3,
 

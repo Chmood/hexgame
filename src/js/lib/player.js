@@ -59,9 +59,8 @@ const Player = (config) => {
   }
 
   // SET UNIT RANDOM TYPE
-  const setUnitRandomType = () => {
-    const types = Object.keys(CONFIG.game.units),
-          nTypes = types.length,
+  const setUnitRandomType = (types = Object.keys(CONFIG.game.units)) => {
+    const nTypes = types.length,
           rng = Math.floor(Math.random() * nTypes)
 
     return types[rng]
@@ -69,8 +68,19 @@ const Player = (config) => {
 
   // UNITS
   for (let n = 0; n < 5; n++) {
-    player.addUnit(setUnitRandomType())
-    // player.addUnit('air-transport')
+    // player.addUnit(setUnitRandomType()) // All types
+    player.addUnit(setUnitRandomType([
+      'soldier',
+      'bazooka',
+      'jeep',
+      'artillery',
+      'tank',
+      'heavy-tank',
+      'cruiser',
+      'helicopter'
+      // 'bomber'
+    ])) // Selected types
+    // player.addUnit('air-transport') // Single type
   }
 
   return player
