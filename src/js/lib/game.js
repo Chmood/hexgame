@@ -398,18 +398,17 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     },
 
     isGameReady() {
-      console.warn('buildings', game.map.data.buildings.length, 'players', game.players.length)
+      // console.warn('buildings', game.map.data.buildings.length, 'players', game.players.length)
       const isReady = (
         game.map.data.buildings.length > 0 && 
         game.players.length > 0
       )
 
       if (isReady) {
-        console.error('READY')
-        game.dom.btnPlay.disable = false
+        game.dom.btnPlay.disabled = false
         game.dom.btnPlay.classList.add('btn-highlight')
       } else {
-        game.dom.btnPlay.disable = true
+        game.dom.btnPlay.disabled = true
         game.dom.btnPlay.classList.remove('btn-highlight')
       }
 
