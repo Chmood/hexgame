@@ -4,7 +4,9 @@ const webpack = require('webpack'),
       HtmlWebpackPlugin = require('html-webpack-plugin'),
       ExtractTextPlugin = require('extract-text-webpack-plugin'),
 
-      extractPlugin = new ExtractTextPlugin({ filename: './css/app.css' })
+      extractPlugin = new ExtractTextPlugin({ filename: './css/app.css' }),
+
+      { VueLoaderPlugin } = require('vue-loader')
 
 const config = {
 
@@ -36,6 +38,11 @@ const config = {
             presets: ['env']
           } 
         }
+      },
+      // Vue loader
+      {
+        test: /\.vue$/,
+        use: 'vue-loader'
       },
       //html-loader
       {
@@ -90,9 +97,12 @@ const config = {
   plugins: [
     new CleanWebpackPlugin(['dist']),
     new HtmlWebpackPlugin({
-      template: 'index.html'
+      filename: 'index.html',
+      template: 'index.html',
+      inject: true
     }),
-    extractPlugin
+    extractPlugin,
+    new VueLoaderPlugin()
   ],
 
   devServer: {
@@ -101,8 +111,11 @@ const config = {
     port: 3000,
     stats: 'errors-only', // "'errors-only", "minimal", "none", "normal" & "verbose"
     open: true,
-    host: '0.0.0.0'
-    // hot: true
+    host: '0.0.0.0',
+    hot: true,
+    watchOptions: {
+      poll: true
+    }
   },
 
   devtool: 'inline-source-map',

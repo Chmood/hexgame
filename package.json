@@ -5,7 +5,7 @@
   "main": "dist/app.bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "./node_modules/.bin/webpack-dev-server",
+    "dev": "./node_modules/.bin/webpack-dev-server --hot --inline",
     "build": "./node_modules/.bin/webpack",
     "build:prod": "./node_modules/.bin/webpack -p",
     "deploy": "./deploy.sh",
@@ -34,6 +34,9 @@
     "node-sass": "^4.9.0",
     "sass-loader": "^7.0.3",
     "style-loader": "^0.21.0",
+    "vue-loader": "^15.2.4",
+    "vue-style-loader": "^4.1.0",
+    "vue-template-compiler": "^2.5.16",
     "webpack": "^4.11.1",
     "webpack-cli": "^3.0.3",
     "webpack-dev-server": "^3.1.4"
@@ -42,6 +45,8 @@
     "babel-polyfill": "^6.26.0",
     "babylonjs": "^3.3.0-alpha.8",
     "normalize-css": "^2.3.1",
-    "seedrandom": "^2.4.3"
+    "seedrandom": "^2.4.3",
+    "vue": "^2.5.16",
+    "vue-router": "^3.0.1"
   }
 }
