@@ -11,6 +11,7 @@
 
 ## Improvements
 
+* Fix mouse playing
 * 'move or fire' unit mode
 * Not healing air units in buildings (only in airports), and healing naval units in ports
 * Healing for bot units too

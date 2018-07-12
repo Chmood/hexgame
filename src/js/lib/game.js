@@ -422,10 +422,12 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       }
       console.warn('GAME STARTED')
       // Close the option panel (brutal way)
-      game.dom.optionsPanel.classList.toggle('active')
-      game.renderer3d.setActiveCamera('camera')
+      dom.optionsPanel.classList.remove('active')
+      dom.topPanel.classList.add('active')
 
+      game.renderer3d.setActiveCamera('camera')
       game.ui.resetUI()
+
 
       // BOT
       game.bot = GameBot(game, RNG)
@@ -564,6 +566,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Used by GameBot and UI
     getUnitByHex,
     cycleValueInRange,
+    clampValueInRange,
     wait,
   
     ////////////////////////////////////////

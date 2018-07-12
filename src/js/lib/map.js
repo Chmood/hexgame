@@ -46,6 +46,13 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
       // Procedural terrain generation
       createMapData('height', config.mapValueRange.height)
       createMapData('moisture', config.mapValueRange.moisture)
+      map.postprocessMap()
+    },
+
+    // POSTPROCESS MAP
+    postprocessMap() {
+      postprocessMapData('height', config.mapValueRange.height)
+      postprocessMapData('moisture', config.mapValueRange.moisture)
       createMapBiomes()
     },
 
@@ -495,6 +502,17 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
           value = createNoise(type, x, y)
         }
         map.data.terrain[x][y][type] = value * range
+        map.data.terrain[x][y][`${type}-raw`] = value * range
+      }
+    }
+  }
+
+  // POSTPROCESS MAP DATA
+  const postprocessMapData = (type, range) => {
+    // Reset terrain to original
+    for (let x = 0; x < config.mapSize.width; x++) {
+      for (let y = 0; y < config.mapSize.height; y++) {
+        map.data.terrain[x][y][type] = map.data.terrain[x][y][`${type}-raw`]
       }
     }
 

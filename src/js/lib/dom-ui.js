@@ -11,6 +11,13 @@ const DomUI = () => {
 
   let game = {}
 
+   // Game configuration object
+  const config = {
+    players: CONFIG.players
+  }
+
+  const maxPlayers = 4
+
   // GET ELEMENTS
   dom.getElements = () => {
     // 2D and 3D canvases
@@ -19,6 +26,7 @@ const DomUI = () => {
     dom.canvas3d = document.getElementById('canvas3d')
   
     // Top panel
+    dom.topPanel = document.getElementById('top-panel')
     dom.playerName = document.getElementById('player-name')
     dom.playerMoney = document.getElementById('player-money')
     dom.infoMode = document.getElementById('info-mode')
@@ -38,6 +46,21 @@ const DomUI = () => {
     dom.optionsPanel = document.getElementById('options-panel')
     dom.btnOptionsTogglePanel = document.getElementById('options-btn-toggle-panel')
     
+    dom.gameConfigurationPanel = document.getElementById('game-configuration-panel')
+    dom.btnGameConfigurationPrevious = document.getElementById('game-configuration-btn-previous')
+    dom.btnGameConfigurationNext = document.getElementById('game-configuration-btn-next')
+
+    // GAME CONFIGURATION
+    dom.players = []
+
+    for (let p = 0; p < maxPlayers; p++) {
+      dom.players[p] = {}
+      dom.players[p].name = document.getElementById(`options-players-name-${p}`)
+      dom.players[p].typeHuman = document.getElementById(`options-players-type-human-${p}`)
+      dom.players[p].typeBot = document.getElementById(`options-players-type-bot-${p}`)
+      dom.players[p].typeDisabled = document.getElementById(`options-players-type-disabled-${p}`)
+    }
+
     dom.btnUpdate = document.getElementById('options-btn-update')
     dom.btnNewTerrain = document.getElementById('options-btn-new-terrain')
     dom.btnNewBuildings = document.getElementById('options-btn-new-buildings')
@@ -57,6 +80,17 @@ const DomUI = () => {
     dom.checkboxBetterOcean.checked = CONFIG.render3d.betterOcean
     dom.checkboxCameraFree.checked = CONFIG.render3d.camera.activeCamera === 'cameraFree'
     dom.checkboxCameraFreeAutoRotate.checked = CONFIG.render3d.camera.cameraFreeAutoRotate
+
+    // GAME CONFIGURATION
+    for (let p = 0; p < maxPlayers; p++) {
+      dom.players[p].name.value = CONFIG.players[p].name
+      if (CONFIG.players[p].isHuman) {
+        dom.players[p].typeHuman.checked = true
+      } else {
+        dom.players[p].typeBot.checked = true
+      }
+    }
+
   }
 
   // SET EVENT LISTENERS
@@ -123,6 +157,22 @@ const DomUI = () => {
     // dom.btnUpdate.addEventListener('click', () => {
     //   game.generate()
     // })
+
+    // GAME CONFIGURATION
+    dom.btnGameConfigurationPrevious.addEventListener('click', () => {
+      dom.changeGameConfigurationStep(-1)
+    })
+    dom.btnGameConfigurationNext.addEventListener('click', () => {
+      dom.changeGameConfigurationStep(1)
+    })
+
+    for (let p = 0; p < maxPlayers; p++) {
+      dom.players[p].name.addEventListener('change', (event) => {
+        config.players[p].name = event.target.value
+      })
+      
+    }
+    
     dom.btnNewTerrain.addEventListener('click', () => {
       game.generateTerrain(true) // New random seed
     })
@@ -179,6 +229,29 @@ const DomUI = () => {
 
   dom.updateInfoMode = (mode) => {
     dom.infoMode.textContent = mode
+  }
+
+  // GAME CONFIGURATION
+  dom.changeGameConfigurationStep = (increment) => {
+    currentGameConfigurationStep += increment
+    currentGameConfigurationStep = game.clampValueInRange(
+      currentGameConfigurationStep,
+      4
+    )
+
+    if (currentGameConfigurationStep > 0) {
+      dom.btnGameConfigurationPrevious.disabled = false
+    } else {
+      dom.btnGameConfigurationPrevious.disabled = true
+    }
+    if (currentGameConfigurationStep < 4) {
+      dom.btnGameConfigurationNext.disabled = false
+    } else {
+      dom.btnGameConfigurationNext.disabled = true
+    }
+
+    dom.gameConfigurationPanel.classList.remove('step-0', 'step-1', 'step-2', 'step-3', 'step-4')
+    dom.gameConfigurationPanel.classList.add(`step-${currentGameConfigurationStep}`)
   }
 
   // GAME MENU
@@ -364,6 +437,8 @@ const DomUI = () => {
 
   let currentGameMenuItems = []
   let currentGameMenuItemId = undefined
+
+  let currentGameConfigurationStep = 0
 
   dom.getElements()
   dom.setElements()

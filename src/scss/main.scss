@@ -2,6 +2,17 @@
 @import url('https://fonts.googleapis.com/css?family=Righteous');
 @import '../../node_modules/normalize-css/normalize.css';
 
+// VARIABLES
+
+$color-primary: #bb0022;
+
+$gutter: 2rem;
+
+$gutter-half: $gutter / 2;
+$gutter-quarter: $gutter / 4;
+$gutter-heighth: $gutter / 8;
+$gutter-double: $gutter * 2;
+
 // BASE
 
 *, *::after, *::before {
@@ -19,6 +30,10 @@ body {
 	font-size: 1.0rem;
 	// font-family: 'Ranchers', cursive;
 	font-family: 'Righteous', cursive;
+}
+
+h2 {
+	color: $color-primary;
 }
 
 // GAME WRAPPER
@@ -60,15 +75,15 @@ body {
 	background-color: transparent;
 	border-color: $color;
 
-	&:hover,
-	&:focus {
+	&:hover/*,
+	&:focus*/ {
 		background-color: $color;
 		color: #111;
 	}
 
 	&:active {
-		background-color: #f80;
-		border-color: #f80;
+		background-color: $color-primary;
+		border-color: $color-primary;
 		color: white;
 	}
 }
@@ -78,7 +93,7 @@ button {
 
 	@include btn-color(white);
 
-	padding: 0.5rem 1rem;
+	padding: 0.5rem $gutter-half;
 	font-weight: bold;
 	text-transform: capitalize;
 	transition: all 0.25s;
@@ -93,7 +108,7 @@ button {
 	}
 
 	&.btn-highlight {
-		@include btn-color(#f08);
+		@include btn-color($color-primary);
 	}
 
 	&:disabled {
@@ -105,7 +120,7 @@ button {
 #top-panel,
 #game-menu {
 	position: fixed;
-	padding: 1rem;
+	padding: $gutter-half;
 	background-color: rgba(0,0,0,0.75);
 	color: white;
 
@@ -119,6 +134,12 @@ button {
 	padding: 0;
 	display: flex;
 	justify-content: space-between;
+	transform: translate3d(0, -100%, 0);
+	transition: transform 0.25s;
+
+	&.active {
+		transform: translate3d(0, 0, 0);
+	}
 }
 
 .itembar {
@@ -126,7 +147,7 @@ button {
 }
 
 .itembar-item {
-	padding: 1rem;
+	padding: $gutter-half;
 
 	> span {
 		font-weight: bold;
@@ -140,7 +161,7 @@ button {
 	left: 0;
 	width: 100vw;
 	text-align: center;
-	transform: translateY(calc(100% - (2 * 1rem + 2.5rem)));
+	transform: translateY(100%);
 	transition: transform 0.25s;
 
 	&.active {
@@ -149,7 +170,144 @@ button {
 
 	p {
 		margin-top: 0;
-		margin-bottom: 1rem;
+		margin-bottom: $gutter-half;
+	}
+}
+
+// GAME CONFIGURATION
+
+.game-configuration {
+	position: relative;
+
+	@media (min-width: 40em) {
+		margin-left: 4rem;
+		margin-right: 4rem;
+	}
+	@media (min-width: 60em) {
+		margin-left: 10rem;
+		margin-right: 10rem;
+	}
+}
+
+.game-configuration-btn {
+	position: absolute;
+	z-index: +1;
+}
+.game-configuration-btn--previous { top: $gutter-half; left: 0; }
+.game-configuration-btn--next { bottom: $gutter-half; right: 0; }
+
+.game-configuration-wrapper {
+	width: 500%;
+	display: flex;
+	transition: transform 0.25s;
+
+	.step-0 & { transform: translateX(0); }
+	.step-1 & { transform: translateX(-20%); }
+	.step-2 & { transform: translateX(-40%); }
+	.step-3 & { transform: translateX(-60%); }
+	.step-4 & { transform: translateX(-80%); }
+}
+
+.game-configuration-section {
+	flex-basis: 20%;
+	margin-left: 1rem;
+	margin-right: 1rem;
+	padding: $gutter;
+	background: rgba(0,0,0,0.75);
+
+	> h3 {
+		margin-top: 0;
+		margin-bottom: $gutter;
+	}
+}
+
+.game-configuration-player {
+	margin-bottom: $gutter-half;
+
+	// display: flex;
+	// align-items: stretch;
+
+	// > *:nth-child(1) { flex-basis: auto; }
+	// > *:nth-child(2) { flex-basis: 40%; }
+	// > *:nth-child(3) { flex-basis: auto; }
+}
+
+// FORM UI
+
+.input-block {
+	display: flex;
+	flex-wrap: wrap;
+	@media screen and (min-width: 40em) {
+	}
+
+	> * {
+		flex-basis: 100%;
+
+		@media screen and (min-width: 40em) {
+			flex-basis: 50%;
+		}
+	}
+
+	> label {
+		text-align: left;
+		margin-bottom: $gutter-quarter;
+
+		@media screen and (min-width: 40em) {
+			text-align: right;
+			padding-right: $gutter-half;
+		}
+	}
+
+	> input {
+		margin-bottom: $gutter-half;
+	}
+}
+
+input[type="text"],
+input[type="number"],
+.raydio {
+	display: inline-block;
+	border: 0.1rem solid #666;
+}
+
+label,
+input[type="text"],
+input[type="number"] {
+	padding: $gutter-heighth $gutter-quarter;
+	background-color: transparent;
+	color: white;
+}
+
+label,
+.label {
+	display: inline-block;
+	color: $color-primary;
+}
+
+input[type="text"] {
+}
+input[type="number"] {
+}
+
+.raydio {
+	input[type="radio"] {
+		display: none;
+	}
+
+	input[type="radio"] + label {
+		display: inline-block;
+		padding: $gutter-heighth $gutter-quarter;
+		color: #666;
+		transition: color 0.25s, background-color 0.5s;
+
+		&:hover {
+			color: white;
+		}
+	}
+
+	input[type="radio"]:checked + label {
+		background: $color-primary;
+		color: white;
 	}
 }
 
@@ -269,5 +427,25 @@ button {
 	}
 }
 
+// GRID
 
+.grid {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: stretch;
+}
 
+.grid-1-of-4 {
+	> * {
+		flex-basis: 50%;
+
+		@media screen and (min-width: 40em) {
+			flex-basis: 25%;
+		}
+	}
+}
+.grid-1-of-2 {
+	> * {
+		flex-basis: 50%;
+	}
+}
