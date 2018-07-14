@@ -187,15 +187,7 @@
     </div>
 
     <!-- Game menu panel -->
-    <div id="game-menu">
-      <button class="game-menu-item" id="game-menu-Attack">Attack</button>
-      <button class="game-menu-item" id="game-menu-Heal">Heal</button>
-      <button class="game-menu-item" id="game-menu-Conquer">Conquer</button>
-      <button class="game-menu-item" id="game-menu-Wait">Wait</button>
-      <button class="game-menu-item" id="game-menu-BuildUnits">Build units</button>
-      <button class="game-menu-item" id="game-menu-EndTurn">End turn</button>
-      <button class="game-menu-item" id="game-menu-QuitGame">Quit game</button>
-    </div>
+    <game-menu />
 
     <!-- Fullscreen banner-->
     <div id="big-banner" class="above text-left">
@@ -208,16 +200,16 @@
 
 <script>
 import Topbar from './components/Topbar.vue'
+import GameMenu from './components/GameMenu.vue'
+
 export default {
   components: {
-    Topbar
+    Topbar,
+    GameMenu
   },
 
   data() {
-    return {
-      bar: 'Hello Vue !'
-    }
+    return {}
   }
-
 }
 </script>

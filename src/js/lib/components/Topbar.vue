@@ -22,34 +22,13 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState } from 'vuex'
 
 export default {
   computed: mapState({
     isActive: state => state.topbar.isActive,
     player: state => state.topbar.player,
     mode: state => state.topbar.mode,
-  }),
-
-  // methods: mapActions('cart', [
-  //   'addProductToCart'
-  // ]),
-  
-  props: {
-    // name: {
-    //   type: String,
-    //   required: true
-    // }
-  },
-
-  data() {
-    return {}
-  },
-
-  methods: {
-    // reverseMessage: function () {
-    //   this.message = this.message.split('').reverse().join('')
-    // }
-  }
+  })
 }
 </script>

@@ -75,8 +75,8 @@ h2 {
 	background-color: transparent;
 	border-color: $color;
 
-	&:hover/*,
-	&:focus*/ {
+	&:hover,
+	&:focus {
 		background-color: $color;
 		color: #111;
 	}
@@ -327,13 +327,12 @@ input[type="number"] {
 	}
 
 	button {
-		display: none;
 		width: 100%;
 		margin-bottom: 0.5rem;
 		text-align: left;
 		border-width: 0 !important;
 		
-		&.game-menu-item--dynamic {
+		&.game-menu-item--with-value {
 			display: flex;
 			justify-content: space-between;
 
@@ -344,42 +343,6 @@ input[type="number"] {
 
 		&.game-menu-item--disabled {
 			opacity: 0.5;
-		}
-	}
-
-	&.Attack {
-		#game-menu-Attack {
-			display: block;
-		}
-	}
-	&.Heal {
-		#game-menu-Heal {
-			display: block;
-		}
-	}
-	&.Conquer {
-		#game-menu-Conquer {
-			display: block;
-		}
-	}
-	&.Wait {
-		#game-menu-Wait {
-			display: block;
-		}
-	}
-	&.BuildUnits {
-		#game-menu-BuildUnits {
-			display: block;
-		}
-	}
-	&.EndTurn {
-		#game-menu-EndTurn {
-			display: block;
-		}
-	}
-	&.QuitGame {
-		#game-menu-QuitGame {
-			display: block;
 		}
 	}
 }

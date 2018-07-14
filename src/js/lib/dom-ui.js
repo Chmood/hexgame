@@ -10,17 +10,9 @@ import VueApp from './app.vue'
 const DomUI = () => {
 
   const dom = {},
-        keys = {},
-        gameMenuItems = ['Attack', 'Heal', 'Conquer', 'Wait', 'BuildUnits', 'EndTurn', 'QuitGame']
+        keys = {}
 
   let game = {}
-
-   // Game configuration object
-  const config = {
-    players: CONFIG.players
-  }
-
-  const maxPlayers = 4
 
   // VUE JS
   dom.vm = new Vue({
@@ -28,11 +20,13 @@ const DomUI = () => {
     store,
     render: h => h(VueApp)
   })
+  
+  // Game configuration object
+  const config = {
+    players: CONFIG.players
+  }
 
-  console.log("VUE", dom.vm.$store)
-  // dom.vm.$store.commit('topbar/setActive', {
-  //   active: true
-  // })
+  const maxPlayers = 4
 
   // GET ELEMENTS
   dom.getElements = () => {
@@ -41,13 +35,6 @@ const DomUI = () => {
     dom.canvas2dWrapper = document.getElementById('canvas2d-wrapper')
     dom.canvas3d = document.getElementById('canvas3d')
   
-    // Game menu and its items
-    dom.gameMenu = document.getElementById('game-menu')
-    dom.gameMenuItems = document.querySelectorAll('.game-menu-item')
-    for (const item of gameMenuItems) {
-      dom[`gameMenu${item}`] = document.getElementById(`game-menu-${item}`)
-    }
-
     // Big banner
     dom.bigBanner = document.getElementById('big-banner')
     dom.bigBannerContent = document.getElementById('big-banner-content')
@@ -180,7 +167,6 @@ const DomUI = () => {
       dom.players[p].name.addEventListener('change', (event) => {
         config.players[p].name = event.target.value
       })
-      
     }
     
     dom.btnNewTerrain.addEventListener('click', () => {
@@ -218,13 +204,6 @@ const DomUI = () => {
       game.renderer3d.setCameraFreeAutorotate(cameraFreeAutoRotate)
     })
 
-    // Game menu
-    for (const item of gameMenuItems) {
-      dom[`gameMenu${item}`].addEventListener('click', () => {
-        game[`gameMenu${item}`]()
-      })
-    }
-
     // Resize window
     window.onresize = () => {
       game.resizeGame()
@@ -234,13 +213,89 @@ const DomUI = () => {
   // TOP PANEL
   dom.updateTopPanel = (player) => {
 
-    dom.vm.$store.commit('topbar/setPlayer', { player })
+    store.commit('topbar/setPlayer', { player })
   }
 
   dom.updateInfoMode = (mode) => {
 
-    dom.vm.$store.commit('topbar/setMode', { mode })
+    store.commit('topbar/setMode', { mode })
   }
+
+  // GAME MENU
+
+  window.addEventListener('gameMenuAction', (event) => {
+    console.log('EVENT', event.detail.action)
+    game[`gameMenu${event.detail.action}`]()
+  })
+  window.addEventListener('buildMenuAction', (event) => {
+    console.log('EVENT', event.detail.unitType)
+    game.gameMenuBuildUnit(event.detail.unitType)
+  })
+
+  dom.closeGameMenu = () => {
+
+    store.commit('gameMenu/setActive', {
+      active: false
+    })
+  }
+
+  dom.openGameMenu = (items) => {
+
+    const enhancedItems = []
+    for (const item of items) {
+      enhancedItems.push({
+        type: 'game',
+        label: item
+      })
+    }
+
+    store.commit('gameMenu/clear')
+    store.commit('gameMenu/setItems', { items: enhancedItems })
+    store.commit('gameMenu/setActive', { active: true })
+  }
+
+  // Build menu
+  dom.openGameBuildMenu = (building, money) => {
+    store.commit('gameMenu/clear')
+
+    let unitFamily
+    if (building.type === 'factory') {
+      unitFamily = 'ground'
+    } else if (building.type === 'port') {
+      unitFamily = 'sea'
+    } else if (building.type === 'airport') {
+      unitFamily = 'air'
+    }
+
+    const items = []
+    for (const unitType in CONFIG.game.units) {
+      const unit = CONFIG.game.units[unitType]
+
+      if (unit.family === unitFamily) {
+
+        items.push({
+          type: 'build',
+          label: unitType,
+          value: unit.cost,
+          disabled: (unit.cost > money) ? true : false
+        })
+      }
+    }
+
+    store.commit('gameMenu/setItems', { items })
+    store.commit('gameMenu/setActive', { active: true })
+  }
+
+  dom.moveGameMenu = (direction) => {
+    store.commit('gameMenu/move', { direction })
+  }
+
+  dom.selectGameMenu = () => {
+    // Simulates a click on the menu item button
+    const element = store.getters['gameMenu/getCurrentGameMenuItemElement']
+    element.click()
+  }
+
 
   // GAME CONFIGURATION
   dom.changeGameConfigurationStep = (increment) => {
@@ -263,112 +318,6 @@ const DomUI = () => {
 
     dom.gameConfigurationPanel.classList.remove('step-0', 'step-1', 'step-2', 'step-3', 'step-4')
     dom.gameConfigurationPanel.classList.add(`step-${currentGameConfigurationStep}`)
-  }
-
-  // GAME MENU
-  // Clear all existing menu items
-  dom.clearGameMenu = () => {
-    // Remove items visibility menu classes
-    dom.gameMenu.classList.remove(...gameMenuItems)
-    // Remove items selectability classes
-    dom.gameMenuItems.forEach((item) => {
-      item.classList.remove('is-selectable')
-    })
-    // Remove dynamic items (build menu)
-    const dynamicItems = document.querySelectorAll('.game-menu-item--dynamic')
-    dynamicItems.forEach(function(dynamicItem) {
-      dynamicItem.remove()
-    })
-  }
-
-  dom.activateGameMenu = (items) => {
-    // Make the menu visible
-    dom.gameMenu.classList.add('active')
-
-    // Backup items
-    currentGameMenuItems = items
-    currentGameMenuItemId = 0
-
-    // Give the focus to the first menu item
-    dom[`gameMenu${currentGameMenuItems[0]}`].focus()
-  }
-
-  dom.openGameMenu = (items) => {
-    dom.clearGameMenu()
-
-    // Add the specified menu items
-    for (const item of items) {
-      dom.gameMenu.classList.add(item) // class on the menu
-      dom[`gameMenu${item}`].classList.add('is-selectable') // class on available items
-    }
-
-    dom.activateGameMenu(items)
-  }
-
-  // Build menu
-  dom.openGameBuildMenu = (building, money) => {
-    dom.clearGameMenu()
-
-    let unitFamily
-    if (building.type === 'factory') {
-      unitFamily = 'ground'
-    } else if (building.type === 'port') {
-      unitFamily = 'sea'
-    } else if (building.type === 'airport') {
-      unitFamily = 'air'
-    }
-
-    const items = []
-    for (const unitType in CONFIG.game.units) {
-      const unit = CONFIG.game.units[unitType]
-
-      if (unit.family === unitFamily) {
-        const menuItem = document.createElement("button")
-        // menuItem.id = `game-menu-${unitType}`
-        menuItem.classList.add('game-menu-item', 'game-menu-item--dynamic')
-        menuItem.innerHTML = `${unitType} <span>(${unit.cost})</span>`
-        items.push(unitType)
-
-        if (unit.cost <= money) {
-          menuItem.addEventListener('click', () => {
-            game.gameMenuBuildUnit(unitType)
-          })
-        } else {
-          menuItem.classList.add('game-menu-item--disabled')
-        }
-
-        dom.gameMenu.appendChild(menuItem)
-
-        // Backup item
-        dom[`gameMenu${unitType}`] = menuItem
-      }
-    }
-
-    dom.activateGameMenu(items)
-  }
-
-  dom.closeGameMenu = () => {
-    dom.gameMenu.classList.remove('active')
-  }
-
-  dom.moveGameMenu = (direction) => {
-    const increment = direction === 'up' ? -1 : 1
-    currentGameMenuItemId += increment
-
-    // Wrap index
-    if (currentGameMenuItemId < 0) {
-      currentGameMenuItemId += currentGameMenuItems.length
-    } else if (currentGameMenuItemId >= currentGameMenuItems.length) {
-      currentGameMenuItemId -= currentGameMenuItems.length
-    }
-
-    // Give the focus to the selected menu item button
-    dom[`gameMenu${currentGameMenuItems[currentGameMenuItemId]}`].focus()
-  }
-
-  dom.selectGameMenu = () => {
-    // Simulates a click on the menu item button
-    dom[`gameMenu${currentGameMenuItems[currentGameMenuItemId]}`].click()
   }
 
   // BIG BANNER
@@ -444,10 +393,9 @@ const DomUI = () => {
   // SET GAME
   dom.setGame = (newGame) => {
     game = newGame
-  }
 
-  let currentGameMenuItems = []
-  let currentGameMenuItemId = undefined
+    Vue.prototype.$game = game
+  }
 
   let currentGameConfigurationStep = 0
 
