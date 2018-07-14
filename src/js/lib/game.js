@@ -423,7 +423,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       console.warn('GAME STARTED')
       // Close the option panel (brutal way)
       dom.optionsPanel.classList.remove('active')
-      dom.topPanel.classList.add('active')
+      // dom.topPanel.classList.add('active')
+      dom.vm.$store.commit('topbar/setActive', {
+        active: true
+      })
+    
 
       game.renderer3d.setActiveCamera('camera')
       game.ui.resetUI()

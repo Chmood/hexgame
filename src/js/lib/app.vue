@@ -1,9 +1,6 @@
 <template>
 
-
   <div class="game-wrapper">
-
-    <hello-component name="World" />
 
     <!-- 3d canvas -->
     <canvas id="canvas3d" touch-action="none"></canvas>
@@ -16,20 +13,7 @@
     </div>
 
     <!-- Top panel -->
-    <div id="top-panel">
-      <section class="itembar">
-        <div class="itembar-item">Player
-          <span id="player-name"></span>
-        </div>
-        <div class="itembar-item">Money
-          <span id="player-money"></span>$</div>
-      </section>
-      <section class="itembar">
-        <div class="itembar-item">Mode
-          <span id="info-mode"></span>
-        </div>
-      </section>
-    </div>
+    <topbar />
 
     <!-- UI panel -->
     <div id="options-panel">
@@ -219,13 +203,21 @@
     </div>
 
   </div>
+
 </template>
 
 <script>
-import HelloComponent from './components/Hello.vue'
+import Topbar from './components/Topbar.vue'
 export default {
   components: {
-    HelloComponent
+    Topbar
+  },
+
+  data() {
+    return {
+      bar: 'Hello Vue !'
+    }
   }
+
 }
 </script>

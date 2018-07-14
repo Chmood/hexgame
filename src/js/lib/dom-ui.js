@@ -1,5 +1,9 @@
 import CONFIG from './config'
 
+import Vue from 'vue'
+import store from './store'
+import VueApp from './app.vue'
+
 ////////////////////////////////////////////////////////////////////////////////
 // DOM UI
 
@@ -18,6 +22,18 @@ const DomUI = () => {
 
   const maxPlayers = 4
 
+  // VUE JS
+  dom.vm = new Vue({
+    el: '#app',
+    store,
+    render: h => h(VueApp)
+  })
+
+  console.log("VUE", dom.vm.$store)
+  // dom.vm.$store.commit('topbar/setActive', {
+  //   active: true
+  // })
+
   // GET ELEMENTS
   dom.getElements = () => {
     // 2D and 3D canvases
@@ -25,12 +41,6 @@ const DomUI = () => {
     dom.canvas2dWrapper = document.getElementById('canvas2d-wrapper')
     dom.canvas3d = document.getElementById('canvas3d')
   
-    // Top panel
-    dom.topPanel = document.getElementById('top-panel')
-    dom.playerName = document.getElementById('player-name')
-    dom.playerMoney = document.getElementById('player-money')
-    dom.infoMode = document.getElementById('info-mode')
-
     // Game menu and its items
     dom.gameMenu = document.getElementById('game-menu')
     dom.gameMenuItems = document.querySelectorAll('.game-menu-item')
@@ -223,12 +233,13 @@ const DomUI = () => {
 
   // TOP PANEL
   dom.updateTopPanel = (player) => {
-    dom.playerName.textContent = player.name
-    dom.playerMoney.textContent = player.money
+
+    dom.vm.$store.commit('topbar/setPlayer', { player })
   }
 
   dom.updateInfoMode = (mode) => {
-    dom.infoMode.textContent = mode
+
+    dom.vm.$store.commit('topbar/setMode', { mode })
   }
 
   // GAME CONFIGURATION

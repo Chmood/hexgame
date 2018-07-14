@@ -6,14 +6,6 @@ import CONFIG from './lib/config'
 import Game from './lib/game'
 import DomUI from './lib/dom-ui'
 
-import Vue from 'vue'
-import App from './lib/app.vue'
-
-new Vue({
-  el: '#app',
-  render: h => h(App)
-})
-
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN
 
@@ -63,9 +55,10 @@ const Main = () => {
 
   // START
   main.start = () => {
+
     // GET DOM THINGS
     main.domUI = DomUI()
-    
+
     // Auto-size canvas
     main.sizeGame(main.domUI.canvas2dWrapper)
     main.ctx = main.domUI.canvas2d.getContext('2d')
