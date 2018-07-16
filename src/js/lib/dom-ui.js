@@ -15,19 +15,13 @@ const DomUI = () => {
   let game = {}
 
   // VUE JS
-  dom.vm = new Vue({
+  // DOM creation
+  /*dom.vm = */new Vue({
     el: '#app',
     store,
     render: h => h(VueApp)
   })
   
-  // Game configuration object
-  const config = {
-    players: CONFIG.players
-  }
-
-  const maxPlayers = 4
-
   // GET ELEMENTS
   dom.getElements = () => {
     // 2D and 3D canvases
@@ -89,6 +83,9 @@ const DomUI = () => {
     dom.canvas3d.addEventListener('click', () => {
       game.doAction()
     })
+
+    ////////////////////////////////////////
+    // UI PANEL / TO MOVE into Vue
 
     // UI panel buttons
     dom.btnFullscreen.addEventListener('click', () => {
@@ -321,11 +318,10 @@ const DomUI = () => {
   // SET GAME
   dom.setGame = (newGame) => {
     game = newGame
-
-    Vue.prototype.$game = game
   }
 
-  let currentGameConfigurationStep = 0
+  ////////////////////////////////////////
+  // INIT
 
   dom.getElements()
   dom.setElements()

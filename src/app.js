@@ -10,6 +10,6 @@ import './img/favicon/safari-pinned-tab.svg'
 
 import Main from './js/main.js'
 
-const main = Main()
+/*const main = */Main()
 
-console.log('Game started!')
+console.log('Game startup finished!')

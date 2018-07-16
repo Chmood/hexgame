@@ -355,8 +355,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     return value
   }
 
-
-
   // WAIT
   // Simply wait for some time
   const wait = (time = 500) => {
@@ -370,8 +368,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   ////////////////////////////////////////
   // PUBLIC
   const game = {
-    // DOM (backup)
-    dom,
+    // Inject DOM
+    dom: dom,
 
     // Game map
     map: Map(CONFIG.map),
@@ -385,17 +383,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     // Current player
     currentPlayer: undefined, // Player
-
-    async init () {
-      game.ui.changeMode('configure')
-
-      dom.setGameConfigurationPanel(true)
-      game.renderer3d.setActiveCamera('cameraFree')
-
-      game.generateTerrain()
-      game.generateBuildings()
-      game.generateUnits()
-    },
 
     isGameReady() {
       // console.warn('buildings', game.map.data.buildings.length, 'players', game.players.length)
@@ -1178,6 +1165,16 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       game.ui.focusUnit('next')
     }
   }
+
+  // INIT
+  game.ui.changeMode('configure')
+
+  dom.setGameConfigurationPanel(true)
+  game.renderer3d.setActiveCamera('cameraFree')
+
+  game.generateTerrain()
+  game.generateBuildings()
+  game.generateUnits()
 
   return game
 }

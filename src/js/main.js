@@ -15,8 +15,8 @@ const Main = () => {
   ////////////////////////////////
   // SIZING THINGS
 
-  // SIZE GAME
-  main.sizeGame = (canvasWrapper) => {
+  // SIZE 2D MAP
+  const size2dMap = (canvasWrapper) => {
     const canvasWrapperWidth = canvasWrapper.offsetWidth,
           canvasWrapperHeight = canvasWrapper.offsetHeight
 
@@ -35,7 +35,7 @@ const Main = () => {
   }
 
   // SIZE CANVAS
-  main.sizeCanvas = (canvas, game) => {
+  const size2dCanvas = (canvas, game) => {
     canvas.width = game.renderer2d.mapRenderSize.width
     canvas.height = game.renderer2d.mapRenderSize.height
 
@@ -47,46 +47,37 @@ const Main = () => {
     }
   }
 
-  // RESIZE ALL THINGS
+  // SET SIZE (public?)
+  // Size all the things
   main.setSize = () => {
-    main.sizeGame(main.domUI.canvas2dWrapper)
-    main.sizeCanvas(main.domUI.canvas2d, main.game)
+    size2dMap(dom.canvas2dWrapper)
+    size2dCanvas(dom.canvas2d, main.game)
   }
 
-  // START
-  main.start = () => {
+  ////////////////////////////////
+  // INIT
 
-    // GET DOM THINGS
-    main.domUI = DomUI()
+  // CREATE DOM THINGS (Vue JS)
+  const dom = DomUI()
 
-    // Auto-size canvas
-    main.sizeGame(main.domUI.canvas2dWrapper)
-    main.ctx = main.domUI.canvas2d.getContext('2d')
-    
-    ////////////////////////////////
-    // CREATE THE GAME
+  // CREATE THE GAME
+  const ctx2d = dom.canvas2d.getContext('2d'),
+        canvas3d = dom.canvas3d
 
-    main.game = Game(main.ctx, main.domUI.canvas3d, main.domUI, main)
-    main.game.init()
-    main.domUI.setGame(main.game)
+  // Size 2D map
+  // Must come BEFORE game creation
+  size2dMap(dom.canvas2dWrapper)
+  
+  main.game = Game(ctx2d, canvas3d, dom, main)
 
-    // Set canvas size
-    main.sizeCanvas(main.domUI.canvas2d, main.game)
+  // Set DOM game reference
+  dom.setGame(main.game)
 
-    ////////////////////////////////
-    // LAUCH LOOP
+  // Set 2D canvas size
+  size2dCanvas(dom.canvas2d, main.game)
 
-    // 2D: Initial rendering
-    main.game.renderer2d.render()
-    // 3D: Start engine!
-    // Will be fired in renderer3d, when all assets finished loading
-    // main.game.renderer3d.startRenderLoop()
-  }
-
-  // WINDOW ON LOAD
-  window.onload = () => {
-    main.start()
-  }
+  // 2D: Initial rendering
+  main.game.renderer2d.render()
 
   return main
 }
