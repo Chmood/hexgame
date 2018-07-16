@@ -84,8 +84,10 @@ const Players = (PLAYERS, map, RNG) => {
   }
 
   let nUnitsPlaced = 0
+  let currentId = 0
+
   for (const p of PLAYERS) {
-    const playerId = p.id
+    const playerId = currentId
 
     let player = Player({
       id: playerId,
@@ -106,6 +108,7 @@ const Players = (PLAYERS, map, RNG) => {
     }
 
     players.push(player)
+    currentId++
   }
 
   return players

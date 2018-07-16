@@ -27,13 +27,27 @@ html {
 
 body {
 	// overflow: hidden;
-	font-size: 1.0rem;
+	font-size: 1.4rem;
 	// font-family: 'Ranchers', cursive;
 	font-family: 'Righteous', cursive;
 }
 
 h2 {
 	color: $color-primary;
+}
+
+h4 {
+	margin-top: 0;
+	margin-bottom: $gutter-half;
+}
+
+p {
+	margin-bottom: $gutter-half;
+}
+
+.small {
+	font-size: 1.2rem;
+	opacity: 0.5;
 }
 
 // GAME WRAPPER
@@ -89,11 +103,12 @@ h2 {
 }
 
 button {
-	border: 2px solid;
+	display: inline-block;
+	border: 0.2rem solid;
 
 	@include btn-color(white);
 
-	padding: 0.5rem $gutter-half;
+	padding: $gutter-quarter $gutter-half;
 	font-weight: bold;
 	text-transform: capitalize;
 	transition: all 0.25s;
@@ -103,18 +118,200 @@ button {
 		outline: none;
 	}
 
-	&.btn-strong {
-		text-transform: uppercase;
-	}
-
-	&.btn-highlight {
-		@include btn-color($color-primary);
-	}
-
 	&:disabled {
 		opacity: 0.5;
 	}
+	
+	&.btn--strong {
+		text-transform: uppercase;
+	}
+	
+	&.btn--highlight {
+		@include btn-color($color-primary);
+	}
+	
+	&.btn--small {
+		padding: $gutter-heighth $gutter-quarter;
+		font-weight: normal;
+	}
+}	
+
+// FORM UI
+
+.input-block {
+	display: flex;
+	align-items: end;
+	flex-wrap: wrap;
+	margin-bottom: $gutter-half;
+	@media (min-width: 40em) {
+		flex-wrap: nowrap;
+	}
+
+	> * {
+		flex-basis: 100%;
+
+		@media (min-width: 40em) {
+			flex-basis: 50%;
+			max-width: 50%;
+		}
+	}
+
+	> label,
+	> .label {
+		text-align: left;
+		margin-bottom: $gutter-quarter;
+
+		@media (min-width: 40em) {
+			text-align: right;
+			padding-right: $gutter-half;
+		}
+	}
+
+	> .input-with-unit {
+		text-align: left;
+	}
 }
+
+input[type="text"],
+input[type="number"],
+.checky,
+.raydio {
+	display: inline-block;
+	border: 0.2rem solid #666;
+}
+
+label, 
+.label,
+input[type="text"],
+input[type="number"] {
+	padding: $gutter-heighth $gutter-quarter;
+	background-color: transparent;
+	color: white;
+}
+
+label,
+.label {
+	padding: $gutter-heighth 0;
+	display: inline-block;
+	color: $color-primary;
+	line-height: 1;
+}
+
+input[type="text"] {
+	max-width: $gutter * 5;
+}
+input[type="number"] {
+	max-width: $gutter * 3;
+	text-align: right;
+
+	&.number--small {
+		max-width: $gutter * 2;
+	}
+}
+
+.input-unit {
+	padding: $gutter-heighth;
+	padding-left: 0;
+	background-color: #666;
+	border: 0.2rem solid #666;
+	color: white;
+}
+
+.checky {
+	> input[type="checkbox"] {
+		position: absolute;
+		left: -1000rem;
+	}
+
+	> input[type="checkbox"] + label {
+		display: inline-block;
+		color: #666;
+		font-size: 0;
+		padding: 0;
+
+		&::before,
+		&::after {
+			font-size: 1.4rem;
+			display: inline-block;
+			padding: ($gutter-heighth + 0.2rem) ($gutter-quarter + 0.2rem);
+			transition: color 0.25s, background-color 0.5s;
+		}
+		&::before {
+			content: "on";
+		}
+		&::after {
+			content: "off";
+			color: white;
+			background-color: #666;
+		}
+
+		&:hover {
+			color: white;
+		}
+	}
+
+	> input[type="checkbox"]:checked + label {
+		&::before {
+			color: white;
+			background-color: $color-primary;
+		}
+		&::after {
+			color: #666;
+			background-color: transparent;
+		}
+		&:hover {
+			&::after {
+				color: white;
+			}
+		}
+	}
+}
+
+.raydio {
+	> input[type="radio"] {
+		position: absolute;
+		left: -1000rem;
+		// display: none;
+	}
+
+	> input[type="radio"] + label {
+		display: inline-block;
+		padding: ($gutter-heighth + 0.2rem) ($gutter-quarter + 0.2rem);
+		color: #666;
+		transition: color 0.25s, background-color 0.5s;
+
+		&:hover {
+			color: white;
+		}
+	}
+
+	> input[type="radio"]:checked + label {
+		background: $color-primary;
+		color: white;
+	}
+}
+
+.slidey {
+	display: flex;
+	border: 0.2rem solid #666;
+
+	> input[type="range"] {
+		flex-grow: 1;
+		min-width: 0;
+	}
+	
+	> .slidey-value {
+		min-width: $gutter-double;
+		padding: $gutter-heighth $gutter-quarter;
+		text-align: left;
+		background-color: #666;
+	}
+
+	&.slidey--disabled {
+		opacity: 0.5;
+	}
+}
+
 
 #options-panel,
 #top-panel,
@@ -212,103 +409,63 @@ button {
 	flex-basis: 20%;
 	margin-left: 1rem;
 	margin-right: 1rem;
-	padding: $gutter;
+	padding: $gutter-half;
+	padding-top: 0; // H3 handles top space
 	background: rgba(0,0,0,0.75);
 
-	> h3 {
-		margin-top: 0;
+	display: flex;
+	flex-direction: column;
+
+	h3 {
+		margin-top: $gutter;
 		margin-bottom: $gutter;
+	}
+	
+	h4 {
+		text-align: left;
 	}
 }
 
-.game-configuration-player {
-	margin-bottom: $gutter-half;
+.game-configuration-section__header {
+}
+.game-configuration-section__body {
+	flex-grow: 1;
 
-	// display: flex;
-	// align-items: stretch;
+	button:first-child {
+		margin-bottom: $gutter;
+	}
+}
+.game-configuration-section__footer {
+	padding-top: $gutter-half;
+	padding-right: $gutter-double; // Space for "next" button
+}
+
+.game-configuration-player {
+	margin-bottom: $gutter-quarter;
+
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+
+	> * {
+		margin-bottom: $gutter-quarter;
+		margin-right: $gutter-quarter;
+		
+		&:last-child,
+		&:first-child {
+			margin-right: 0;
+		}
+	}
 
 	// > *:nth-child(1) { flex-basis: auto; }
 	// > *:nth-child(2) { flex-basis: 40%; }
 	// > *:nth-child(3) { flex-basis: auto; }
 }
 
-// FORM UI
-
-.input-block {
-	display: flex;
-	flex-wrap: wrap;
-	@media screen and (min-width: 40em) {
-	}
-
-	> * {
-		flex-basis: 100%;
-
-		@media screen and (min-width: 40em) {
-			flex-basis: 50%;
-		}
-	}
-
-	> label {
-		text-align: left;
-		margin-bottom: $gutter-quarter;
-
-		@media screen and (min-width: 40em) {
-			text-align: right;
-			padding-right: $gutter-half;
-		}
-	}
-
-	> input {
-		margin-bottom: $gutter-half;
-	}
-}
-
-input[type="text"],
-input[type="number"],
-.raydio {
-	display: inline-block;
-	border: 0.1rem solid #666;
-}
-
-label,
-input[type="text"],
-input[type="number"] {
-	padding: $gutter-heighth $gutter-quarter;
-	background-color: transparent;
-	color: white;
-}
-
-label,
-.label {
-	display: inline-block;
-	color: $color-primary;
-}
-
-input[type="text"] {
-}
-input[type="number"] {
-}
-
-.raydio {
-	input[type="radio"] {
-		display: none;
-	}
-
-	input[type="radio"] + label {
-		display: inline-block;
-		padding: $gutter-heighth $gutter-quarter;
-		color: #666;
-		transition: color 0.25s, background-color 0.5s;
-
-		&:hover {
-			color: white;
-		}
-	}
-
-	input[type="radio"]:checked + label {
-		background: $color-primary;
-		color: white;
-	}
+.game-configuration-player__p-color {
+	width: $gutter-half * 3;
+	color: #111;
+	border: 0.2rem solid;
 }
 
 // GAME MENU PANEL
@@ -395,20 +552,28 @@ input[type="number"] {
 .grid {
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: stretch;
+	justify-content: space-between;
 }
 
-.grid-1-of-4 {
-	> * {
-		flex-basis: 50%;
+.grid-1-of-2 {
 
-		@media screen and (min-width: 40em) {
-			flex-basis: 25%;
+	@media (min-width: 20em) {
+		// flex-wrap: nowrap;
+	}
+
+	> * {
+		flex-basis: 100%;
+		margin-bottom: $gutter;
+
+		@media (min-width: 20em) {
+			flex-basis: calc(50% - 0.5rem);
 		}
 	}
 }
-.grid-1-of-2 {
-	> * {
-		flex-basis: 50%;
-	}
+
+// COLORS
+
+.colors {
+	display: flex;
+	flex-wrap: wrap;
 }

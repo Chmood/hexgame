@@ -39,32 +39,9 @@ const DomUI = () => {
     dom.bigBanner = document.getElementById('big-banner')
     dom.bigBannerContent = document.getElementById('big-banner-content')
 
-    // Config panel elements
-    dom.optionsPanel = document.getElementById('options-panel')
-    dom.btnOptionsTogglePanel = document.getElementById('options-btn-toggle-panel')
-    
-    dom.gameConfigurationPanel = document.getElementById('game-configuration-panel')
-    dom.btnGameConfigurationPrevious = document.getElementById('game-configuration-btn-previous')
-    dom.btnGameConfigurationNext = document.getElementById('game-configuration-btn-next')
-
-    // GAME CONFIGURATION
-    dom.players = []
-
-    for (let p = 0; p < maxPlayers; p++) {
-      dom.players[p] = {}
-      dom.players[p].name = document.getElementById(`options-players-name-${p}`)
-      dom.players[p].typeHuman = document.getElementById(`options-players-type-human-${p}`)
-      dom.players[p].typeBot = document.getElementById(`options-players-type-bot-${p}`)
-      dom.players[p].typeDisabled = document.getElementById(`options-players-type-disabled-${p}`)
-    }
-
-    dom.btnUpdate = document.getElementById('options-btn-update')
-    dom.btnNewTerrain = document.getElementById('options-btn-new-terrain')
-    dom.btnNewBuildings = document.getElementById('options-btn-new-buildings')
-    dom.btnNewUnits = document.getElementById('options-btn-new-units')
-    dom.btnPlay = document.getElementById('options-btn-play')
-    
+    // Render options panel elements
     dom.btnFullscreen = document.getElementById('options-btn-fullscreen')
+
     dom.selectPosprocess = document.getElementById('options-select-postprocess')
     dom.checkboxBetterOcean = document.getElementById('options-checkbox-better-ocean')
     dom.checkboxCameraFree = document.getElementById('options-camera-free')
@@ -72,22 +49,12 @@ const DomUI = () => {
   }
 
   // SET ELEMENTS
+  // Dump CONFIG values into UI
   dom.setElements = () => {
     dom.selectPosprocess.value = CONFIG.render3d.postprocess
     dom.checkboxBetterOcean.checked = CONFIG.render3d.betterOcean
     dom.checkboxCameraFree.checked = CONFIG.render3d.camera.activeCamera === 'cameraFree'
     dom.checkboxCameraFreeAutoRotate.checked = CONFIG.render3d.camera.cameraFreeAutoRotate
-
-    // GAME CONFIGURATION
-    for (let p = 0; p < maxPlayers; p++) {
-      dom.players[p].name.value = CONFIG.players[p].name
-      if (CONFIG.players[p].isHuman) {
-        dom.players[p].typeHuman.checked = true
-      } else {
-        dom.players[p].typeBot.checked = true
-      }
-    }
-
   }
 
   // SET EVENT LISTENERS
@@ -124,9 +91,6 @@ const DomUI = () => {
     })
 
     // UI panel buttons
-    dom.btnOptionsTogglePanel.addEventListener('click', () => {
-      dom.optionsPanel.classList.toggle('active')
-    })
     dom.btnFullscreen.addEventListener('click', () => {
       console.warn('FULLSCREEN enabled: ', document.fullscreenEnabled)
       
@@ -150,36 +114,6 @@ const DomUI = () => {
       }
 
       game.resizeGame()
-    })
-    // dom.btnUpdate.addEventListener('click', () => {
-    //   game.generate()
-    // })
-
-    // GAME CONFIGURATION
-    dom.btnGameConfigurationPrevious.addEventListener('click', () => {
-      dom.changeGameConfigurationStep(-1)
-    })
-    dom.btnGameConfigurationNext.addEventListener('click', () => {
-      dom.changeGameConfigurationStep(1)
-    })
-
-    for (let p = 0; p < maxPlayers; p++) {
-      dom.players[p].name.addEventListener('change', (event) => {
-        config.players[p].name = event.target.value
-      })
-    }
-    
-    dom.btnNewTerrain.addEventListener('click', () => {
-      game.generateTerrain(true) // New random seed
-    })
-    dom.btnNewBuildings.addEventListener('click', () => {
-      game.generateBuildings(true) // New random seed
-    })
-    dom.btnNewUnits.addEventListener('click', () => {
-      game.generateUnits(true) // New random seed
-    })
-    dom.btnPlay.addEventListener('click', () => {
-      game.startGame()
     })
 
     // UI panel settings
@@ -210,6 +144,9 @@ const DomUI = () => {
     }
   }
 
+  ////////////////////////////////////////
+  // VUE JS COMPONENTS
+
   // TOP PANEL
   dom.updateTopPanel = (player) => {
 
@@ -224,19 +161,15 @@ const DomUI = () => {
   // GAME MENU
 
   window.addEventListener('gameMenuAction', (event) => {
-    console.log('EVENT', event.detail.action)
     game[`gameMenu${event.detail.action}`]()
   })
   window.addEventListener('buildMenuAction', (event) => {
-    console.log('EVENT', event.detail.unitType)
     game.gameMenuBuildUnit(event.detail.unitType)
   })
 
   dom.closeGameMenu = () => {
 
-    store.commit('gameMenu/setActive', {
-      active: false
-    })
+    store.commit('gameMenu/setActive', { active: false })
   }
 
   dom.openGameMenu = (items) => {
@@ -254,9 +187,7 @@ const DomUI = () => {
     store.commit('gameMenu/setActive', { active: true })
   }
 
-  // Build menu
   dom.openGameBuildMenu = (building, money) => {
-    store.commit('gameMenu/clear')
 
     let unitFamily
     if (building.type === 'factory') {
@@ -282,6 +213,7 @@ const DomUI = () => {
       }
     }
 
+    store.commit('gameMenu/clear')
     store.commit('gameMenu/setItems', { items })
     store.commit('gameMenu/setActive', { active: true })
   }
@@ -296,29 +228,25 @@ const DomUI = () => {
     element.click()
   }
 
-
   // GAME CONFIGURATION
-  dom.changeGameConfigurationStep = (increment) => {
-    currentGameConfigurationStep += increment
-    currentGameConfigurationStep = game.clampValueInRange(
-      currentGameConfigurationStep,
-      4
-    )
-
-    if (currentGameConfigurationStep > 0) {
-      dom.btnGameConfigurationPrevious.disabled = false
-    } else {
-      dom.btnGameConfigurationPrevious.disabled = true
-    }
-    if (currentGameConfigurationStep < 4) {
-      dom.btnGameConfigurationNext.disabled = false
-    } else {
-      dom.btnGameConfigurationNext.disabled = true
-    }
-
-    dom.gameConfigurationPanel.classList.remove('step-0', 'step-1', 'step-2', 'step-3', 'step-4')
-    dom.gameConfigurationPanel.classList.add(`step-${currentGameConfigurationStep}`)
+  dom.setGameConfigurationPanel = (active) => {
+    store.commit('gameConfiguration/setActive', { active })
   }
+
+  window.addEventListener('gameConfigurationAction', (event) => {
+    if (event.detail.action === 'terrain') {
+      game.generateTerrain(true) // New random seed
+
+    } else if (event.detail.action === 'buildings') {
+      game.generateBuildings(true) // New random seed
+
+    } else if (event.detail.action === 'units') {
+      game.generateUnits(true) // New random seed
+
+    } else if (event.detail.action === 'start') {
+      game.startGame()
+    }
+  })
 
   // BIG BANNER
   dom.displayBigBanner = (message) => {

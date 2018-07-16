@@ -389,7 +389,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     async init () {
       game.ui.changeMode('configure')
 
-      game.dom.optionsPanel.classList.add('active')
+      dom.setGameConfigurationPanel(true)
       game.renderer3d.setActiveCamera('cameraFree')
 
       game.generateTerrain()
@@ -403,14 +403,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         game.map.data.buildings.length > 0 && 
         game.players.length > 0
       )
-
-      if (isReady) {
-        game.dom.btnPlay.disabled = false
-        game.dom.btnPlay.classList.add('btn-highlight')
-      } else {
-        game.dom.btnPlay.disabled = true
-        game.dom.btnPlay.classList.remove('btn-highlight')
-      }
 
       return isReady
     },
@@ -450,17 +442,13 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     },
 
     // GENERATE GAME
-    // Generate a new map (with or without a fresh seed) and players
+    // Generate a new map (with or without a fresh seed)
     async generateTerrain(randomMapSeed = false) {
       if (randomMapSeed) {
         game.map.randomizeSeed()
       } else {
         game.map.setSeed(CONFIG.map.seed)
       }
-
-      let generateMapSuccess = false,
-          nTry = 1, // for logging purpose only
-          nTryLeft = 100
 
       game.renderer3d.deleteTiles()
       game.renderer3d.deleteUnits()

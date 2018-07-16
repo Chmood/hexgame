@@ -124,16 +124,15 @@ const CONFIG = {
   },
 
   players: [
-    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000', colorDesaturated: '#c48444' },
-    { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080', colorDesaturated: '#c44484' },
-    { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00', colorDesaturated: '#44c444' },
-    { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff', colorDesaturated: '#4484c4' }
+    { id: 0, name: 'Foo111', isHuman: true, color: '#ff8000', colorDesaturated: '#c48444', money: 7000 },
+    { id: 1, name: 'PlayerTwo', isHuman: false, color: '#ff0080', colorDesaturated: '#c44484', money: 5000 },
+    { id: 2, name: 'Mr3333', isHuman: false, color: '#00ff00', colorDesaturated: '#44c444', money: 5000 },
+    { id: 3, name: 'FourFour', isHuman: false, color: '#0080ff', colorDesaturated: '#4484c4', money: 5000 }
   ],
 
   game: {
     seed: 'staticgameseed', // undefined for a random seed
     playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
-    playerStartingMoney: 5000,
     moneyEarnedPerBuilding: 1000,
     animationsSpeed: 2,
     throttleKeyboardTime: 128, // In milliseconds
@@ -141,22 +140,27 @@ const CONFIG = {
     buildings: {
       base: {
         number: 1, // Per player
+        numberOwned: 1,
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       },
       city: {
         number: 4, // Per player
+        numberOwned: 0,
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       },
       factory: {
         number: 2, // Per player
+        numberOwned: 1,
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       },
       port: {
         number: 1, // Per player
+        numberOwned: 0,
         biomes: ['shore']
       },
       airport: {
         number: 1, // Per player
+        numberOwned: 0,
         biomes: ['whitebeach', 'beach', 'swamp', 'desert', 'grass', 'plain', 'deepforest', 'pineforest', 'mountain', 'highmountain']
       }
     },

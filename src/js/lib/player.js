@@ -14,7 +14,7 @@ const Player = (config) => {
     isHuman: config.isHuman,
     hasLost: false,
     hasPlayed: false,
-    money: CONFIG.game.playerStartingMoney,
+    money: config.money,
     color: config.color,
     // colorDesaturated: ShadeBlend(0.5, player.color, '#888888'),
     units: [],
