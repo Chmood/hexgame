@@ -1,6 +1,6 @@
 <template>
 
-  <div id="options-panel"
+  <div id="game-panel"
     :class="{ active: isActive }"
   >
     <h2>Configure the game!</h2>
@@ -427,24 +427,6 @@
         </section>
       </div>
     </div>
-    <p>
-      <!-- <button id="options-btn-update">Perturbate</button>&nbsp;&nbsp; -->
-    </p>
-    <p style="display: none;">
-      <button id="options-btn-fullscreen">Fullscreen</button>
-      <label for="options-select-postprocess">Post-process</label>
-      <select id="options-select-postprocess">
-        <option value="none">None</option>
-        <option value="ssao">SSAO</option>
-        <option value="multi">Multi FX</option>
-      </select>
-      <label for="options-checkbox-better-ocean">Realistic ocean</label>
-      <input id="options-checkbox-better-ocean" type="checkbox">
-      <label for="options-camera-free">Free camera</label>
-      <input id="options-camera-free" type="checkbox">
-      <label for="options-camera-free-auto-rotate">Auto-rotate</label>
-      <input id="options-camera-free-auto-rotate" type="checkbox">
-    </p>
   </div>
 
 </template>

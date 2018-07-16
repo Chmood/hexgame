@@ -15,8 +15,10 @@
     <!-- Top panel -->
     <topbar />
 
-    <!-- UI panel -->
+    <!-- Game configuration panel -->
     <game-configuration />
+    <!-- Render configuration panel -->
+    <render-configuration />
 
     <!-- Game menu panel -->
     <game-menu />
@@ -34,12 +36,14 @@
 import Topbar from './components/Topbar.vue'
 import GameMenu from './components/GameMenu.vue'
 import GameConfiguration from './components/GameConfiguration.vue'
+import RenderConfiguration from './components/RenderConfiguration.vue'
 
 export default {
   components: {
     Topbar,
     GameMenu,
-    GameConfiguration
+    GameConfiguration,
+    RenderConfiguration
   },
 
   data() {

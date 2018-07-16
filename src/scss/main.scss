@@ -42,6 +42,7 @@ h4 {
 }
 
 p {
+	margin-top: 0;
 	margin-bottom: $gutter-half;
 }
 
@@ -313,7 +314,8 @@ input[type="number"] {
 }
 
 
-#options-panel,
+#game-panel,
+#render-panel,
 #top-panel,
 #game-menu {
 	position: fixed;
@@ -350,9 +352,10 @@ input[type="number"] {
 	}
 }
 
-// UI PANEL
+// GAME AND RENDER PANEL
 
-#options-panel {
+#game-panel,
+#render-panel {
 	bottom: -0;
 	left: 0;
 	width: 100vw;
@@ -362,11 +365,6 @@ input[type="number"] {
 
 	&.active {
 		transform: translateY(0);
-	}
-
-	p {
-		margin-top: 0;
-		margin-bottom: $gutter-half;
 	}
 }
 
