@@ -1,5 +1,4 @@
 import HEXLIB from '../vendor/hexlib.js'
-import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // UNIT
@@ -20,10 +19,10 @@ import CONFIG from './config.js'
 // criticalEvade,
 // criticalChance
 
-const Unit = (config) => {
+const Unit = (CONFIG_GAME, config) => {
   const unit = Object.assign(
     {},
-    CONFIG.game.units[config.type],
+    CONFIG_GAME.units[config.type],
     {
       id: config.id,
       playerId: config.playerId,
@@ -32,7 +31,7 @@ const Unit = (config) => {
       name: `${config.type}-${config.id}`,
       hasPlayed: false,
       hasMoved: false,
-      health: CONFIG.game.units[config.type].maxHealth
+      health: CONFIG_GAME.units[config.type].maxHealth
     }
   )
 

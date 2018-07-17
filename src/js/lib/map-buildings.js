@@ -1,10 +1,9 @@
-import CONFIG from './config'
 import HEXLIB from '../vendor/hexlib'
 
 ////////////////////////////////////////////////////////////////////////////////
 // MAP BULDINGS
 
-const Buildings = (map, RNG) => {
+const Buildings = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map, RNG) => {
 
   ////////////////////////////////////////
   // PUBLIC
@@ -37,7 +36,7 @@ const Buildings = (map, RNG) => {
 
     let isValidPosition = false,
         nTryLeft = 20,
-        startingZoneRatio = CONFIG.game.playerStartingZoneRatio
+        startingZoneRatio = CONFIG_GAME.playerStartingZoneRatio
 
     // Starting zone tweaking
     if (type === 'city') {
@@ -55,10 +54,10 @@ const Buildings = (map, RNG) => {
       let col, row
       const randomCol = RNG(),
         randomRow = RNG(),
-        colStart = Math.floor(CONFIG.map.mapSize.width * randomCol / startingZoneRatio),
-        rowStart = Math.floor(CONFIG.map.mapSize.height * randomRow / startingZoneRatio),
-        colEnd = Math.floor(CONFIG.map.mapSize.width * (1 - randomCol / startingZoneRatio)),
-        rowEnd = Math.floor(CONFIG.map.mapSize.height * (1 - randomRow / startingZoneRatio))
+        colStart = Math.floor(CONFIG_MAP.mapSize.width * randomCol / startingZoneRatio),
+        rowStart = Math.floor(CONFIG_MAP.mapSize.height * randomRow / startingZoneRatio),
+        colEnd = Math.floor(CONFIG_MAP.mapSize.width * (1 - randomCol / startingZoneRatio)),
+        rowEnd = Math.floor(CONFIG_MAP.mapSize.height * (1 - randomRow / startingZoneRatio))
   
       if (playerId === 0) {
         col = colStart // left
@@ -75,14 +74,14 @@ const Buildings = (map, RNG) => {
       }
       
       building.hexOffset = HEXLIB.hexOffset(col, row)
-      building.hex = HEXLIB.offset2Hex(building.hexOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      building.hex = HEXLIB.offset2Hex(building.hexOffset, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
   
       const cell = map.getCellFromHex(building.hex)
 
       // Check if the building position is a valid biome cell
       const isValidBiome = map.isValidBiome(
         cell.biome,
-        CONFIG.game.buildings[type].biomes
+        CONFIG_GAME.buildings[type].biomes
       )
 
       // Ports
@@ -130,8 +129,8 @@ const Buildings = (map, RNG) => {
 
   let nBuildingsPlaced = 0
   for (const type of buildingType) {
-    for (const player of CONFIG.players) {
-      for (let n = 0; n < CONFIG.game.buildings[type].number; n++) {
+    for (const player of CONFIG_PLAYERS) {
+      for (let n = 0; n < CONFIG_GAME.buildings[type].number; n++) {
 
         const isBuildingPlaced = setBuildingRandomPosition(type, player.id)
 

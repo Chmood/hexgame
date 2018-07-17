@@ -1,14 +1,13 @@
 import HEXLIB from '../vendor/hexlib.js'
-import CONFIG from './config.js'
 import Player from './player'
 
 ////////////////////////////////////////////////////////////////////////////////
-// PLAYERS
+// CONFIG_PLAYERS
 
-const Players = (PLAYERS, map, RNG) => {
+const Players = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map, RNG) => {
   const players = []
 
-  const startingZoneRatio = CONFIG.game.playerStartingZoneRatio,
+  const startingZoneRatio = CONFIG_GAME.playerStartingZoneRatio,
         occupiedhexes = [], // Hexes already taken by units
         placedUnits = []
 
@@ -27,10 +26,10 @@ const Players = (PLAYERS, map, RNG) => {
       let col, row
       const randomCol = RNG(),
         randomRow = RNG(),
-        colStart = Math.floor(CONFIG.map.mapSize.width * randomCol / startingZoneRatio),
-        rowStart = Math.floor(CONFIG.map.mapSize.height * randomRow / startingZoneRatio),
-        colEnd = Math.floor(CONFIG.map.mapSize.width * (1 - randomCol / startingZoneRatio)),
-        rowEnd = Math.floor(CONFIG.map.mapSize.height * (1 - randomRow / startingZoneRatio))
+        colStart = Math.floor(CONFIG_MAP.mapSize.width * randomCol / startingZoneRatio),
+        rowStart = Math.floor(CONFIG_MAP.mapSize.height * randomRow / startingZoneRatio),
+        colEnd = Math.floor(CONFIG_MAP.mapSize.width * (1 - randomCol / startingZoneRatio)),
+        rowEnd = Math.floor(CONFIG_MAP.mapSize.height * (1 - randomRow / startingZoneRatio))
   
       if (playerId === 0) {
         col = colStart // left
@@ -47,7 +46,7 @@ const Players = (PLAYERS, map, RNG) => {
       }
       
       unit.hexOffset = HEXLIB.hexOffset(col, row)
-      unit.hex = HEXLIB.offset2Hex(unit.hexOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      unit.hex = HEXLIB.offset2Hex(unit.hexOffset, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
   
       // Check if the unit position is a valid biome cell
       const isValidBiome = map.isValidBiome(
@@ -86,15 +85,19 @@ const Players = (PLAYERS, map, RNG) => {
   let nUnitsPlaced = 0
   let currentId = 0
 
-  for (const p of PLAYERS) {
+  for (const p of CONFIG_PLAYERS) {
     const playerId = currentId
 
-    let player = Player({
-      id: playerId,
-      name: PLAYERS[playerId].name,
-      isHuman: PLAYERS[playerId].isHuman,
-      color: PLAYERS[playerId].color
-    })
+    let player = Player(
+      CONFIG_MAP, 
+      CONFIG_GAME, 
+      {
+        id: playerId,
+        name: CONFIG_PLAYERS[playerId].name,
+        isHuman: CONFIG_PLAYERS[playerId].isHuman,
+        color: CONFIG_PLAYERS[playerId].color
+      }
+    )
 
     for (const unit of player.units) {
       const isUnitPlaced = setUnitRandomPosition(unit, playerId)

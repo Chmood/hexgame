@@ -1,10 +1,9 @@
 import BABYLON from 'babylonjs'
-import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D MATERIALS
 
-const Materials = () => {
+const Materials = (CONFIG_MAP, CONFIG_RENDER_3D, CONFIG_PLAYERS) => {
 
   const renderer = {}
 
@@ -16,23 +15,23 @@ const Materials = () => {
     const materials = {}
 
     // TERRAINS
-    for (const [name, value] of Object.entries(CONFIG.map.terrain)) {
+    for (const [name, value] of Object.entries(CONFIG_MAP.terrain)) {
       if (name !== 'ice') {
         materials[name] = createSimpleMaterial(name, value.color)
       } else {
         materials['ice'] = createSimpleMaterial(
           'ice', 
           value.color, 
-          CONFIG.render3d.shinyIce, 
+          CONFIG_RENDER_3D.shinyIce, 
           false, 
-          CONFIG.render3d.transparentIce ? 0.9 : 1
+          CONFIG_RENDER_3D.transparentIce ? 0.9 : 1
         )
       }
     }
 
     // PLAYERS
     materials.players = {}
-    for (let [n, player] of Object.entries(CONFIG.players)) {
+    for (let [n, player] of Object.entries(CONFIG_PLAYERS)) {
       materials.players[n] = [] // [0] is base color, [1] is desaturated color
       materials.players[n][0] = createSimpleMaterial(`player-${n}`, player.color)
       materials.players[n][1] = createSimpleMaterial(`player-${n}`, player.colorDesaturated)
@@ -45,13 +44,13 @@ const Materials = () => {
     // Health bars materials
     materials['healthbarBack'] = createSimpleMaterial(
       'healthbarBack', 
-      CONFIG.render3d.healthbars.colorBack, 
+      CONFIG_RENDER_3D.healthbars.colorBack, 
       false,
       true // emmissive
     )
     materials['healthbarFront'] = createSimpleMaterial(
       'healthbarFront', 
-      CONFIG.render3d.healthbars.colorFront, 
+      CONFIG_RENDER_3D.healthbars.colorFront, 
       false,
       true // emmissive
     )

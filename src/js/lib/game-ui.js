@@ -1,10 +1,11 @@
-import CONFIG from './config'
 import HEXLIB from '../vendor/hexlib'
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME UI
 
 const GameUI = (game) => {
+
+  const CONFIG = game.CONFIG
 
   // CHANGE MODE
   const changeMode = (mode) => {

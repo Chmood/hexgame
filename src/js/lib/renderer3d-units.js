@@ -1,12 +1,11 @@
 import BABYLON from 'babylonjs'
 import HEXLIB from '../vendor/hexlib'
-import CONFIG from './config'
 import unitsParts from './renderer3d-unitsparts'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D UNITS
 
-const Units = (game, map, camera) => {
+const Units = (CONFIG_MAP, CONFIG_RENDER_3D, game, camera) => {
   
   const renderer = {}
 
@@ -15,7 +14,7 @@ const Units = (game, map, camera) => {
 
   // UPDATE HEALTH BAR
   renderer.updateHealthbar = (unit, noAnimationMode = false) => {
-    const healthbarBaseWidth = CONFIG.render3d.cellSize * CONFIG.render3d.healthbars.width,
+    const healthbarBaseWidth = CONFIG_RENDER_3D.cellSize * CONFIG_RENDER_3D.healthbars.width,
           healthbarFrontWidth = unit.health * healthbarBaseWidth,
           healthbarBackWidth = unit.maxHealth * healthbarBaseWidth,
           healthbar = unit.meshes.healthbarFront, // shortcut
@@ -66,7 +65,7 @@ const Units = (game, map, camera) => {
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      1 * CONFIG.game.animationsSpeed // Speed ratio
+      1 * game.CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
@@ -89,7 +88,7 @@ const Units = (game, map, camera) => {
 
     ////////////////////////////////////////
     // HEALTH BAR
-    const cellSize = CONFIG.render3d.cellSize
+    const cellSize = CONFIG_RENDER_3D.cellSize
 
     const healthbar = createHealthbar(unit, cellSize)
     unit.meshes.healthbarBack = healthbar.back
@@ -175,7 +174,7 @@ const Units = (game, map, camera) => {
       const moveUnitAnimation = moveUnit(unit, hex)
       await moveUnitAnimation.waitAsync()
       // Update unit's position
-      unit.moveToHex(hex, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      unit.moveToHex(hex, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
       resolve()
     })
   }
@@ -205,7 +204,7 @@ const Units = (game, map, camera) => {
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      3 * CONFIG.game.animationsSpeed // Speed ratio
+      3 * game.CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
@@ -237,7 +236,7 @@ const Units = (game, map, camera) => {
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      0.5 * CONFIG.game.animationsSpeed // Speed ratio
+      0.5 * game.CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
@@ -268,7 +267,7 @@ const Units = (game, map, camera) => {
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      0.5 * CONFIG.game.animationsSpeed // Speed ratio
+      0.5 * game.CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
@@ -335,7 +334,7 @@ const Units = (game, map, camera) => {
         p.dontColorize = true // Risky: add property to BABYLON.mesh
       }
       // Shadows
-      if (CONFIG.render3d.shadows) {
+      if (CONFIG_RENDER_3D.shadows) {
         shadowGenerator.getShadowMap().renderList.push(p)
         p.receiveShadows = true
       }
@@ -352,15 +351,15 @@ const Units = (game, map, camera) => {
 
   // CREATE HEALTHBAR
   const createHealthbar = (unit, cellSize) => {
-    const healthbarWidth = unit.maxHealth * cellSize * CONFIG.render3d.healthbars.width
+    const healthbarWidth = unit.maxHealth * cellSize * CONFIG_RENDER_3D.healthbars.width
 
     // Back and front of the bar
     const healthbarBack = BABYLON.MeshBuilder.CreatePlane(
       `unit-${unit.id}-healthbar-back`, 
-      { width: healthbarWidth, height: cellSize * CONFIG.render3d.healthbars.height })
+      { width: healthbarWidth, height: cellSize * CONFIG_RENDER_3D.healthbars.height })
     const healthbarFront = BABYLON.MeshBuilder.CreatePlane(
       `unit-${unit.id}-healthbar-front`, 
-      { width: healthbarWidth, height: cellSize * CONFIG.render3d.healthbars.height })
+      { width: healthbarWidth, height: cellSize * CONFIG_RENDER_3D.healthbars.height })
 
     // Do not pick them
     healthbarBack.isPickable = false
@@ -368,7 +367,7 @@ const Units = (game, map, camera) => {
 
     // Bars position 
     healthbarBack.position = new BABYLON.Vector3(
-      0, CONFIG.render3d.healthbars.heightAbove * cellSize, 0
+      0, CONFIG_RENDER_3D.healthbars.heightAbove * cellSize, 0
     )
     healthbarFront.position = new BABYLON.Vector3(
       0, 0, -0.01 // Just a bit in front of the back of the bar
@@ -401,7 +400,7 @@ const Units = (game, map, camera) => {
   const rotateUnit = (unit, step) => {
     const position = HEXLIB.hex2Pixel(layout, step),
           stepData = game.map.getCellFromHex(step),
-          height = stepData.height * CONFIG.render3d.cellStepHeight,
+          height = stepData.height * CONFIG_RENDER_3D.cellStepHeight,
           nextPosition = new BABYLON.Vector3( // end value
             position.y, // Axis inversion!
             height, 
@@ -410,7 +409,7 @@ const Units = (game, map, camera) => {
 
     // Get the direction of the move
     const targetAngle = nextPosition.subtract(unit.mesh.position)
-    const hypothenuse = CONFIG.render3d.cellSize * Math.sqrt(3) * 1.000001 // Avoid NaN
+    const hypothenuse = CONFIG_RENDER_3D.cellSize * Math.sqrt(3) * 1.000001 // Avoid NaN
     let angle = Math.acos(-targetAngle.x / hypothenuse)
     if (targetAngle.z < 0) {
       angle *= -1
@@ -439,7 +438,7 @@ const Units = (game, map, camera) => {
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      speed * CONFIG.game.animationsSpeed // Speed ratio
+      speed * game.CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
@@ -460,29 +459,29 @@ const Units = (game, map, camera) => {
 
     } else if (unit.family === 'sea') {
       // Naval units use the ocean surface height
-      cellHeight = CONFIG.map.mapSeaMinLevel + 1
+      cellHeight = CONFIG_MAP.mapSeaMinLevel + 1
 
     } else if (unit.family === 'air') {
       // Air units use maximum height (not very legible on the 3D map)
-      // cellHeight = CONFIG.map.mapValueRange.height + 1
+      // cellHeight = CONFIG_MAP.mapValueRange.height + 1
       // Air units fly from a distance above the ground
-      if (height < CONFIG.map.mapSeaMinLevel + 1) {
+      if (height < CONFIG_MAP.mapSeaMinLevel + 1) {
         // Fly above the sea
-        cellHeight = CONFIG.map.mapSeaMinLevel + 1 + 3
+        cellHeight = CONFIG_MAP.mapSeaMinLevel + 1 + 3
       } else {
         // Fly above the ground
         cellHeight = height + 3
       }
     }
 
-    cellHeight *= CONFIG.render3d.cellStepHeight
+    cellHeight *= CONFIG_RENDER_3D.cellStepHeight
 
     // DIRECTION
     if (unit.mesh) {
       direction = unit.mesh.rotation.y
     } else {
       // Random direction
-      if (CONFIG.map.mapTopped === HEXLIB.FLAT) {
+      if (CONFIG_MAP.mapTopped === HEXLIB.FLAT) {
         direction = (Math.floor(Math.random() * 6) * 2 * Math.PI / 6)
       } else {
         direction = (Math.floor(Math.random() * 6) * 2 * Math.PI / 6) + (2 * Math.PI / 12)
@@ -552,7 +551,7 @@ const Units = (game, map, camera) => {
       0, // Start frame
       10, // End frame
       false, // Loop (according to ANIMATIONLOOPMODE)
-      3 * CONFIG.game.animationsSpeed // Speed ratio
+      3 * game.CONFIG.game.animationsSpeed // Speed ratio
     )
   }
 
@@ -572,7 +571,7 @@ const Units = (game, map, camera) => {
       const moveUnitAnimation = moveUnit(unit, step)
       await moveUnitAnimation.waitAsync()
       // Update unit's position
-      unit.moveToHex(step, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      unit.moveToHex(step, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
 
       resolve(path)
     })

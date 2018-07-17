@@ -1,5 +1,3 @@
-import CONFIG from './config'
-
 import Vue from 'vue'
 import store from './store'
 import VueApp from './app.vue'
@@ -16,11 +14,13 @@ const DomUI = () => {
 
   // VUE JS
   // DOM creation
-  /*dom.vm = */new Vue({
+  dom.vm = new Vue({
     el: '#app',
     store,
     render: h => h(VueApp)
   })
+
+  const config = store.getters['gameConfiguration/getGameConfig']
   
   // GET ELEMENTS
   dom.getElements = () => {
@@ -42,30 +42,29 @@ const DomUI = () => {
     dom.checkboxCameraFreeAutoRotate = document.getElementById('options-camera-free-auto-rotate')
   }
 
-  // SET ELEMENTS
-  // Dump CONFIG values into UI
-  dom.setElements = () => {
-    dom.selectPosprocess.value = CONFIG.render3d.postprocess
-    dom.checkboxBetterOcean.checked = CONFIG.render3d.betterOcean
-    dom.checkboxCameraFree.checked = CONFIG.render3d.camera.activeCamera === 'cameraFree'
-    dom.checkboxCameraFreeAutoRotate.checked = CONFIG.render3d.camera.cameraFreeAutoRotate
-  }
-
   // SET EVENT LISTENERS
   dom.setEventListeners = () => {
 
-    // Keyboard events
+    // Resize window
+    window.onresize = () => {
+      game.resizeGame()
+    }
+
+    // KEYBOARD
+        
     const throttledOnKeyDown = throttle((event) => {
       keys[event.key] = true
       game.onKeyDown(keys)
-    }, CONFIG.game.throttleKeyboardTime)
+    }, config.game.throttleKeyboardTime)
 
     const throttledOnKeyUp = throttle((event) => {
       delete keys[event.key]
-    }, CONFIG.game.throttleKeyboardTime)
+    }, config.game.throttleKeyboardTime)
     
     document.addEventListener('keydown', throttledOnKeyDown)
     document.addEventListener('keyup', throttledOnKeyUp)
+
+    // MOUSE
 
     // Mouse move over canvases
     dom.canvas2d.addEventListener('mousemove', (e) => {
@@ -83,62 +82,6 @@ const DomUI = () => {
     dom.canvas3d.addEventListener('click', () => {
       game.doAction()
     })
-
-    ////////////////////////////////////////
-    // UI PANEL / TO MOVE into Vue
-
-    // UI panel buttons
-    dom.btnFullscreen.addEventListener('click', () => {
-      console.warn('FULLSCREEN enabled: ', document.fullscreenEnabled)
-      
-      if ((document.fullScreenElement && document.fullScreenElement !== null) ||
-      (!document.mozFullScreen && !document.webkitIsFullScreen)) {
-        if (document.documentElement.requestFullScreen) {
-          document.documentElement.requestFullScreen()
-        } else if (document.documentElement.mozRequestFullScreen) {
-          document.documentElement.mozRequestFullScreen()
-        } else if (document.documentElement.webkitRequestFullScreen) {
-          document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
-        }
-      } else {
-        if (document.cancelFullScreen) {
-          document.cancelFullScreen()
-        } else if (document.mozCancelFullScreen) {
-          document.mozCancelFullScreen()
-        } else if (document.webkitCancelFullScreen) {
-          document.webkitCancelFullScreen()
-        }
-      }
-
-      game.resizeGame()
-    })
-
-    // UI panel settings
-    // Select post-process
-    dom.selectPosprocess.addEventListener('change', () => {
-      const postprocess = dom.selectPosprocess.value
-      game.renderer3d.updatePosprocessPipeline(postprocess)
-    })
-    // Checkbox for better ocean
-    dom.checkboxBetterOcean.addEventListener('change', () => {
-      game.renderer3d.updateOcean(dom.checkboxBetterOcean.checked)
-      game.renderer3d.addToOceanRenderList()
-    })
-    // Checkbox for switching camera ('free mode')
-    dom.checkboxCameraFree.addEventListener('change', () => {
-      const activeCamera = dom.checkboxCameraFree.checked ? 'cameraFree' : 'camera'
-      game.renderer3d.setActiveCamera(activeCamera)
-    })
-    // Checkbox for auto-rotating camera
-    dom.checkboxCameraFreeAutoRotate.addEventListener('change', () => {
-      const cameraFreeAutoRotate = dom.checkboxCameraFreeAutoRotate.checked
-      game.renderer3d.setCameraFreeAutorotate(cameraFreeAutoRotate)
-    })
-
-    // Resize window
-    window.onresize = () => {
-      game.resizeGame()
-    }
   }
 
   ////////////////////////////////////////
@@ -196,8 +139,8 @@ const DomUI = () => {
     }
 
     const items = []
-    for (const unitType in CONFIG.game.units) {
-      const unit = CONFIG.game.units[unitType]
+    for (const unitType in config.game.units) {
+      const unit = config.game.units[unitType]
 
       if (unit.family === unitFamily) {
 
@@ -324,7 +267,6 @@ const DomUI = () => {
   // INIT
 
   dom.getElements()
-  dom.setElements()
   dom.setEventListeners()
 
   return dom

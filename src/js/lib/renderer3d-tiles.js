@@ -1,11 +1,10 @@
 import BABYLON from 'babylonjs'
 import HEXLIB from '../vendor/hexlib.js'
-import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D TILES
 
-const Tiles = (map) => {
+const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
 
   const renderer = {}
 
@@ -16,8 +15,8 @@ const Tiles = (map) => {
   // Create tiles and buildings
   renderer.createTiles = () => {
 
-    for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-      for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         const cell = map.terrain[x][y]
 
         const tileAndBuilding = createTileAndBuilding(x, y, cell, cell.building)
@@ -30,8 +29,8 @@ const Tiles = (map) => {
   // DELETE TILES
   // Delete tiles and buildings
   renderer.deleteTiles = () => {
-    for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-      for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         if (map.terrain[x][y] && map.terrain[x][y].tile) {
           map.terrain[x][y].tile.dispose()
 
@@ -54,17 +53,17 @@ const Tiles = (map) => {
   renderer.redistributeElevationWithGap = (height) => {
     // Increase height gap between lower land & higher sea tiles
     if (
-      height > CONFIG.map.mapSeaMinLevel &&
-      height < CONFIG.map.mapSeaMinLevel + 1
+      height > CONFIG_MAP.mapSeaMinLevel &&
+      height < CONFIG_MAP.mapSeaMinLevel + 1
     ) {
-      height = CONFIG.map.mapSeaMinLevel +
-        (height - CONFIG.map.mapSeaMinLevel) * 3 / 4
+      height = CONFIG_MAP.mapSeaMinLevel +
+        (height - CONFIG_MAP.mapSeaMinLevel) * 3 / 4
     } else if (
-      height > CONFIG.map.mapSeaMinLevel + 1 &&
-      height < CONFIG.map.mapSeaMinLevel + 2
+      height > CONFIG_MAP.mapSeaMinLevel + 1 &&
+      height < CONFIG_MAP.mapSeaMinLevel + 2
     ) {
-      height = (CONFIG.map.mapSeaMinLevel + 1) + 0.25 +
-        (height - (CONFIG.map.mapSeaMinLevel + 1)) * 3 / 4
+      height = (CONFIG_MAP.mapSeaMinLevel + 1) + 0.25 +
+        (height - (CONFIG_MAP.mapSeaMinLevel + 1)) * 3 / 4
     }
     return height
   }
@@ -74,7 +73,7 @@ const Tiles = (map) => {
   let scene, layout, materials, shadowGenerator, buildings
 
   // GET RANDOM DISP
-  const getRandomDisp = () => (Math.random() - CONFIG.render3d.randomTileSizeOffset) * 2 * CONFIG.render3d.randomTileSizeFactor
+  const getRandomDisp = () => (Math.random() - CONFIG_RENDER_3D.randomTileSizeOffset) * 2 * CONFIG_RENDER_3D.randomTileSizeFactor
 
   // GET RANDOM DISP SETS
   // One set is 6 random displacement Vector3
@@ -107,9 +106,9 @@ const Tiles = (map) => {
     type = 'tile',
     noTop = false
   ) => {
-    const cornersTop = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * topScaling),
-          cornersMiddle = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * middleScaling),
-          cornersBottom = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * bottomScaling)
+    const cornersTop = HEXLIB.hexCorners(layout, hex, CONFIG_RENDER_3D.cellSize * topScaling),
+          cornersMiddle = HEXLIB.hexCorners(layout, hex, CONFIG_RENDER_3D.cellSize * middleScaling),
+          cornersBottom = HEXLIB.hexCorners(layout, hex, CONFIG_RENDER_3D.cellSize * bottomScaling)
 
     // HACK: 
     // map X axis (width) => world Z axis
@@ -123,7 +122,7 @@ const Tiles = (map) => {
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersTop[c].y + randomDispSets[0][c].y, // X
-          topHeight * CONFIG.render3d.cellStepHeight, // Y
+          topHeight * CONFIG_RENDER_3D.cellStepHeight, // Y
           cornersTop[c].x + randomDispSets[0][c].x // Z
         )
       }
@@ -131,21 +130,21 @@ const Tiles = (map) => {
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersBottom[c].y + randomDispSets[1][c].y, // X
-          bottomHeight * CONFIG.render3d.cellStepHeight, // Y
+          bottomHeight * CONFIG_RENDER_3D.cellStepHeight, // Y
           cornersBottom[c].x + randomDispSets[1][c].x // Z
         )
       }
     } else {
       // BULDINGS
       const innerRatio = 0.8,
-            cornersTopInner = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * topScaling * innerRatio),
-            cornersMiddleInner = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * middleScaling * innerRatio),
-            cornersBottomInner = HEXLIB.hexCorners(layout, hex, CONFIG.render3d.cellSize * bottomScaling * innerRatio)
+            cornersTopInner = HEXLIB.hexCorners(layout, hex, CONFIG_RENDER_3D.cellSize * topScaling * innerRatio),
+            cornersMiddleInner = HEXLIB.hexCorners(layout, hex, CONFIG_RENDER_3D.cellSize * middleScaling * innerRatio),
+            cornersBottomInner = HEXLIB.hexCorners(layout, hex, CONFIG_RENDER_3D.cellSize * bottomScaling * innerRatio)
       // top outer (0 to 5)
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersTop[c].y + randomDispSets[0][c].y, // X
-          topHeight * CONFIG.render3d.cellStepHeight, // Y
+          topHeight * CONFIG_RENDER_3D.cellStepHeight, // Y
           cornersTop[c].x + randomDispSets[0][c].x // Z
         )
       }
@@ -153,7 +152,7 @@ const Tiles = (map) => {
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersBottom[c].y + randomDispSets[0][c].y, // X
-          bottomHeight * CONFIG.render3d.cellStepHeight, // Y
+          bottomHeight * CONFIG_RENDER_3D.cellStepHeight, // Y
           cornersBottom[c].x + randomDispSets[0][c].x // Z
         )
       }
@@ -161,7 +160,7 @@ const Tiles = (map) => {
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersMiddle[c].y + randomDispSets[0][c].y, // X
-          middleHeight * CONFIG.render3d.cellStepHeight, // Y
+          middleHeight * CONFIG_RENDER_3D.cellStepHeight, // Y
           cornersMiddle[c].x + randomDispSets[0][c].x // Z
         )
       }
@@ -169,7 +168,7 @@ const Tiles = (map) => {
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersTopInner[c].y + randomDispSets[0][c].y, // X
-          topHeight * CONFIG.render3d.cellStepHeight, // Y
+          topHeight * CONFIG_RENDER_3D.cellStepHeight, // Y
           cornersTopInner[c].x + randomDispSets[0][c].x // Z
         )
       }
@@ -177,7 +176,7 @@ const Tiles = (map) => {
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersBottomInner[c].y + randomDispSets[0][c].y, // X
-          bottomHeight * CONFIG.render3d.cellStepHeight, // Y
+          bottomHeight * CONFIG_RENDER_3D.cellStepHeight, // Y
           cornersBottomInner[c].x + randomDispSets[0][c].x // Z
         )
       }
@@ -185,7 +184,7 @@ const Tiles = (map) => {
       for(let c = 0; c < 6; c++) {
         positions.push(
           cornersMiddleInner[c].y + randomDispSets[0][c].y, // X
-          middleHeight * CONFIG.render3d.cellStepHeight, // Y
+          middleHeight * CONFIG_RENDER_3D.cellStepHeight, // Y
           cornersMiddleInner[c].x + randomDispSets[0][c].x // Z
         )
       }
@@ -416,8 +415,8 @@ const Tiles = (map) => {
     const offset = HEXLIB.hexOffset(x, y),
           hex = HEXLIB.offset2Hex(
             offset,
-            CONFIG.map.mapTopped,
-            CONFIG.map.mapParity
+            CONFIG_MAP.mapTopped,
+            CONFIG_MAP.mapParity
           ),
           position = HEXLIB.hex2Pixel(layout, hex), // center of tile top
           tile = new BABYLON.Mesh(`tile-${x}-${y}`, scene),
@@ -442,13 +441,13 @@ const Tiles = (map) => {
 
     // ROTATION
     // Set pivot (local center for transformations)
-    tile.setPivotPoint(new BABYLON.Vector3(position.y, height * CONFIG.render3d.cellStepHeight, position.x))
+    tile.setPivotPoint(new BABYLON.Vector3(position.y, height * CONFIG_RENDER_3D.cellStepHeight, position.x))
     // Random rotation
-    if (CONFIG.render3d.randomTileRotation) {
+    if (CONFIG_RENDER_3D.randomTileRotation) {
       tile.rotation = new BABYLON.Vector3(
-        (Math.random() - 0.5) * 2 * Math.PI / 16 * CONFIG.render3d.randomTileRotationFactor, 
+        (Math.random() - 0.5) * 2 * Math.PI / 16 * CONFIG_RENDER_3D.randomTileRotationFactor, 
         0, 
-        (Math.random() - 0.5) * 2 * Math.PI / 16 * CONFIG.render3d.randomTileRotationFactor
+        (Math.random() - 0.5) * 2 * Math.PI / 16 * CONFIG_RENDER_3D.randomTileRotationFactor
       )
     }
 
@@ -456,7 +455,7 @@ const Tiles = (map) => {
     // Give the tile mesh a material
     tile.material = materials[cell.biome]
     // Make and receive shadows
-    if (CONFIG.render3d.shadows) {
+    if (CONFIG_RENDER_3D.shadows) {
       shadowGenerator.getShadowMap().renderList.push(tile)
       tile.receiveShadows = true;
     }
@@ -485,9 +484,9 @@ const Tiles = (map) => {
 
       // ROTATION
       // Set pivot (local center for transformations)
-      building.setPivotPoint(new BABYLON.Vector3(position.y, height * CONFIG.render3d.cellStepHeight, position.x))
+      building.setPivotPoint(new BABYLON.Vector3(position.y, height * CONFIG_RENDER_3D.cellStepHeight, position.x))
       // Same rotation as the tile below it
-      if (CONFIG.render3d.randomTileRotation) {
+      if (CONFIG_RENDER_3D.randomTileRotation) {
         building.rotation = tile.rotation
       }
 
@@ -499,7 +498,7 @@ const Tiles = (map) => {
         building.material = materials['buildingGreyLight']
       }
       // Make and receive shadows
-      if (CONFIG.render3d.shadows) {
+      if (CONFIG_RENDER_3D.shadows) {
         shadowGenerator.getShadowMap().renderList.push(building)
         building.receiveShadows = true;
       }

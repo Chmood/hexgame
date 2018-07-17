@@ -1,12 +1,11 @@
 import HEXLIB from '../vendor/hexlib.js'
 import ShadeBlend from '../vendor/shadeblend'
 import Unit from './unit'
-import CONFIG from './config';
 
 ////////////////////////////////////////////////////////////////////////////////
 // PLAYER
 
-const Player = (config) => {
+const Player = (CONFIG_MAP, CONFIG_GAME, config) => {
 
   const player = {
     id: config.id,
@@ -21,14 +20,17 @@ const Player = (config) => {
   
     // ADD UNIT
     addUnit(unitType, position = HEXLIB.hex(-1, -1)) {
-      const unit = Unit({
-        id: findFreeUnitId(),
-        playerId: player.id,
-        type: unitType,
-        color: player.color
-      })
+      const unit = Unit(
+        CONFIG_GAME,
+        {
+          id: findFreeUnitId(),
+          playerId: player.id,
+          type: unitType,
+          color: player.color
+        }
+      )
 
-      unit.moveToHex(position, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+      unit.moveToHex(position, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
   
       player.units.push(unit)
 
@@ -59,7 +61,7 @@ const Player = (config) => {
   }
 
   // SET UNIT RANDOM TYPE
-  const setUnitRandomType = (types = Object.keys(CONFIG.game.units)) => {
+  const setUnitRandomType = (types = Object.keys(CONFIG_GAME.units)) => {
     const nTypes = types.length,
           rng = Math.floor(Math.random() * nTypes)
 

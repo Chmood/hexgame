@@ -1,11 +1,10 @@
 import BABYLON from 'babylonjs'
 import HEXLIB from '../vendor/hexlib.js'
-import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D HIGHLIGHT
 
-const Highlight = () => {
+const Highlight = (CONFIG_MAP) => {
 
   const renderer = {}
 
@@ -54,14 +53,14 @@ const Highlight = () => {
   const hightlightTile = (hex, color = BABYLON.Color3.White(), n = 0) => {
     const offset = HEXLIB.hex2Offset(
             hex, 
-            CONFIG.map.mapTopped, 
-            CONFIG.map.mapParity
+            CONFIG_MAP.mapTopped, 
+            CONFIG_MAP.mapParity
           )
 
     // Sanitize inputs
     if (offset.col !== undefined && offset.row !== undefined && 
         offset.col >= 0 && offset.row >= 0 &&
-        offset.col < CONFIG.map.mapSize.width && offset.row < CONFIG.map.mapSize.height
+        offset.col < CONFIG_MAP.mapSize.width && offset.row < CONFIG_MAP.mapSize.height
       ) {
       // Add tile mesh to layer
       highlightMeshes[n].push({

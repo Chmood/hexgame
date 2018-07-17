@@ -1,8 +1,8 @@
-import CONFIG from './config'
 import HEXLIB from '../vendor/hexlib'
 import seedrandom from 'seedrandom'
 import arrayShuffle from '../vendor/array-shuffle'
 
+import store from './store'
 import Map from './map'
 import Players from './players'
 import GameBot from './game-bot'
@@ -12,6 +12,9 @@ import Renderer3d from './renderer3d'
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
+
+// Store is ready, we get a reference to it
+const CONFIG = store.getters['gameConfiguration/getGameConfig']
 
 const Game = (ctx2d, canvas3d, dom, main) => {
 
@@ -367,12 +370,20 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   
   ////////////////////////////////////////
   // PUBLIC
+
   const game = {
+    // Backup CONFIG oberject reference
+    CONFIG,
+
     // Inject DOM
     dom: dom,
 
     // Game map
-    map: Map(CONFIG.map),
+    map: Map(
+      CONFIG.map,
+      CONFIG.game,
+      CONFIG.players
+    ),
 
     // Players
     players: [],
@@ -399,21 +410,18 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         console.warn('Cannot start game, missing buildings or players')
         return
       }
-      console.warn('GAME STARTED')
-      // Close the option panel (brutal way)
-      dom.optionsPanel.classList.remove('active')
-      // dom.topPanel.classList.add('active')
-      dom.vm.$store.commit('topbar/setActive', {
-        active: true
-      })
-    
 
+      console.warn('GAME STARTED')
+      // Hide the game configuration panel
+      dom.vm.$store.commit('gameConfiguration/setActive', { active: false })
+      // Activate the topbar
+      dom.vm.$store.commit('topbar/setActive', { active: true })
+    
       game.renderer3d.setActiveCamera('camera')
       game.ui.resetUI()
 
-
       // BOT
-      game.bot = GameBot(game, RNG)
+      game.bot = GameBot(game, RNG, CONFIG)
 
       // Show banner!
       await game.ACTION_DO({
@@ -430,16 +438,19 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     // GENERATE GAME
     // Generate a new map (with or without a fresh seed)
-    async generateTerrain(randomMapSeed = false) {
+    generateTerrain(randomMapSeed = false) {
+      // Seed
       if (randomMapSeed) {
         game.map.randomizeSeed()
       } else {
         game.map.setSeed(CONFIG.map.seed)
       }
 
+      // Delete meshes
       game.renderer3d.deleteTiles()
       game.renderer3d.deleteUnits()
 
+      // Re-init buildings and players
       game.map.data.buildings = []
       game.players = []
 
@@ -504,7 +515,13 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         // PLAYERS
         console.log(`Units placement (#${nTry} try)`)
-        game.players = Players(CONFIG.players, game.map, RNG)
+        game.players = Players(
+          CONFIG.map, 
+          CONFIG.game, 
+          CONFIG.players, 
+          game.map, 
+          RNG
+        )
 
         if (game.players && game.players.length > 0) {
           generatePlayerSuccess = true

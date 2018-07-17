@@ -21,15 +21,19 @@ import img6 from "../../img/TropicalSunnyDay_pz.jpg"
 // RENDERER 3D
 
 const Renderer3d = (game, canvas) => {
+  const CONFIG_MAP = game.CONFIG.map,
+        CONFIG_RENDER_3D = CONFIG.render3d,
+        CONFIG_PLAYERS = game.CONFIG.players
+
   const map = game.map.data, // Only data, no calls to Map's functions should be made here
         // External modules
-        camera = Camera(canvas, game), // game is overkill, map is enough
-        highlight = Highlight(),
-        materials = Materials(),
-        environement = Environement(),
-        postprocess = Postprocess(),
-        tiles = Tiles(map),
-        units = Units(game, map, camera) // game is overkill, players is enough?
+        camera = Camera(CONFIG_RENDER_3D, canvas, game), // game is overkill, map is enough
+        highlight = Highlight(CONFIG_MAP),
+        materials = Materials(CONFIG_MAP, CONFIG_RENDER_3D, CONFIG_PLAYERS),
+        environement = Environement(CONFIG_MAP, CONFIG_RENDER_3D),
+        postprocess = Postprocess(CONFIG_RENDER_3D),
+        tiles = Tiles(CONFIG_MAP, CONFIG_RENDER_3D, map),
+        units = Units(CONFIG_MAP, CONFIG_RENDER_3D, game, camera) // game is overkill, players is enough?
         
   const renderer = {
 
@@ -97,7 +101,7 @@ const Renderer3d = (game, canvas) => {
                 x = parseInt(idFragments[1]),
                 y = parseInt(idFragments[2]),
                 cursorOffset = HEXLIB.hexOffset(x, y),
-                cursorHex = HEXLIB.offset2Hex(cursorOffset, CONFIG.map.mapTopped, CONFIG.map.mapParity)
+                cursorHex = HEXLIB.offset2Hex(cursorOffset, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
           return cursorHex
         }
       }
@@ -136,17 +140,17 @@ const Renderer3d = (game, canvas) => {
   // CREATE LAYOUT
   const createLayout = () => {
     return HEXLIB.layout(
-      CONFIG.map.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
+      CONFIG_MAP.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
       {
         // cell size in px
-        x: CONFIG.render3d.cellSize,
-        y: CONFIG.render3d.cellSize
+        x: CONFIG_RENDER_3D.cellSize,
+        y: CONFIG_RENDER_3D.cellSize
       },
       {
         // Origin
         // TODO: auto centering map
-        x: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.width * Math.sqrt(2) / 2,
-        y: -CONFIG.render3d.cellSize * CONFIG.map.mapSize.height * Math.sqrt(3) / 2
+        x: -CONFIG_RENDER_3D.cellSize * CONFIG_MAP.mapSize.width * Math.sqrt(2) / 2,
+        y: -CONFIG_RENDER_3D.cellSize * CONFIG_MAP.mapSize.height * Math.sqrt(3) / 2
       }
     )
   }

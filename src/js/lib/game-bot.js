@@ -1,11 +1,10 @@
-import CONFIG from './config'
 import HEXLIB from '../vendor/hexlib'
 import arrayShuffle from '../vendor/array-shuffle'
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME BOT
 
-const GameBot = (game, RNG) => {
+const GameBot = (game, RNG, config) => {
 
   ////////////////////////////////////////
   // PUBLIC
@@ -299,8 +298,8 @@ const GameBot = (game, RNG) => {
       unit.attackRangeMax // cost higher limit
     )  
 
-    for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+    for (let y = 0; y < config.map.mapSize.height; y++) {
+      for (let x = 0; x < config.map.mapSize.width; x++) {
         const cell = game.map.data.terrain[x][y]
 
         // Must be at attack range
@@ -491,7 +490,7 @@ const GameBot = (game, RNG) => {
         if (player.money >= 1000) { // miimal unit price (TODO)
 
           // CHOOSING UNIT TYPE
-          let unitTypes = Object.keys(CONFIG.game.units)
+          let unitTypes = Object.keys(config.game.units)
           
           if (playerBuilding.type === 'factory') {
 
@@ -521,7 +520,7 @@ const GameBot = (game, RNG) => {
           while (!unitType && nMaxTry > 0) {
             nMaxTry--
             const type = unitTypes[Math.floor(RNG() * unitTypes.length)],
-                  cost = CONFIG.game.units[type].cost
+                  cost = config.game.units[type].cost
 
             if (cost <= player.money && cost >= minCost) {
               unitType = type

@@ -5,6 +5,10 @@ import CONFIG from './config.js'
 // RENDERER 2D
 
 const Renderer2d = (game, ctx) => {
+
+  const CONFIG_MAP = game.CONFIG.map,
+        CONFIG_RENDER_2D = CONFIG.render2d
+
   const renderer = {},
         map = game.map
 
@@ -71,7 +75,7 @@ const Renderer2d = (game, ctx) => {
 
   // GET TERRAIN COLOR
   renderer.getTerrainColor = (biome) => {
-    return CONFIG.map.terrain[biome].color
+    return CONFIG_MAP.terrain[biome].color
   }
 
   // DRAWING FUNCTIONS
@@ -121,15 +125,15 @@ const Renderer2d = (game, ctx) => {
     // renderer.ctx.clearRect(0, 0, canvas.width, canvas.height) // TODO: canvas is undefined here!
 
     // MAP LOOP
-    for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
-      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
+    for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+      for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
 
         // Cell variables
         const val = map.data.terrain[x][y].height,
               valFloor = Math.floor(val),
 
               offset = HEXLIB.hexOffset(x, y),
-              hex = HEXLIB.offset2Hex(offset, CONFIG.map.mapTopped, CONFIG.map.mapParity),
+              hex = HEXLIB.offset2Hex(offset, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
 
               point = HEXLIB.hex2Pixel(renderer.layout, hex),
               corners = HEXLIB.hexCorners(renderer.layout, hex),
@@ -179,7 +183,7 @@ const Renderer2d = (game, ctx) => {
         }
 
         // CELL TEXT
-        if (CONFIG.render2d.displayTileText) {
+        if (CONFIG_RENDER_2D.displayTileText) {
           renderer.ctx.font = '8px Arial'
           renderer.ctx.lineWidth = 0
           renderer.ctx.fillStyle = 'rgba(255,255,255,0.5)'
@@ -204,25 +208,25 @@ const Renderer2d = (game, ctx) => {
 
     // Map origin
     renderer.mapOrigin = renderer.mapComputeOrigin(
-      CONFIG.render2d.cellSize,
-      CONFIG.map.mapTopped,
-      CONFIG.map.mapParity
+      CONFIG_RENDER_2D.cellSize,
+      CONFIG_MAP.mapTopped,
+      CONFIG_MAP.mapParity
     )
 
     // Map render size
     renderer.mapRenderSize = renderer.mapComputeSize(
-      CONFIG.map.mapSize,
-      CONFIG.render2d.cellSize,
-      CONFIG.map.mapTopped
+      CONFIG_MAP.mapSize,
+      CONFIG_RENDER_2D.cellSize,
+      CONFIG_MAP.mapTopped
     )
 
     // Layout
     renderer.layout = HEXLIB.layout(
-      CONFIG.map.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
+      CONFIG_MAP.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
       {
         // cell size in px
-        x: CONFIG.render2d.cellSize.width,
-        y: CONFIG.render2d.cellSize.height
+        x: CONFIG_RENDER_2D.cellSize.width,
+        y: CONFIG_RENDER_2D.cellSize.height
       },
       renderer.mapOrigin // origin
     )

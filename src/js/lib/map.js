@@ -1,4 +1,3 @@
-import CONFIG from './config.js';
 import HEXLIB from '../vendor/hexlib.js'
 import seedrandom from 'seedrandom'
 
@@ -9,7 +8,7 @@ import MapBuildings from './map-buildings'
 ////////////////////////////////////////////////////////////////////////////////
 // MAP
 
-export default Map = (config) => { // WTF is this syntax only working here?! (bottom export elsewhere)
+export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is this syntax only working here?! (bottom export elsewhere)
   const map = {
 
     ////////////////////////////////////////
@@ -40,19 +39,22 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
     // GENERATE MAP
     generateMap() {
+      // Size map
+      sizeMap()
+
       // Map cells instanciation
       populateMap()
 
       // Procedural terrain generation
-      createMapData('height', config.mapValueRange.height)
-      createMapData('moisture', config.mapValueRange.moisture)
+      createMapData('height', CONFIG_MAP.mapValueRange.height)
+      createMapData('moisture', CONFIG_MAP.mapValueRange.moisture)
       map.postprocessMap()
     },
 
     // POSTPROCESS MAP
     postprocessMap() {
-      postprocessMapData('height', config.mapValueRange.height)
-      postprocessMapData('moisture', config.mapValueRange.moisture)
+      postprocessMapData('height', CONFIG_MAP.mapValueRange.height)
+      postprocessMapData('moisture', CONFIG_MAP.mapValueRange.moisture)
       createMapBiomes()
     },
 
@@ -63,14 +65,14 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
       // Buildings generation can fail!
       const generateBuildingsSuccess = createdMapBuildings()
 
-      generateGraphs(CONFIG.game.units)
+      generateGraphs(CONFIG_GAME.units)
 
       return generateBuildingsSuccess
     },
 
     clearBuildings() {
-      for (let x = 0; x < config.mapSize.width; x++) {
-        for (let y = 0; y < config.mapSize.height; y++) {
+      for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+        for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
           map.data.terrain[x][y].building = undefined
         }
       }
@@ -93,7 +95,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     // GET CELL FROM HEX
     // Returns a map cell from a given (cubic) hex
     getCellFromHex(hex) {
-      const hexOffset = HEXLIB.hex2Offset(hex, config.mapTopped, config.mapParity)
+      const hexOffset = HEXLIB.hex2Offset(hex, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
       if (map.data.terrain[hexOffset.col]) {
         if (map.data.terrain[hexOffset.col][hexOffset.row]) {
           return map.data.terrain[hexOffset.col][hexOffset.row]
@@ -110,12 +112,12 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     // IS HEX ON MAP
     // Is the hex within the map boundaries?
     isHexOnMap(hex) {
-      const hexOffset = HEXLIB.hex2Offset(hex, config.mapTopped, config.mapParity)
+      const hexOffset = HEXLIB.hex2Offset(hex, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
 
       return (hexOffset.col >= 0 &&
         hexOffset.row >= 0 &&
-        hexOffset.col < config.mapSize.width &&
-        hexOffset.row < config.mapSize.height)
+        hexOffset.col < CONFIG_MAP.mapSize.width &&
+        hexOffset.row < CONFIG_MAP.mapSize.height)
     },
 
     // IS OCEAN BIOME
@@ -276,11 +278,17 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // Create an empty 2D array with given width and height
   const array2d = (width, height) => Array(...Array(width)).map(() => Array(height))
 
+  // SIZE MAP
+  const sizeMap = () => {
+    console.error('MAP SIZE', CONFIG_MAP.mapSize.width, CONFIG_MAP.mapSize.height)
+    map.data.terrain = array2d(CONFIG_MAP.mapSize.width, CONFIG_MAP.mapSize.height)
+  }
+
   // MAP POPULATE
   // Fill the 2d array with empty objects
   const populateMap = () => {
-    for (let x = 0; x < config.mapSize.width; x++) {
-      for (let y = 0; y < config.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         map.data.terrain[x][y] = {}
       }
     }
@@ -294,8 +302,8 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     let minValue = 10000
     let maxValue = -10000
 
-    for (let x = 0; x < config.mapSize.width; x++) {
-      for (let y = 0; y < config.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         const value = map.data.terrain[x][y][type]
         if (value < minValue) {
           minValue = value
@@ -321,8 +329,8 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   const normalizeMap = (type, targetRange) => {
     const range = mapGetRange(type)
 
-    for (let x = 0; x < config.mapSize.width; x++) {
-      for (let y = 0; y < config.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         const ratio = (map.data.terrain[x][y][type] - range.min) / (range.max - range.min)
         const newHeight = ratio * (targetRange - 0.00001)
         map.data.terrain[x][y][type] = newHeight
@@ -332,26 +340,26 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
   // MAKE ISLAND
   const makeIsland = (type) => {
-    const halfWidth = Math.floor(config.mapSize.width / 2),
-          halfHeight = Math.floor(config.mapSize.height / 2),
+    const halfWidth = Math.floor(CONFIG_MAP.mapSize.width / 2),
+          halfHeight = Math.floor(CONFIG_MAP.mapSize.height / 2),
 
           offsetCenter = HEXLIB.hexOffset(halfWidth, halfHeight),
           offsetVertical = HEXLIB.hexOffset(halfWidth, 0),
           offsetHorizontal = HEXLIB.hexOffset(0, halfHeight),
 
-          hexCenter = HEXLIB.offset2Hex(offsetCenter, config.mapTopped, config.mapParity),
-          hexVertical = HEXLIB.offset2Hex(offsetVertical, config.mapTopped, config.mapParity),
-          hexHorizontal = HEXLIB.offset2Hex(offsetHorizontal, config.mapTopped, config.mapParity),
+          hexCenter = HEXLIB.offset2Hex(offsetCenter, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
+          hexVertical = HEXLIB.offset2Hex(offsetVertical, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
+          hexHorizontal = HEXLIB.offset2Hex(offsetHorizontal, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
 
           distanceMaxVertical = HEXLIB.hexDistance(hexCenter, hexVertical),
           distanceMaxHorizontal = HEXLIB.hexDistance(hexCenter, hexHorizontal),
           distanceMax = Math.min(distanceMaxVertical, distanceMaxHorizontal) - 
-            config.mapPostprocess.height.islandMargin // Make sure map border are ocean
+            CONFIG_MAP.mapPostprocess.height.islandMargin // Make sure map border are ocean
 
-    for (let x = 0; x < config.mapSize.width; x++) {
-      for (let y = 0; y < config.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         const offsetTile = HEXLIB.hexOffset(x, y),
-          hexTile = HEXLIB.offset2Hex(offsetTile, config.mapTopped, config.mapParity)
+          hexTile = HEXLIB.offset2Hex(offsetTile, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
 
         const distance = HEXLIB.hexDistance(hexTile, hexCenter)
         let ratio = distance / distanceMax // from 0 (border) to 1 (center)
@@ -361,7 +369,7 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
           ratio = 1
         }
         ratio = 1 - ratio
-        ratio = Math.pow(ratio, config.mapPostprocess.height.islandRedistributionPower)
+        ratio = Math.pow(ratio, CONFIG_MAP.mapPostprocess.height.islandRedistributionPower)
         // Add random peaks to border area of the map (otherwise only 'deepsea')
         if (ratio < 0.5) {
           ratio += (RNG() / 5)
@@ -447,8 +455,8 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
 
   // CREATE MAP BIOMES
   const createMapBiomes = () => {
-    for (let x = 0; x < config.mapSize.width; x++) {
-      for (let y = 0; y < config.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         map.data.terrain[x][y].biome = getBiome(map.data.terrain[x][y].height, map.data.terrain[x][y].moisture)
       }
     }
@@ -459,9 +467,9 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     const nz = [] // noize
     let value = 0;
 
-    for (let h = 0; h < config.mapNoise[type].harmonics.length; h++) {
+    for (let h = 0; h < CONFIG_MAP.mapNoise[type].harmonics.length; h++) {
       const frequencyDivider =
-        config.mapNoise[type].frequency /
+        CONFIG_MAP.mapNoise[type].frequency /
         Math.pow(2, h)
 
     nz[h] = normalizeNoise(
@@ -474,27 +482,27 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
     // Redistribution (raise the elevation to a power)
     nz[h] = Math.pow(
       nz[h],
-      config.mapPostprocess[type].redistributionPower
+      CONFIG_MAP.mapPostprocess[type].redistributionPower
     )
 
     // Revert values
-    if (config.mapPostprocess[type].revert) {
+    if (CONFIG_MAP.mapPostprocess[type].revert) {
       nz[h] = 1 - nz[h]
     }
 
-    value += nz[h] * config.mapNoise[type].harmonics[h]
+    value += nz[h] * CONFIG_MAP.mapNoise[type].harmonics[h]
   }
   return value
   }
 
   // CREATE MAP DATA
   const createMapData = (type, range) => {
-    for (let x = 0; x < config.mapSize.width; x++) {
-      for (let y = 0; y < config.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
 
         let value = 0 // From 0 to 1
 
-        if (config.mapNoise[type].stupidRandom) {
+        if (CONFIG_MAP.mapNoise[type].stupidRandom) {
           // Stupid random value
           value = RNG()
         } else {
@@ -510,26 +518,32 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // POSTPROCESS MAP DATA
   const postprocessMapData = (type, range) => {
     // Reset terrain to original
-    for (let x = 0; x < config.mapSize.width; x++) {
-      for (let y = 0; y < config.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         map.data.terrain[x][y][type] = map.data.terrain[x][y][`${type}-raw`]
       }
     }
 
     // Island mode
-    if (config.mapPostprocess[type].islandMode) {
+    if (CONFIG_MAP.mapPostprocess[type].islandMode) {
       makeIsland(type)
     }
 
     // Normalizing values
-    if (config.mapPostprocess[type].normalize) {
-      normalizeMap(type, config.mapValueRange[type])
+    if (CONFIG_MAP.mapPostprocess[type].normalize) {
+      normalizeMap(type, CONFIG_MAP.mapValueRange[type])
     }
   }
 
   // CREATE MAP BUILDINGS
   const createdMapBuildings = () => {
-    map.data.buildings = MapBuildings(map, RNG)
+    map.data.buildings = MapBuildings(
+      CONFIG_MAP, 
+      CONFIG_GAME, 
+      CONFIG_PLAYERS, 
+      map, 
+      RNG
+    )
 
     return map.data.buildings
   }
@@ -574,11 +588,11 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // Build the pathfinding graph, into the map
   const generateGraphs = (units) => {
 
-    for (let x = 0; x < config.mapSize.width; x++) {
-      for (let y = 0; y < config.mapSize.height; y++) {
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
 
         const hexOffset = HEXLIB.hexOffset(x, y),
-              hex = HEXLIB.offset2Hex(hexOffset, config.mapTopped, config.mapParity),
+              hex = HEXLIB.offset2Hex(hexOffset, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
               cell = map.data.terrain[x][y], // Reference to the cell map data
               neighborsAll = HEXLIB.hexNeighbors(hex)
 
@@ -700,14 +714,18 @@ export default Map = (config) => { // WTF is this syntax only working here?! (bo
   // RESET COSTS
   // Reset all move costs to max value
   const resetCosts = () => {
-    for (let y = 0; y < config.mapSize.height; y++) {
-      for (let x = 0; x < config.mapSize.width; x++) {
+    for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+      for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
         map.data.terrain[x][y].cost = 100000000
       }
     }
   }
 
-  map.data.terrain = array2d(config.mapSize.width, config.mapSize.height)
+  ////////////////////////////////////////
+  // INIT
+
+  // Initial map cells instanciation
+  sizeMap()
 
   return map
 }

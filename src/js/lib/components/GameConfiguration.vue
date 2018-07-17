@@ -13,6 +13,7 @@
         :disabled="currentGameConfigurationStep === 0"
         @click="changeStep(-1)"
       >&lt;</button>
+      
       <button class="game-configuration-btn game-configuration-btn--next"
         :disabled="currentGameConfigurationStep === 4"
         @click="changeStep(+1)"
@@ -450,9 +451,7 @@ export default {
           count += building.number  
         }
       )
-      // for (const building of state.gameConfiguration.config.game.buildings) {
-      //   count += building.number
-      // }
+
       return count * state.gameConfiguration.config.players.length
     }
   }),

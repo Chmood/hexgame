@@ -1,12 +1,13 @@
 import BABYLON from 'babylonjs'
 import HEXLIB from '../vendor/hexlib.js'
-import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D CAMERA
 
-const Camera = (canvas, game) => {
+const Camera = (CONFIG_RENDER_3D, canvas, game) => {
   
+  const CONFIG = game.CONFIG
+
   const dampbox = {
     width: 8,
     height: 8,
@@ -28,7 +29,7 @@ const Camera = (canvas, game) => {
   renderer.updateCameraPosition = (hex) => {
     
     // Dampbox
-    if (CONFIG.render3d.camera.cameraDampbox) {
+    if (CONFIG_RENDER_3D.camera.cameraDampbox) {
       const offset = HEXLIB.hex2Offset(hex)
       // Box AABB from position and size
       const box = {
@@ -65,7 +66,7 @@ const Camera = (canvas, game) => {
 
     const position = HEXLIB.hex2Pixel(layout, hex),
           cell = game.map.getCellFromHex(hex),
-          height = cell.height * CONFIG.render3d.cellStepHeight
+          height = cell.height * CONFIG_RENDER_3D.cellStepHeight
 
     const animationCamera = new BABYLON.Animation(
       'moveCamera', 
@@ -115,8 +116,8 @@ const Camera = (canvas, game) => {
       BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     )
     animationCameraBeta.setKeys([
-      { frame: 0, value: CONFIG.render3d.camera.beta }, 
-      { frame: 10, value: CONFIG.render3d.camera.beta }
+      { frame: 0, value: CONFIG_RENDER_3D.camera.beta }, 
+      { frame: 10, value: CONFIG_RENDER_3D.camera.beta }
     ])
           
     renderer.camera.animations = [animationCamera, animationCameraAlpha, animationCameraBeta]
@@ -131,18 +132,18 @@ const Camera = (canvas, game) => {
 
   // UPDATE CAMERA ZOOM
   renderer.updateCameraZoom = (direction) => {
-    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
+    const ratioBaseSize = CONFIG_RENDER_3D.cellSize * CONFIG.map.mapSize.width
     let delta = 0;
     if (direction === 'in') {
-      delta = -ratioBaseSize * CONFIG.render3d.camera.distanceRatioStep
+      delta = -ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatioStep
     } else if (direction === 'out') {
-      delta = ratioBaseSize * CONFIG.render3d.camera.distanceRatioStep
+      delta = ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatioStep
     }
 
     // DAMPBOX SIZE UPDATE
-    if (CONFIG.render3d.camera.cameraDampbox) {
-      dampbox.width = Math.round((renderer.camera.radius + delta) / CONFIG.render3d.camera.cameraDampboxRatio) // Sort of magic value...
-      dampbox.height = Math.round((renderer.camera.radius + delta) / CONFIG.render3d.camera.cameraDampboxRatio) // Sort of magic value...
+    if (CONFIG_RENDER_3D.camera.cameraDampbox) {
+      dampbox.width = Math.round((renderer.camera.radius + delta) / CONFIG_RENDER_3D.camera.cameraDampboxRatio) // Sort of magic value...
+      dampbox.height = Math.round((renderer.camera.radius + delta) / CONFIG_RENDER_3D.camera.cameraDampboxRatio) // Sort of magic value...
     }
 
     const animationCameraRadius = new BABYLON.Animation(
@@ -251,17 +252,17 @@ const Camera = (canvas, game) => {
   // CREATE CAMERA
   const createCamera = () => {
     // Add a camera to the scene and attach it to the canvas
-    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
+    const ratioBaseSize = CONFIG_RENDER_3D.cellSize * CONFIG.map.mapSize.width
 
     const camera = new BABYLON.ArcRotateCamera(
       'Camera',
       0, // alpha angle
-      CONFIG.render3d.camera.beta, // beta angle
-      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
+      CONFIG_RENDER_3D.camera.beta, // beta angle
+      ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatio, // radius (aka distance)
       new BABYLON.Vector3( // target
         0,
         // focus height is one stepsize above water level
-        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
+        CONFIG_RENDER_3D.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
         0
       ),
       scene
@@ -273,8 +274,8 @@ const Camera = (canvas, game) => {
     camera.upperBetaLimit = Math.PI / 2
     // camera.lowerAlphaLimit = 0
     // camera.upperAlphaLimit = 0
-    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
-    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
+    camera.lowerRadiusLimit = ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatioMin
+    camera.upperRadiusLimit = ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatioMax
 
     return camera
   }
@@ -282,17 +283,17 @@ const Camera = (canvas, game) => {
   // CREATE CAMERA FREE
   const createCameraFree = () => {
     // Add a camera to the scene and attach it to the canvas
-    const ratioBaseSize = CONFIG.render3d.cellSize * CONFIG.map.mapSize.width
+    const ratioBaseSize = CONFIG_RENDER_3D.cellSize * CONFIG.map.mapSize.width
 
     const camera = new BABYLON.ArcRotateCamera(
       'Camera',
       0, // alpha angle
-      CONFIG.render3d.camera.beta, // beta angle
-      ratioBaseSize * CONFIG.render3d.camera.distanceRatio, // radius (aka distance)
+      CONFIG_RENDER_3D.camera.beta, // beta angle
+      ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatio, // radius (aka distance)
       new BABYLON.Vector3( // target
         0,
         // focus height is one stepsize above water level
-        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
+        CONFIG_RENDER_3D.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1 + 1),
         0
       ),
       scene
@@ -304,8 +305,8 @@ const Camera = (canvas, game) => {
     camera.upperBetaLimit = Math.PI / 2
     // camera.lowerAlphaLimit = 0
     // camera.upperAlphaLimit = 0
-    camera.lowerRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMin
-    camera.upperRadiusLimit = ratioBaseSize * CONFIG.render3d.camera.distanceRatioMax
+    camera.lowerRadiusLimit = ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatioMin
+    camera.upperRadiusLimit = ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatioMax
 
     return camera
   }
@@ -326,10 +327,10 @@ const Camera = (canvas, game) => {
     renderer.cameraFree = createCameraFree()
 
     // Set the active camera
-    renderer.setActiveCamera(CONFIG.render3d.camera.activeCamera)
+    renderer.setActiveCamera(CONFIG_RENDER_3D.camera.activeCamera)
 
     // Set the free camera auto-rotation
-    renderer.setCameraFreeAutorotate(CONFIG.render3d.camera.cameraFreeAutoRotate)
+    renderer.setCameraFreeAutorotate(CONFIG_RENDER_3D.camera.cameraFreeAutoRotate)
   }
 
   return renderer

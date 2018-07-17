@@ -1,5 +1,4 @@
 import BABYLON from 'babylonjs'
-import CONFIG from './config.js'
 
 // image import (for Webpack loading & bundling as dependencies)
 import waterbump from "../../img/waterbump.png"
@@ -19,7 +18,7 @@ waterMaterial(BABYLON)
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D ENVIRONEMENT
 
-const Environement = () => {
+const Environement = (CONFIG_MAP, CONFIG_RENDER_3D) => {
   
   const renderer = {}
 
@@ -30,7 +29,7 @@ const Environement = () => {
   
   // UPDATE OCEAN
   renderer.updateOcean = (_betterOcean) => {
-    const worldSize = CONFIG.render3d.worldSize
+    const worldSize = CONFIG_RENDER_3D.worldSize
     betterOcean = _betterOcean
 
     // Ocean floor
@@ -56,7 +55,7 @@ const Environement = () => {
       // Position tile mesh
       renderer.ocean.position = new BABYLON.Vector3(
         0,
-        CONFIG.render3d.cellStepHeight * (CONFIG.map.mapSeaMinLevel + 1),
+        CONFIG_RENDER_3D.cellStepHeight * (CONFIG_MAP.mapSeaMinLevel + 1),
         0
       )
       renderer.ocean.isPickable = false
@@ -109,8 +108,8 @@ const Environement = () => {
       }
 
       // Tiles
-      for (let x = 0; x < CONFIG.map.mapSize.width; x++) {
-        for (let y = 0; y < CONFIG.map.mapSize.height; y++) {
+      for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+        for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
           renderer.ocean.material.addToRenderList(map[x][y].tile)
         }
       }
@@ -123,7 +122,7 @@ const Environement = () => {
 
   // CREATE SKYBOX
   const createSkybox = () => {
-    const skybox = BABYLON.Mesh.CreateBox('skyBox', CONFIG.render3d.worldSize, scene)
+    const skybox = BABYLON.Mesh.CreateBox('skyBox', CONFIG_RENDER_3D.worldSize, scene)
     const skyboxMaterial = new BABYLON.StandardMaterial('skyBox', scene)
     skyboxMaterial.backFaceCulling = false
     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture('./img/TropicalSunnyDay', scene)
@@ -230,19 +229,19 @@ const Environement = () => {
     players = gamePlayers
     map = gameMap
 
-    betterOcean = CONFIG.render3d.betterOcean
+    betterOcean = CONFIG_RENDER_3D.betterOcean
     
     skybox = createSkybox()
 
     renderer.updateOcean(betterOcean)
 
-    if (CONFIG.render3d.showAxis) {
+    if (CONFIG_RENDER_3D.showAxis) {
       showWorldAxis(27) // TODO: adapt to map size largest dimensions (width or height)
     }
 
     renderer.lights = createLights()
 
-    if (CONFIG.render3d.shadows) {
+    if (CONFIG_RENDER_3D.shadows) {
       renderer.shadowGenerator = createShadows()
     }
   }

@@ -1,10 +1,9 @@
 import BABYLON from 'babylonjs'
-import CONFIG from './config.js'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 3D POSTPROCESS
 
-const Postprocess = () => {
+const Postprocess = (CONFIG_RENDER_3D) => {
 
   const renderer = {}
 
@@ -131,8 +130,8 @@ const Postprocess = () => {
     camera = rendererCamera
     cameraFree = rendererCameraFree
 
-    activeCamera = CONFIG.render3d.camera.activeCamera === 'camera' ? camera : cameraFree
-    renderer.updatePosprocessPipeline(CONFIG.render3d.postprocess)
+    activeCamera = CONFIG_RENDER_3D.camera.activeCamera === 'camera' ? camera : cameraFree
+    renderer.updatePosprocessPipeline(CONFIG_RENDER_3D.postprocess)
   }
 
   return renderer
