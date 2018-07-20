@@ -2,6 +2,7 @@
 
 ## Known bugs
 
+* Fix the 2D map
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
 * Sometimes (!) keybord is broken, cursor moves on all keys (keys[] broken?)
 * Switching post-processing ('multi'/'ssao') cause lighting issues (too dark / too bright)
@@ -32,6 +33,7 @@
 
 ## Later
 
+* All things in store? (config render 2d/3d...)
 * Joypad support
 * Sound and music support
 * Log all game actions, and replay a game (and undo/redo???)

@@ -1,6 +1,6 @@
 import BABYLON from 'babylonjs'
 import HEXLIB from '../vendor/hexlib.js'
-import CONFIG from './config.js'
+import CONFIG_RENDER_3D from '../config/render3d'
 
 import Camera from './renderer3d-camera'
 import Highlight from './renderer3d-highlight'
@@ -22,7 +22,6 @@ import img6 from "../../img/TropicalSunnyDay_pz.jpg"
 
 const Renderer3d = (game, canvas) => {
   const CONFIG_MAP = game.CONFIG.map,
-        CONFIG_RENDER_3D = CONFIG.render3d,
         CONFIG_PLAYERS = game.CONFIG.players
 
   const map = game.map.data, // Only data, no calls to Map's functions should be made here

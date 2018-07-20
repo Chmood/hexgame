@@ -13,7 +13,7 @@ const Main = () => {
   const main = {}
 
   ////////////////////////////////
-  // SIZING THINGS
+  // SIZING 2D THINGS
 
   // SIZE 2D MAP
   const size2dMap = (canvasWrapper, game) => {
@@ -56,29 +56,30 @@ const Main = () => {
   ////////////////////////////////
   // INIT
 
-  // CREATE DOM THINGS (and init Vue JS)
-  const dom = DomUI()
-
-  // CREATE THE GAME
-  const ctx2d = dom.canvas2d.getContext('2d'),
+  const dom = DomUI(), // DOM (and init Vue JS)
+        // Canvases
+        ctx2d = dom.canvas2d.getContext('2d'),
         canvas3d = dom.canvas3d
-
+  
+  // CREATE THE GAME
   // The game knows about the DOM, the main (his "parent") and both canvases
   main.game = Game(ctx2d, canvas3d, dom, main)
-  // Now we've got both renderers
+  // Now we've got both renderers, and game CONFIG object
 
-  // Size 2D map
-  // Must come BEFORE game creation
-  size2dMap(dom.canvas2dWrapper, main.game)
-  
   // Set DOM game reference
   dom.setGame(main.game)
 
-  // Set 2D canvas size
-  size2dCanvas(dom.canvas2d, main.game)
-
-  // 2D: Initial rendering
-  main.game.renderer2d.render()
+  // // 2D
+  // window.setTimeout(() => {
+  //   // Size 2D map
+  //   size2dMap(dom.canvas2dWrapper, main.game)
+  //   // Set 2D canvas size
+  //   size2dCanvas(dom.canvas2d, main.game)
+  
+  //   // 2D: Initial rendering
+  //   main.game.renderer2d.render()
+  //   main.game.updateRenderers(['resize'])
+  // }, 5000)
 
   return main
 }

@@ -1,4 +1,7 @@
-import CONFIG from '../../config'
+import CONFIG_GAME from '../../../config/game'
+import CONFIG_MAP from '../../../config/map'
+import CONFIG_PLAYERS from '../../../config/players'
+
 import MaterialColors from '../../../vendor/material-colors'
 
 // initial state
@@ -7,9 +10,9 @@ const state = {
   currentGameConfigurationStep: 0,
 
   config: {
-    game: JSON.parse(JSON.stringify(CONFIG.game)),
-    players: JSON.parse(JSON.stringify(CONFIG.players)),
-    map: JSON.parse(JSON.stringify(CONFIG.map))
+    game: JSON.parse(JSON.stringify(CONFIG_GAME)),
+    players: JSON.parse(JSON.stringify(CONFIG_PLAYERS)),
+    map: JSON.parse(JSON.stringify(CONFIG_MAP))
   },
 
   isReady: {
@@ -21,6 +24,22 @@ const state = {
 
   colors: MaterialColors
 }
+
+// INITIAL COMPUTED VARIABLES
+
+// Players
+
+let playerId = 0
+for (const player of state.config.players) {
+  player.id = playerId
+  playerId++
+}
+
+// Map
+state.config.map.mapNoise.height.frequency =
+  state.config.map.mapNoise.height.frequencyRatio * state.config.map.mapSize.width
+state.config.map.mapNoise.moisture.frequency =
+  state.config.map.mapNoise.moisture.frequencyRatio * state.config.map.mapSize.width
 
 // getters
 const getters = {
