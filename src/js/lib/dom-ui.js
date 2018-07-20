@@ -188,6 +188,13 @@ const DomUI = () => {
     }
   })
 
+  window.addEventListener('gameConfigurationActionUpdatePlayersColor', (event) => {
+    // event.detail.player
+    game.renderer3d.updatePlayersColor()
+    game.renderer3d.deleteUnits()
+    game.renderer3d.createUnits()
+  })
+
   // BIG BANNER
   dom.displayBigBanner = (message) => {
     const delay = 500

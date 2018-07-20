@@ -7,12 +7,24 @@ const Materials = (CONFIG_MAP, CONFIG_RENDER_3D, CONFIG_PLAYERS) => {
 
   const renderer = {}
 
+  const materials = {}
+
   ////////////////////////////////////////
   // PUBLIC
 
+
+  // UPDATE PLAYERS COLOR
+  renderer.updatePlayersColor = () => {
+    materials.players = {}
+    for (let [n, player] of Object.entries(CONFIG_PLAYERS)) {
+      materials.players[n] = [] // [0] is base color, [1] is desaturated color
+      materials.players[n][0] = createSimpleMaterial(`player-${n}`, player.color)
+      materials.players[n][1] = createSimpleMaterial(`player-${n}`, player.colorDesaturated)
+    }
+  }    
+
   // CREATE MATERIALS
   renderer.createMaterials = () => {
-    const materials = {}
 
     // TERRAINS
     for (const [name, value] of Object.entries(CONFIG_MAP.terrain)) {
@@ -30,12 +42,7 @@ const Materials = (CONFIG_MAP, CONFIG_RENDER_3D, CONFIG_PLAYERS) => {
     }
 
     // PLAYERS
-    materials.players = {}
-    for (let [n, player] of Object.entries(CONFIG_PLAYERS)) {
-      materials.players[n] = [] // [0] is base color, [1] is desaturated color
-      materials.players[n][0] = createSimpleMaterial(`player-${n}`, player.color)
-      materials.players[n][1] = createSimpleMaterial(`player-${n}`, player.colorDesaturated)
-    }
+    renderer.updatePlayersColor()
 
     // Unit neutral parts (not colored)
     materials['unitGrey'] = createSimpleMaterial('unit-neutral', '#aaaaaa', true)

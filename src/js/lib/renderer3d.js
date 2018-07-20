@@ -81,6 +81,9 @@ const Renderer3d = (game, canvas) => {
     updateHealthbar: units.updateHealthbar,
     changeUnitMaterial: units.changeUnitMaterial,
 
+    // Materials
+    updatePlayersColor: materials.updatePlayersColor,
+
     ////////////////////////////////////////
     // RENDERER PUBLIC METHODS
   

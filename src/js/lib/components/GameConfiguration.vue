@@ -457,9 +457,12 @@ export default {
   }),
 
   methods: {
-    doAction(action) {
-      const event = new CustomEvent('gameConfigurationAction', { detail: {'action': action }})
+    emitGameEvent(name, eventData) {
+      const event = new CustomEvent(name, eventData)
       window.dispatchEvent(event)
+    },
+    doAction(action) {
+      this.emitGameEvent('gameConfigurationAction', { detail: {'action': action }})
     },
     changeStep(increment) {
       this.$store.commit('gameConfiguration/changeStep', { increment })
@@ -468,8 +471,9 @@ export default {
     createPlayer() {
       this.$store.commit('gameConfiguration/createPlayer', { player: undefined })
     },
-    updatePlayerColor(player) {
+    updatePlayerColor(player) {// FOOOO
       this.$store.commit('gameConfiguration/updatePlayerColor', { player })
+      this.emitGameEvent('gameConfigurationActionUpdatePlayersColor', {})
     },
     updatePlayerName(e, player) {
       this.$store.commit('gameConfiguration/updatePlayerName', { player, name: e.target.value })
