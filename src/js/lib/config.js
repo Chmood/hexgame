@@ -80,11 +80,12 @@ const CONFIG = {
       ice: { color: '#ccffff' } // 11
     }
   },
+  // TODO: MOVE INTO DEDICATED CONFIG FILE
   render2d: {
-    cellSizeBase: undefined,	// base size of a cell in px // COMPUTED (on DOM ready)
     cellSizeRatio: 6 / 6,	// perspective cell height diminution ratio
-    cellSize: undefined, // size of the cell // COMPUTED (on DOM ready)
-    displayTileText: true // debug tiles cost / height
+    displayTileText: true, // debug tiles cost / height
+    cellSizeBase: undefined,	// base size of a cell in px // COMPUTED (on DOM ready)
+    cellSize: undefined // size of the cell // COMPUTED (on DOM ready)
   },
   render3d: {
     // Terrain

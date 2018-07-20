@@ -2,7 +2,7 @@
 // HEXGAME PROJECT
 ////////////////////////////////////////////////////////////////////////////////
 
-import CONFIG from './lib/config'
+import CONFIG_RENDER_2D from './config/render2d'
 import Game from './lib/game'
 import DomUI from './lib/dom-ui'
 
@@ -16,22 +16,21 @@ const Main = () => {
   // SIZING THINGS
 
   // SIZE 2D MAP
-  const size2dMap = (canvasWrapper) => {
+  const size2dMap = (canvasWrapper, game) => {
     const canvasWrapperWidth = canvasWrapper.offsetWidth,
           canvasWrapperHeight = canvasWrapper.offsetHeight
 
     // TODO: better & more accurate
     // Topped
-    const fitWidth = Math.floor(canvasWrapperWidth * (3 / 4) / (CONFIG.map.mapSize.width + 3)),
-          fitHeight = Math.floor((canvasWrapperHeight / CONFIG.render2d.cellSizeRatio) / ((CONFIG.map.mapSize.height + 2) * Math.sqrt(3))),
+    const fitWidth = Math.floor(canvasWrapperWidth * (3 / 4) / (game.CONFIG.map.mapSize.width + 3)),
+          fitHeight = Math.floor((canvasWrapperHeight / CONFIG_RENDER_2D.cellSizeRatio) / ((game.CONFIG.map.mapSize.height + 2) * Math.sqrt(3))),
           fitSize = Math.min(fitWidth, fitHeight)
 
-    CONFIG.render2d.cellSizeBase = fitSize
-
     // Computed vars
-    CONFIG.render2d.cellSize = {}
-    CONFIG.render2d.cellSize.width = CONFIG.render2d.cellSizeBase
-    CONFIG.render2d.cellSize.height = Math.floor(CONFIG.render2d.cellSizeBase * CONFIG.render2d.cellSizeRatio)
+    game.renderer2d.cellSizeBase = fitSize
+    game.renderer2d.cellSize = {}
+    game.renderer2d.cellSize.width = game.renderer2d.cellSizeBase
+    game.renderer2d.cellSize.height = Math.floor(game.renderer2d.cellSizeBase * CONFIG_RENDER_2D.cellSizeRatio)
   }
 
   // SIZE CANVAS
@@ -50,26 +49,28 @@ const Main = () => {
   // SET SIZE (public?)
   // Size all the things
   main.setSize = () => {
-    size2dMap(dom.canvas2dWrapper)
+    size2dMap(dom.canvas2dWrapper, main.game)
     size2dCanvas(dom.canvas2d, main.game)
   }
 
   ////////////////////////////////
   // INIT
 
-  // CREATE DOM THINGS (Vue JS)
+  // CREATE DOM THINGS (and init Vue JS)
   const dom = DomUI()
 
   // CREATE THE GAME
   const ctx2d = dom.canvas2d.getContext('2d'),
         canvas3d = dom.canvas3d
 
+  // The game knows about the DOM, the main (his "parent") and both canvases
+  main.game = Game(ctx2d, canvas3d, dom, main)
+  // Now we've got both renderers
+
   // Size 2D map
   // Must come BEFORE game creation
-  size2dMap(dom.canvas2dWrapper)
+  size2dMap(dom.canvas2dWrapper, main.game)
   
-  main.game = Game(ctx2d, canvas3d, dom, main)
-
   // Set DOM game reference
   dom.setGame(main.game)
 

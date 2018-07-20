@@ -1,19 +1,21 @@
-import HEXLIB from '../vendor/hexlib.js'
-import CONFIG from './config.js'
+import HEXLIB from '../vendor/hexlib'
+import CONFIG_RENDER_2D from '../config/render2d'
 
 ////////////////////////////////////////////////////////////////////////////////
 // RENDERER 2D
 
 const Renderer2d = (game, ctx) => {
 
-  const CONFIG_MAP = game.CONFIG.map,
-        CONFIG_RENDER_2D = CONFIG.render2d
+  const CONFIG_MAP = game.CONFIG.map
 
   const renderer = {},
         map = game.map
 
   renderer.game = game	// Backup game
   renderer.ctx = ctx	// Backup ctx
+
+  renderer.cellSizeBase = undefined	// base size of a cell in px // COMPUTED (on DOM ready)
+  renderer.cellSize = {} // size of the cell // COMPUTED (on DOM ready)
 
   // COMPUTE MAP SCREEN ORIGIN
   renderer.mapComputeOrigin = (cellSize, mapTopped, mapParity) => {
@@ -208,7 +210,7 @@ const Renderer2d = (game, ctx) => {
 
     // Map origin
     renderer.mapOrigin = renderer.mapComputeOrigin(
-      CONFIG_RENDER_2D.cellSize,
+      renderer.cellSize,
       CONFIG_MAP.mapTopped,
       CONFIG_MAP.mapParity
     )
@@ -216,7 +218,7 @@ const Renderer2d = (game, ctx) => {
     // Map render size
     renderer.mapRenderSize = renderer.mapComputeSize(
       CONFIG_MAP.mapSize,
-      CONFIG_RENDER_2D.cellSize,
+      renderer.cellSize,
       CONFIG_MAP.mapTopped
     )
 
@@ -225,8 +227,8 @@ const Renderer2d = (game, ctx) => {
       CONFIG_MAP.mapTopped ? HEXLIB.orientationFlat : HEXLIB.orientationPointy, // topped
       {
         // cell size in px
-        x: CONFIG_RENDER_2D.cellSize.width,
-        y: CONFIG_RENDER_2D.cellSize.height
+        x: renderer.cellSize.width,
+        y: renderer.cellSize.height
       },
       renderer.mapOrigin // origin
     )
