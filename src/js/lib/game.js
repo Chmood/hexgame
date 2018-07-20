@@ -445,20 +445,21 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       } else {
         game.map.setSeed(CONFIG.map.seed)
       }
-
+      
       // Delete meshes
-      game.renderer3d.deleteTiles()
+      game.renderer3d.deleteTilesAndBuildings()
       game.renderer3d.deleteUnits()
-
+      
       // Re-init buildings and players
       game.map.data.buildings = []
       game.players = []
-
+      
       game.map.generateMap()
-
+      
       console.log('MAP TERRAIN', game.map.data.terrain)
-
-      game.renderer3d.createTiles()
+      
+      game.renderer3d.randomizeTileDispSets()
+      game.renderer3d.createTilesAndBuildings()
       game.updateRenderers() // 2D map updating
 
       game.isGameReady()
@@ -487,7 +488,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         console.warn(`Buildings generated in ${nTry} tries`)
         console.log('MAP BULDINGS', game.map.data.buildings)
 
-        game.renderer3d.createTiles()
+        game.renderer3d.createTilesAndBuildings()
         game.updateRenderers() // 2D map updating
 
         game.isGameReady()

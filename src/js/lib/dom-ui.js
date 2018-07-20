@@ -193,6 +193,10 @@ const DomUI = () => {
     game.renderer3d.updatePlayersColor()
     game.renderer3d.deleteUnits()
     game.renderer3d.createUnits()
+
+    game.renderer3d.updateBuildingsColor()
+    game.renderer3d.deleteBuildings()
+    game.renderer3d.createBuildings()
   })
 
   // BIG BANNER

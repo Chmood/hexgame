@@ -10,6 +10,10 @@
 * bot units sometimes move an incredibly long path to attack (validate move) [TO BE CONFIRMED]
 * Units can be built on occupied factories / port / airport??? [TO BE CONFIRMED]
 
+## Live game configuration
+
+* Being able to re-draw a building without re-drawing (and randomizing) its terrain cell
+
 ## Improvements
 
 * Fix mouse playing

@@ -11,41 +11,94 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
   ////////////////////////////////////////
   // PUBLIC
 
-  // CREATE TILES
+  // RANDOMIZE TILE DISP SETS
   // Create tiles and buildings
-  renderer.createTiles = () => {
+  renderer.randomizeTileDispSets = () => {
 
     for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
       for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+        // Get the cell
         const cell = map.terrain[x][y]
 
-        const tileAndBuilding = createTileAndBuilding(x, y, cell, cell.building)
-        map.terrain[x][y].tile = tileAndBuilding.tile
-        map.terrain[x][y].buildingMesh = tileAndBuilding.building
+        cell.dispSets = getRandomDispSets(4)
       }
     }
   }
 
-  // DELETE TILES
-  // Delete tiles and buildings
-  renderer.deleteTiles = () => {
+  // CREATE TILES
+  renderer.createTiles = () => {
+
     for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
       for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+        // Get the cell
+        const cell = map.terrain[x][y]
+
+        const noTop = map.terrain[x][y].building && map.terrain[x][y].building.type !== 'port' ? true : false
+
+        map.terrain[x][y].tile = createTile(x, y, cell, noTop)
+      }
+    }
+  }
+
+  // CREATE BUILDINGS
+  renderer.createBuildings = () => {
+
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+        // Get the cell
+        const cell = map.terrain[x][y]
+
+        map.terrain[x][y].buildingMesh = createBuilding(x, y, cell, cell.building)
+      }
+    }
+  }
+
+  // CREATE TILES AND BUILDINGS
+  renderer.createTilesAndBuildings = () => {
+    renderer.createTiles()
+    renderer.createBuildings()
+  }
+
+  // DELETE TILES
+  renderer.deleteTiles = () => {
+
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+
         if (map.terrain[x][y] && map.terrain[x][y].tile) {
           map.terrain[x][y].tile.dispose()
-
-          if (map.terrain[x][y].buildingMesh) {
-            console.warn('building mesh deleted')
-            map.terrain[x][y].buildingMesh.dispose()
-          }
         }
       }
     }
   }
 
-  // CHANGE BULDING COLOR
+  // DELETE BUILDINGS
+  renderer.deleteBuildings = () => {
+
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+
+        if (map.terrain[x][y] && map.terrain[x][y].buildingMesh) {
+          map.terrain[x][y].buildingMesh.dispose()
+        }
+      }
+    }
+  }
+
+  // DELETE TILES AND BUILDINGS
+  renderer.deleteTilesAndBuildings = () => {
+    renderer.deleteTiles()
+    renderer.deleteBuildings()
+  }
+
+  // CHANGE BUILDING COLOR
   renderer.changeBuildingColor = (cell, playerId) => {
     cell.buildingMesh.material = materials.players[playerId][0]
+  }
+
+  // UPDATE BUILDINGS COLOR
+  renderer.updateBuildingsColor = (cell, playerId) => {
+    // cell.buildingMesh.material = materials.players[playerId][0]
   }
 
   // REDISTRIBUTE ELEVATION WITH GAP
@@ -411,7 +464,7 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
   }
 
   // CREATE TILE
-  const createTileAndBuilding = (x, y, cell, gameBuilding) => {
+  const createTile = (x, y, cell, noTop) => {
     const offset = HEXLIB.hexOffset(x, y),
           hex = HEXLIB.offset2Hex(
             offset,
@@ -421,7 +474,7 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
           position = HEXLIB.hex2Pixel(layout, hex), // center of tile top
           tile = new BABYLON.Mesh(`tile-${x}-${y}`, scene),
           height = cell.height,
-          randomDispSets = getRandomDispSets(4)
+          randomDispSets = cell.dispSets
 
     // BUILD MESH
     const vertexData = getHexaprismVertexData(
@@ -435,7 +488,8 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
       1.125, // bottom scaling
       randomDispSets,
       'tile',
-      gameBuilding && gameBuilding.type !== 'port' ? true : false // No tile top when a building is present
+      noTop
+      // gameBuilding && gameBuilding.type !== 'port' ? true : false // No tile top when a building is present
     )
     vertexData.applyToMesh(tile)
 
@@ -461,7 +515,23 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
     }
 
     tile.freezeWorldMatrix()
- 
+
+    return tile
+  }
+
+  // CREATE BUILDING
+  const createBuilding = (x, y, cell, gameBuilding) => {
+    const offset = HEXLIB.hexOffset(x, y),
+          hex = HEXLIB.offset2Hex(
+            offset,
+            CONFIG_MAP.mapTopped,
+            CONFIG_MAP.mapParity
+          ),
+          position = HEXLIB.hex2Pixel(layout, hex), // center of tile top
+          tile = cell.tile,
+          height = cell.height,
+          randomDispSets = cell.dispSets
+
     ////////////////////////////////////////
     // BULDING
     let building
@@ -508,7 +578,7 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
       building.freezeWorldMatrix()
     }
 
-    return {tile, building}
+    return building
   }
 
   ////////////////////////////////////////

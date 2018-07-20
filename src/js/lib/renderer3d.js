@@ -64,9 +64,14 @@ const Renderer3d = (game, canvas) => {
     addToOceanRenderList: environement.addToOceanRenderList,
   
     // Tiles
+    randomizeTileDispSets: tiles.randomizeTileDispSets,
     createTiles: tiles.createTiles,
+    createBuildings: tiles.createBuildings,
+    createTilesAndBuildings: tiles.createTilesAndBuildings,
     deleteTiles: tiles.deleteTiles,
-    changeBuildingColor: tiles.changeBuildingColor,
+    deleteBuildings: tiles.deleteBuildings,
+    deleteTilesAndBuildings: tiles.deleteTilesAndBuildings,
+    updateBuildingsColor: tiles.updateBuildingsColor,
   
     // Units
     createUnits: units.createUnits,
@@ -83,6 +88,7 @@ const Renderer3d = (game, canvas) => {
 
     // Materials
     updatePlayersColor: materials.updatePlayersColor,
+    updateBuildingsColor: tiles.updateBuildingsColor,
 
     ////////////////////////////////////////
     // RENDERER PUBLIC METHODS
