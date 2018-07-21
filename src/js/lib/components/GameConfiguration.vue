@@ -470,6 +470,7 @@ export default {
 
     createPlayer() {
       this.$store.commit('gameConfiguration/createPlayer', { player: undefined })
+      this.emitGameEvent('gameConfigurationActionUpdatePlayers', {})
     },
     updatePlayerColor(player) {// FOOOO
       this.$store.commit('gameConfiguration/updatePlayerColor', { player })
@@ -485,7 +486,10 @@ export default {
       this.$store.commit('gameConfiguration/updatePlayerMoney', { player, money: parseInt(e.target.value) })
     },
     deletePlayer(player) {
+      // We clear players' buildings and units BEFORE deleting a player
+      this.emitGameEvent('gameConfigurationActionClearPlayers', {})
       this.$store.commit('gameConfiguration/deletePlayer', { player })
+      this.emitGameEvent('gameConfigurationActionUpdatePlayers', {})
     },
 
     updateMapSize(e, dimension) {

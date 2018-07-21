@@ -470,7 +470,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           nTry = 1, // for logging purpose only
           nTryLeft = 100
 
-      game.renderer3d.deleteTiles()
+      game.renderer3d.deleteTilesAndBuildings()
       game.renderer3d.deleteUnits()
 
       game.players = []

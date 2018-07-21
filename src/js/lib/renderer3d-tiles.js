@@ -96,11 +96,6 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
     cell.buildingMesh.material = materials.players[playerId][0]
   }
 
-  // UPDATE BUILDINGS COLOR
-  renderer.updateBuildingsColor = (cell, playerId) => {
-    // cell.buildingMesh.material = materials.players[playerId][0]
-  }
-
   // REDISTRIBUTE ELEVATION WITH GAP
   // TODO: rewrite all this crap! (not used by now)
   renderer.redistributeElevationWithGap = (height) => {

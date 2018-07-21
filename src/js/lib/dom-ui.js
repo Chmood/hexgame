@@ -189,14 +189,26 @@ const DomUI = () => {
   })
 
   window.addEventListener('gameConfigurationActionUpdatePlayersColor', (event) => {
-    // event.detail.player
     game.renderer3d.updatePlayersColor()
     game.renderer3d.deleteUnits()
     game.renderer3d.createUnits()
 
-    game.renderer3d.updateBuildingsColor()
+    // game.renderer3d.updateBuildingsColor()
     game.renderer3d.deleteBuildings()
     game.renderer3d.createBuildings()
+  })
+
+  window.addEventListener('gameConfigurationActionClearPlayers', (event) => {
+    console.error('clearing players\' buildings and units' )
+    game.renderer3d.deleteBuildings()
+    game.renderer3d.deleteUnits()
+  })
+
+  window.addEventListener('gameConfigurationActionUpdatePlayers', (event) => {
+    console.error('player added or deleted')
+    game.renderer3d.updatePlayersColor()
+    game.generateBuildings() // New random seed
+    game.generateUnits() // New random seed
   })
 
   // BIG BANNER

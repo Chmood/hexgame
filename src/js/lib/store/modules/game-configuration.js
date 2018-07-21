@@ -25,29 +25,16 @@ const state = {
   colors: MaterialColors
 }
 
-// INITIAL COMPUTED VARIABLES
-
-// Players
-
-let playerId = 0
-for (const player of state.config.players) {
-  player.id = playerId
-  playerId++
-}
-
-// Map
-state.config.map.mapNoise.height.frequency =
-  state.config.map.mapNoise.height.frequencyRatio * state.config.map.mapSize.width
-state.config.map.mapNoise.moisture.frequency =
-  state.config.map.mapNoise.moisture.frequencyRatio * state.config.map.mapSize.width
-
-// getters
-const getters = {
-  getGameConfig: (state) => state.config,
-  getColors: (state) => state.colors
-}
-
 // STATE HELPERS
+
+const setPlayersId = (state) => {
+  let playerId = 0
+
+  for (const player of state.config.players) {
+    player.id = playerId
+    playerId++
+  }
+}
 
 const getRandomColor = () => {
   const colorKeys = Object.keys(state.colors)
@@ -91,9 +78,26 @@ const setPlayerRandomColor = (player) => {
   player.colors = randomColor
 }
 
+// INIT COMPUTED VARIABLES
+
+// Players
+setPlayersId(state)
+
 // Set random colors to CONFIG players
 for (const player of state.config.players) {
   setPlayerRandomColor(player)
+}
+
+// Map
+state.config.map.mapNoise.height.frequency =
+  state.config.map.mapNoise.height.frequencyRatio * state.config.map.mapSize.width
+state.config.map.mapNoise.moisture.frequency =
+  state.config.map.mapNoise.moisture.frequencyRatio * state.config.map.mapSize.width
+
+// getters
+const getters = {
+  getGameConfig: (state) => state.config,
+  getColors: (state) => state.colors
 }
 
 // mutations
@@ -131,6 +135,19 @@ const mutations = {
       colors: randomColor,
       money: 5000
     })
+
+    setPlayersId(state)
+  },
+  deletePlayer (state, { player }) {
+    const id = state.config.players.indexOf(player)
+    if (id !== -1) {
+      state.config.players.splice(id, 1)
+
+      // Free color
+      freeColor(player.colors)
+
+      setPlayersId(state)
+    }
   },
   updatePlayerColor (state, { player }) {
     setPlayerRandomColor(player)
@@ -143,15 +160,6 @@ const mutations = {
   },
   updatePlayerMoney (state, { player, money }) {
     player.money = money
-  },
-  deletePlayer (state, { player }) {
-    const id = state.config.players.indexOf(player)
-    if (id !== -1) {
-      state.config.players.splice(id, 1)
-
-      // Free color
-      freeColor(player.colors)
-    }
   },
 
   updateMapSize (state, { width, height }) {

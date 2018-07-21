@@ -71,7 +71,7 @@ const Renderer3d = (game, canvas) => {
     deleteTiles: tiles.deleteTiles,
     deleteBuildings: tiles.deleteBuildings,
     deleteTilesAndBuildings: tiles.deleteTilesAndBuildings,
-    updateBuildingsColor: tiles.updateBuildingsColor,
+    changeBuildingColor: tiles.changeBuildingColor,
   
     // Units
     createUnits: units.createUnits,
@@ -88,7 +88,6 @@ const Renderer3d = (game, canvas) => {
 
     // Materials
     updatePlayersColor: materials.updatePlayersColor,
-    updateBuildingsColor: tiles.updateBuildingsColor,
 
     ////////////////////////////////////////
     // RENDERER PUBLIC METHODS
