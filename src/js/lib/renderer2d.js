@@ -131,7 +131,7 @@ const Renderer2d = (game, ctx) => {
       for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
 
         // Cell variables
-        const val = map.data.terrain[x][y].height,
+        const val = map.data.terrain[x][y].elevation,
               valFloor = Math.floor(val),
 
               offset = HEXLIB.hexOffset(x, y),

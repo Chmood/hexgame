@@ -468,7 +468,7 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
           ),
           position = HEXLIB.hex2Pixel(layout, hex), // center of tile top
           tile = new BABYLON.Mesh(`tile-${x}-${y}`, scene),
-          height = cell.height,
+          height = cell.elevation,
           randomDispSets = cell.dispSets
 
     // BUILD MESH
@@ -524,7 +524,7 @@ const Tiles = (CONFIG_MAP, CONFIG_RENDER_3D, map) => {
           ),
           position = HEXLIB.hex2Pixel(layout, hex), // center of tile top
           tile = cell.tile,
-          height = cell.height,
+          height = cell.elevation,
           randomDispSets = cell.dispSets
 
     ////////////////////////////////////////

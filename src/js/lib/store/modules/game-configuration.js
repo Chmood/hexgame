@@ -7,7 +7,7 @@ import MaterialColors from '../../../vendor/material-colors'
 // initial state
 const state = {
   isActive: false,
-  currentGameConfigurationStep: 0,
+  currentGameConfigurationStep: 1,
 
   config: {
     game: JSON.parse(JSON.stringify(CONFIG_GAME)),
@@ -89,8 +89,8 @@ for (const player of state.config.players) {
 }
 
 // Map
-state.config.map.mapNoise.height.frequency =
-  state.config.map.mapNoise.height.frequencyRatio * state.config.map.mapSize.width
+state.config.map.mapNoise.elevation.frequency =
+  state.config.map.mapNoise.elevation.frequencyRatio * state.config.map.mapSize.width
 state.config.map.mapNoise.moisture.frequency =
   state.config.map.mapNoise.moisture.frequencyRatio * state.config.map.mapSize.width
 
@@ -173,9 +173,6 @@ const mutations = {
     state.config.map.mapTopped = topped
   },
   updateMapNoiseFrequencyRatio (state, { ratio, type }) {
-    if (type === 'elevation') {
-      type = 'height'
-    }
     state.config.map.mapNoise[type].frequencyRatio = ratio
     state.config.map.mapNoise[type].frequency =
       state.config.map.mapNoise[type].frequencyRatio * state.config.map.mapSize.width
@@ -225,26 +222,19 @@ const mutations = {
     state.config.map.mapNoise[type].harmonics[harmonicId] = level
   },
   updateMapPostprocessRedistributionPower (state, { power, type }) {
-    if (type === 'elevation') {
-      state.config.map.mapPostprocess.height.redistributionPower = power
-
-    } else if (type === 'moisture') {
-      state.config.map.mapPostprocess.moisture.redistributionPower = power
-    }
+    state.config.map.mapPostprocess[type].redistributionPower = power
   },
   updateMapPostprocessNormalize (state, { normalize, type }) {
-    if (type === 'elevation') {
-      state.config.map.mapPostprocess.height.normalize = normalize
-
-    } else if (type === 'moisture') {
-      state.config.map.mapPostprocess.moisture.normalize = normalize
-    }
+    state.config.map.mapPostprocess[type].normalize = normalize
+  },
+  updateMapPostprocessInvert (state, { invert, type }) {
+    state.config.map.mapPostprocess[type].invert = invert
   },
   updateMapPostprocessIslandMode (state, { islandMode }) {
-    state.config.map.mapPostprocess.height.islandMode = islandMode
+    state.config.map.mapPostprocess.elevation.islandMode = islandMode
   },
   updateMapPostprocessIslandRedistributionPower (state, { power }) {
-    state.config.map.mapPostprocess.height.islandRedistributionPower = power
+    state.config.map.mapPostprocess.elevation.islandRedistributionPower = power
   },
 
   updateGameBuildingsNumber (state, { number, building, owned }) {

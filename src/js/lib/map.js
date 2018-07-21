@@ -18,7 +18,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
     //   hexOffset, // HexOffset
     //   isInGraph, // Boolean
     //
-    //   height,    // Number - the elevation of the tile
+    //   elevation,    // Number - the elevation of the tile
     //   moisture,  // Number - the humidity of the tile
     //   biome,     // String - the name of the biome
     //
@@ -46,14 +46,23 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       populateMap()
 
       // Procedural terrain generation
-      createMapData('height', CONFIG_MAP.mapValueRange.height)
+      map.resynthMap()
+
+      // Post-process the terrain
+      map.postprocessMap()
+    },
+
+    resynthMap() {
+      createMapData('elevation', CONFIG_MAP.mapValueRange.elevation)
       createMapData('moisture', CONFIG_MAP.mapValueRange.moisture)
+
+      // Post-process the terrain
       map.postprocessMap()
     },
 
     // POSTPROCESS MAP
     postprocessMap() {
-      postprocessMapData('height', CONFIG_MAP.mapValueRange.height)
+      postprocessMapData('elevation', CONFIG_MAP.mapValueRange.elevation)
       postprocessMapData('moisture', CONFIG_MAP.mapValueRange.moisture)
       createMapBiomes()
     },
@@ -354,7 +363,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
           distanceMaxVertical = HEXLIB.hexDistance(hexCenter, hexVertical),
           distanceMaxHorizontal = HEXLIB.hexDistance(hexCenter, hexHorizontal),
           distanceMax = Math.min(distanceMaxVertical, distanceMaxHorizontal) - 
-            CONFIG_MAP.mapPostprocess.height.islandMargin // Make sure map border are ocean
+            CONFIG_MAP.mapPostprocess.elevation.islandMargin // Make sure map border are ocean
 
     for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
       for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
@@ -369,7 +378,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
           ratio = 1
         }
         ratio = 1 - ratio
-        ratio = Math.pow(ratio, CONFIG_MAP.mapPostprocess.height.islandRedistributionPower)
+        ratio = Math.pow(ratio, CONFIG_MAP.mapPostprocess.elevation.islandRedistributionPower)
         // Add random peaks to border area of the map (otherwise only 'deepsea')
         if (ratio < 0.5) {
           ratio += (RNG() / 5)
@@ -380,13 +389,13 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
   }
 
   // GET BIOME
-  const getBiome = (height, moisture) => {
+  const getBiome = (elevation, moisture) => {
 
-    if (height < 1) { return 'deepsea' }
-    if (height < 2) { return 'sea' }
-    if (height < 3) { return 'shore' }
+    if (elevation < 1) { return 'deepsea' }
+    if (elevation < 2) { return 'sea' }
+    if (elevation < 3) { return 'shore' }
 
-    if (height < 4) {
+    if (elevation < 4) {
       if (moisture < 1) {
         return 'whitebeach'
       } else if (moisture < 3) {
@@ -395,7 +404,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
         return 'swamp'
       }
     }
-    if (height < 5) {
+    if (elevation < 5) {
       if (moisture < 1) {
         return 'desert'
       } else if (moisture < 3) {
@@ -404,7 +413,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
         return 'plain'
       }
     }
-    if (height < 6) {
+    if (elevation < 6) {
       if (moisture < 1) {
         return 'grass'
       } else if (moisture < 3) {
@@ -413,7 +422,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
         return 'forest'
       }
     }
-    if (height < 7) {
+    if (elevation < 7) {
       if (moisture < 1) {
         return 'plain'
       } else if (moisture < 3) {
@@ -422,7 +431,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
         return 'deepforest'
       }
     }
-    if (height < 8) {
+    if (elevation < 8) {
       if (moisture < 1) {
         return 'mountain'
       } else if (moisture < 2) {
@@ -434,7 +443,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       }
     }
 
-    if (height < 9) {
+    if (elevation < 9) {
       if (moisture < 1) {
         return 'mountain'
       } else if (moisture < 3) {
@@ -443,7 +452,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
         return 'pineforest'
       }
     }
-    if (height < 10) {
+    if (elevation < 10) {
       if (moisture < 2) {
         return 'scorched'
       } else {
@@ -457,7 +466,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
   const createMapBiomes = () => {
     for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
       for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
-        map.data.terrain[x][y].biome = getBiome(map.data.terrain[x][y].height, map.data.terrain[x][y].moisture)
+        map.data.terrain[x][y].biome = getBiome(map.data.terrain[x][y].elevation, map.data.terrain[x][y].moisture)
       }
     }
   }
@@ -486,7 +495,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
     )
 
     // Revert values
-    if (CONFIG_MAP.mapPostprocess[type].revert) {
+    if (CONFIG_MAP.mapPostprocess[type].invert) {
       nz[h] = 1 - nz[h]
     }
 
@@ -647,8 +656,8 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
                       biomesMoveCosts,
                       neighborCell.building,
                       buildingsMoveCosts,
-                      cell.height,
-                      neighborCell.height
+                      cell.elevation,
+                      neighborCell.elevation
                     )
 
                     costs.push(cost)	// add the edge cost to the graph

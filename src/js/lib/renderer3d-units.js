@@ -400,7 +400,7 @@ const Units = (CONFIG_MAP, CONFIG_RENDER_3D, game, camera) => {
   const rotateUnit = (unit, step) => {
     const position = HEXLIB.hex2Pixel(layout, step),
           stepData = game.map.getCellFromHex(step),
-          height = stepData.height * CONFIG_RENDER_3D.cellStepHeight,
+          height = stepData.elevation * CONFIG_RENDER_3D.cellStepHeight,
           nextPosition = new BABYLON.Vector3( // end value
             position.y, // Axis inversion!
             height, 
@@ -446,7 +446,7 @@ const Units = (CONFIG_MAP, CONFIG_RENDER_3D, game, camera) => {
   const getUnitPositionAndRotationOnHex = (unit, hex) => {
     const hexPosition = HEXLIB.hex2Pixel(layout, hex),
           cell = game.map.getCellFromHex(hex),
-          height = cell.height,
+          height = cell.elevation,
           // Only ground units follow terrain slope
           doFollowTerrainSlope = unit.family === 'ground' ? true : false
 
@@ -463,7 +463,7 @@ const Units = (CONFIG_MAP, CONFIG_RENDER_3D, game, camera) => {
 
     } else if (unit.family === 'air') {
       // Air units use maximum height (not very legible on the 3D map)
-      // cellHeight = CONFIG_MAP.mapValueRange.height + 1
+      // cellHeight = CONFIG_MAP.mapValueRange.elevation + 1
       // Air units fly from a distance above the ground
       if (height < CONFIG_MAP.mapSeaMinLevel + 1) {
         // Fly above the sea

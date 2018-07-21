@@ -142,7 +142,7 @@
                   <div class="input-with-unit">
                     <div class="checky">
                       <input id="options-postprocess-island-elevation" type="checkbox"
-                        :checked="config.map.mapPostprocess.height.islandMode"
+                        :checked="config.map.mapPostprocess.elevation.islandMode"
                         @input="updateMapPostprocessIslandMode($event)"
                       >
                       <label for="options-postprocess-island-elevation">Island mode</label>
@@ -151,14 +151,17 @@
                 </div>
                 <div class="input-block">
                   <label for="options-postprocess-island-elevation-redistribution-power">Island redistribution power</label>
-                  <div class="slidey">
+                  <div class="slidey"
+                    :class="{ 'slidey--disabled': !config.map.mapPostprocess.elevation.islandMode }"
+                  >
                     <input id="options-postprocess-island-elevation-redistribution-power"
                       type="range" min="0.1" max="4" step="0.05"
-                      :value="config.map.mapPostprocess.height.islandRedistributionPower"
+                      :value="config.map.mapPostprocess.elevation.islandRedistributionPower"
                       @input="updateMapPostprocessIslandRedistributionPower($event)"
+                      :disabled="!config.map.mapPostprocess.elevation.islandMode"
                     >
                     <span class="slidey-value">
-                      {{ config.map.mapPostprocess.height.islandRedistributionPower }}
+                      {{ config.map.mapPostprocess.elevation.islandRedistributionPower }}
                     </span> 
                   </div>
                 </div>
@@ -167,164 +170,101 @@
             </section>
 
             <section class="grid grid-1-of-2">
-              <article>
-                <h4>Elevation</h4>
+              <article
+                v-for="type in ['elevation', 'moisture']"
+                :key="type"
+              >
+                <h4>{{ type }}</h4>
                 <div class="input-block">
-                  <label for="options-noise-elevation-frequency">Tonic frequency</label>
+                  <label :for="`options-noise-${type}-frequency`">Tonic period</label>
                   <div class="slidey">
-                    <input id="options-noise-elevation-frequency"
+                    <input :id="`options-noise-${type}-frequency`"
                       type="range" min="0.1" max="2" step="0.05"
-                      :value="config.map.mapNoise.height.frequencyRatio"
-                      @input="updateMapNoiseFrequencyRatio($event, 'elevation')"
+                      :value="config.map.mapNoise[type].frequencyRatio"
+                      @input="updateMapNoiseFrequencyRatio($event, type)"
                     >
                     <span class="slidey-value">
-                      {{ config.map.mapNoise.height.frequencyRatio }}
+                      {{ config.map.mapNoise[type].frequencyRatio }}
                     </span> 
                   </div>
                 </div>
                 <div class="input-block">
-                  <label for="options-noise-elevation-octave-0">Tonic level</label>
+                  <label :for="`options-noise-${type}-octave-0`">Tonic level</label>
                   <div class="slidey slidey--disabled">
-                    <input id="options-noise-elevation-octave-0"
+                    <input :id="`options-noise-${type}-octave-0`"
                       type="range" min="0" max="1" step="0.01" disabled
-                      :value="config.map.mapNoise.height.harmonics[0]"
+                      :value="config.map.mapNoise[type].harmonics[0]"
                     >
                     <span class="slidey-value">
-                      {{ Math.round(config.map.mapNoise.height.harmonics[0] * 100) / 100 }}
+                      {{ Math.round(config.map.mapNoise[type].harmonics[0] * 100) / 100 }}
                     </span> 
                   </div>
                 </div>
                 <div class="input-block">
-                  <label for="options-noise-elevation-octave-1">1st octave level</label>
+                  <label :for="`options-noise-${type}-octave-1`">1st octave level</label>
                   <div class="slidey">
-                    <input id="options-noise-elevation-octave-1"
+                    <input :id="`options-noise-${type}-octave-1`"
                       type="range" min="0" max="1" step="0.01"
-                      :value="config.map.mapNoise.height.harmonics[1]"
-                      @input="updateMapNoiseHarmonics($event, 1, 'elevation')"
+                      :value="config.map.mapNoise[type].harmonics[1]"
+                      @input="updateMapNoiseHarmonics($event, 1, type)"
                     >
                     <span class="slidey-value">
-                      {{ Math.round(config.map.mapNoise.height.harmonics[1] * 100) / 100 }}
+                      {{ Math.round(config.map.mapNoise[type].harmonics[1] * 100) / 100 }}
                     </span> 
                   </div>
                 </div>
                 <div class="input-block">
-                  <label for="options-noise-elevation-octave-2">2nd octave level</label>
+                  <label :for="`options-noise-${type}-octave-2`">2nd octave level</label>
                   <div class="slidey">
-                    <input id="options-noise-elevation-octave-2"
+                    <input :id="`options-noise-${type}-octave-2`"
                       type="range" min="0" max="1" step="0.01"
-                      :value="config.map.mapNoise.height.harmonics[2]"
-                      @input="updateMapNoiseHarmonics($event, 2, 'elevation')"
+                      :value="config.map.mapNoise[type].harmonics[2]"
+                      @input="updateMapNoiseHarmonics($event, 2, type)"
                     >
                     <span class="slidey-value">
-                      {{ Math.round(config.map.mapNoise.height.harmonics[2] * 100) / 100 }}
+                      {{ Math.round(config.map.mapNoise[type].harmonics[2] * 100) / 100 }}
                     </span> 
                   </div>
                 </div>
                 <div class="input-block">
-                  <label for="options-postprocess-elevation-redistribution-power">Redistribution power</label>
+                  <label :for="`options-postprocess-${type}-redistribution-power`">Redistribution power</label>
                   <div class="slidey">
-                    <input id="options-postprocess-elevation-redistribution-power"
+                    <input :id="`options-postprocess-${type}-redistribution-power`"
                       type="range" min="0.1" max="4" step="0.1"
-                      :value="config.map.mapPostprocess.height.redistributionPower"
-                      @input="updateMapPostprocessRedistributionPower($event, 'elevation')"
+                      :value="config.map.mapPostprocess[type].redistributionPower"
+                      @input="updateMapPostprocessRedistributionPower($event, type)"
                     >
                     <span class="slidey-value">
-                      {{ config.map.mapPostprocess.height.redistributionPower }}
+                      {{ config.map.mapPostprocess[type].redistributionPower }}
                     </span> 
                   </div>
                 </div>
                 <div class="input-block">
-                  <label for="options-postprocess-elevation-normalize">Normalize elevation</label>
+                  <label :for="`options-postprocess-${type}-normalize`">Normalize</label>
                   <div class="input-with-unit">
                     <div class="checky">
-                      <input id="options-postprocess-elevation-normalize" type="checkbox"
-                        :checked="config.map.mapPostprocess.height.normalize"
-                        @input="updateMapPostprocessNormalize($event, 'elevation')"
+                      <input :id="`options-postprocess-${type}-normalize`" type="checkbox"
+                        :checked="config.map.mapPostprocess[type].normalize"
+                        @input="updateMapPostprocessNormalize($event, type)"
                       >
-                      <label for="options-postprocess-elevation-normalize">Normalize elevation</label>
+                      <label :for="`options-postprocess-${type}-normalize`">Normalize</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="input-block">
+                  <label :for="`options-postprocess-${type}-invert`">Invert</label>
+                  <div class="input-with-unit">
+                    <div class="checky">
+                      <input :id="`options-postprocess-${type}-invert`" type="checkbox"
+                        :checked="config.map.mapPostprocess[type].invert"
+                        @input="updateMapPostprocessInvert($event, type)"
+                      >
+                      <label :for="`options-postprocess-${type}-invert`">Invert</label>
                     </div>
                   </div>
                 </div>
               </article>
-              <article>
-                <h4>Moisture</h4>
-                <div class="input-block">
-                  <label for="options-noise-moisture-frequency">Tonic frequency</label>
-                  <div class="slidey">
-                    <input id="options-noise-moisture-frequency"
-                      type="range" min="0.1" max="2" step="0.05"
-                      :value="config.map.mapNoise.moisture.frequencyRatio"
-                      @input="updateMapNoiseFrequencyRatio($event, 'moisture')"
-                    >
-                    <span class="slidey-value">
-                      {{ config.map.mapNoise.moisture.frequencyRatio }}
-                    </span> 
-                  </div>
-                </div>
-                <div class="input-block">
-                  <label for="options-noise-moisture-octave-0">Tonic level</label>
-                  <div class="slidey slidey--disabled">
-                    <input id="options-noise-moisture-octave-0"
-                      type="range" min="0" max="1" step="0.01" disabled
-                      :value="config.map.mapNoise.moisture.harmonics[0]"
-                    >
-                    <span class="slidey-value">
-                      {{ Math.round(config.map.mapNoise.moisture.harmonics[0] * 100) / 100 }}
-                    </span> 
-                  </div>
-                </div>
-                <div class="input-block">
-                  <label for="options-noise-moisture-octave-1">1st octave level</label>
-                  <div class="slidey">
-                    <input id="options-noise-moisture-octave-1"
-                      type="range" min="0" max="1" step="0.01"
-                      :value="config.map.mapNoise.moisture.harmonics[1]"
-                      @input="updateMapNoiseHarmonics($event, 1, 'moisture')"
-                    >
-                    <span class="slidey-value">
-                      {{ Math.round(config.map.mapNoise.moisture.harmonics[1] * 100) / 100 }}
-                    </span> 
-                  </div>
-                </div>
-                <div class="input-block">
-                  <label for="options-noise-moisture-octave-2">2nd octave level</label>
-                  <div class="slidey">
-                    <input id="options-noise-moisture-octave-2"
-                      type="range" min="0" max="1" step="0.01"
-                      :value="config.map.mapNoise.moisture.harmonics[2]"
-                      @input="updateMapNoiseHarmonics($event, 2, 'moisture')"
-                    >
-                    <span class="slidey-value">
-                      {{ Math.round(config.map.mapNoise.moisture.harmonics[2] * 100) / 100 }}
-                    </span> 
-                  </div>
-                </div>
-                <div class="input-block">
-                  <label for="options-postprocess-moisture-redistribution-power">Redistribution power</label>
-                  <div class="slidey">
-                    <input id="options-postprocess-moisture-redistribution-power"
-                      type="range" min="0.1" max="4" step="0.1"
-                      :value="config.map.mapPostprocess.moisture.redistributionPower"
-                      @input="updateMapPostprocessRedistributionPower($event, 'moisture')"
-                    >
-                    <span class="slidey-value">
-                      {{ config.map.mapPostprocess.moisture.redistributionPower }}
-                    </span> 
-                  </div>
-                </div>
-                <div class="input-block">
-                  <label for="options-postprocess-moisture-normalize">Normalize moisture</label>
-                  <div class="input-with-unit">
-                    <div class="checky">
-                      <input id="options-postprocess-moisture-normalize" type="checkbox"
-                        :checked="config.map.mapPostprocess.moisture.normalize"
-                        @input="updateMapPostprocessNormalize($event, 'moisture')"
-                      >
-                      <label for="options-postprocess-moisture-normalize">Normalize moisture</label>
-                    </div>
-                  </div>
-                </div>
-              </article>
+
             </section>
           </main>
           <footer class="game-configuration-section__footer">
@@ -419,7 +359,7 @@
             <p>
               {{ config.map.mapSize.width }}x{{ config.map.mapSize.height }} map
               ({{ config.map.mapTopped ? 'flat-topped' : 'pointy-topped' }}
-              {{ config.map.mapPostprocess.height.islandMode ? ', island type' : ', normal type' }})
+              {{ config.map.mapPostprocess.elevation.islandMode ? ', island type' : ', normal type' }})
             </p>
             <p>
               {{ countBuildings }} buildings
@@ -519,8 +459,15 @@ export default {
           height: parseInt(e.target.value)
         })
       }
+
+      // TODO: re-create a terrain from scratch and inject it into renderers
+      // replace camera target to center of the (new) map
+      this.doAction('terrain')
+      this.doAction('buildings')
+      this.doAction('units')
     },
     updateMapTopping(topped) {
+      // TODO: make reactive
       this.$store.commit('gameConfiguration/updateMapTopping', { topped })
     },
     updateMapNoiseFrequencyRatio(e, type) {
@@ -528,6 +475,8 @@ export default {
         ratio: parseFloat(e.target.value),
         type
       })
+
+      this.doAction('resynth-map')
     },
     updateMapNoiseHarmonics(e, harmonicId, type) {
       this.$store.commit('gameConfiguration/updateMapNoiseHarmonics', { 
@@ -535,29 +484,48 @@ export default {
         harmonicId,
         type
       })
+
       this.$forceUpdate();
+      this.doAction('resynth-map')
     },
+    // Post-processing
     updateMapPostprocessRedistributionPower(e, type) {
       this.$store.commit('gameConfiguration/updateMapPostprocessRedistributionPower', { 
         power: parseFloat(e.target.value),
         type
       })
+
+      this.doAction('postprocess-map')
     },
     updateMapPostprocessNormalize(e, type) {
       this.$store.commit('gameConfiguration/updateMapPostprocessNormalize', { 
         normalize: e.target.checked,
         type
       })
+
+      this.doAction('postprocess-map')
+    },
+    updateMapPostprocessInvert(e, type) {
+      this.$store.commit('gameConfiguration/updateMapPostprocessInvert', { 
+        invert: e.target.checked,
+        type
+      })
+
+      this.doAction('postprocess-map')
     },
     updateMapPostprocessIslandMode(e) {
       this.$store.commit('gameConfiguration/updateMapPostprocessIslandMode', { 
         islandMode: e.target.checked
       })
+
+      this.doAction('postprocess-map')
     },
     updateMapPostprocessIslandRedistributionPower(e) {
       this.$store.commit('gameConfiguration/updateMapPostprocessIslandRedistributionPower', { 
         power: parseFloat(e.target.value)
       })
+
+      this.doAction('postprocess-map')
     },
 
     // BUILDINGS
@@ -584,8 +552,7 @@ export default {
         unit
       })
       this.doAction('units')
-    },
-    
+    }
   },
   
   data() {

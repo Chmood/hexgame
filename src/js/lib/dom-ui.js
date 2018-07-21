@@ -178,6 +178,12 @@ const DomUI = () => {
     if (event.detail.action === 'terrain') {
       game.generateTerrain(event.detail.newSeed)
 
+    } else if (event.detail.action === 'postprocess-map') {
+      game.postprocessMap()
+
+    } else if (event.detail.action === 'resynth-map') {
+      game.resynthMap()
+
     } else if (event.detail.action === 'buildings') {
       game.generateBuildings(event.detail.newSeed)
 

@@ -66,7 +66,7 @@ const Camera = (CONFIG_RENDER_3D, canvas, game) => {
 
     const position = HEXLIB.hex2Pixel(layout, hex),
           cell = game.map.getCellFromHex(hex),
-          height = cell.height * CONFIG_RENDER_3D.cellStepHeight
+          height = cell.elevation * CONFIG_RENDER_3D.cellStepHeight
 
     const animationCamera = new BABYLON.Animation(
       'moveCamera', 

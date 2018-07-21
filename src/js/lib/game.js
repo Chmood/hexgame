@@ -465,6 +465,40 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       game.isGameReady()
     },
 
+    postprocessMap() {
+      // Delete meshes
+      game.renderer3d.deleteTilesAndBuildings()
+      game.renderer3d.deleteUnits()
+      
+      // Re-init buildings and players
+      game.map.data.buildings = []
+      game.players = []
+
+      game.map.postprocessMap()
+
+      console.log('MAP TERRAIN', game.map.data.terrain)
+
+      game.renderer3d.createTiles()
+      game.updateRenderers() // 2D map updating
+    },
+
+    resynthMap() {
+      // Delete meshes
+      game.renderer3d.deleteTilesAndBuildings()
+      game.renderer3d.deleteUnits()
+      
+      // Re-init buildings and players
+      game.map.data.buildings = []
+      game.players = []
+
+      game.map.resynthMap()
+
+      console.log('MAP TERRAIN', game.map.data.terrain)
+
+      game.renderer3d.createTiles()
+      game.updateRenderers() // 2D map updating
+    },
+
     generateBuildings(randomMapSeed = false) {
       let generateBuildingsSuccess = false,
           nTry = 1, // for logging purpose only

@@ -12,12 +12,14 @@ const CONFIG_MAP = {
   // mapParity: HEXLIB.EVEN, // HEXLIB.EVEN or HEXLIB.ODD
 
   mapSeaMinLevel: 2, // Sea is flat below this value
+
   mapValueRange: {
-    height: 12,
+    elevation: 12,
     moisture: 5
   },
+
   mapNoise: {
-    height: {
+    elevation: {
       stupidRandom: false,
       frequencyRatio: 0.45, // Noise base size
       frequency: undefined, // To be computed later
@@ -30,9 +32,10 @@ const CONFIG_MAP = {
       harmonics: [0.7, 0.2, 0.1] // Amplitude of noise octaves 0, 1 and 2 (must sum up to 1)
     }
   },
+
   mapPostprocess: {
-    height: {
-      revert: false,
+    elevation: {
+      invert: false,
       redistributionPower: 2, // >1 => more sea / <1 more mountains
       normalize: true, // Spread the whole height range
       islandMode: true, // All map borders are sea
@@ -40,7 +43,7 @@ const CONFIG_MAP = {
       islandMargin: 0 // numbers of ocean cells at map boundaries
     },
     moisture: {
-      revert: false,
+      invert: false,
       redistributionPower: 1,
       normalize: true, // Spread the whole value range
       islandMode: false // All map borders have zero moisture (useless)
