@@ -475,6 +475,7 @@ export default {
       this.$store.commit('gameConfiguration/changeStep', { increment })
     },
 
+    // PLAYERS
     createPlayer() {
       this.$store.commit('gameConfiguration/createPlayer', { player: undefined })
       this.emitGameEvent('gameConfigurationActionUpdatePlayers', {})
@@ -502,6 +503,7 @@ export default {
       this.$store.commit('gameConfiguration/updatePlayerMoneyPerBuilding', { player, money: parseInt(e.target.value) })
     },
 
+    // MAP TERRAIN
     updateMapSize(e, dimension) {
       if (dimension === 'width') {
         this.$store.commit('gameConfiguration/updateMapSize', { 
@@ -555,13 +557,17 @@ export default {
       })
     },
 
+    // BUILDINGS
     updateGameBuildingsNumber(e, building, owned) {
       this.$store.commit('gameConfiguration/updateGameBuildingsNumber', { 
         number: parseInt(e.target.value),
         building,
         owned
       })
+      this.emitGameEvent('gameConfigurationActionUpdateBuildings', {})
     },
+
+    // UNITS
     updateGameUnitsNumber(e, unit) {
       this.$store.commit('gameConfiguration/updateGameUnitsNumber', { 
         number: parseInt(e.target.value),

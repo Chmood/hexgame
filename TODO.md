@@ -12,9 +12,7 @@
 
 ## Live game configuration
 
-* Starting money, earning money
 * Disabled and created units
-* Owned and created buildings
 * All terrain configuration
 
 ## Improvements

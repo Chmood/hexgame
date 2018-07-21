@@ -22,11 +22,11 @@ const Buildings = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map, RNG) => {
   // }
 
   // SET BUILDING RANDOM POSITION
-  const setBuildingRandomPosition = (type, playerId) => {
+  const setBuildingRandomPosition = (type, playerId, buildingIndex) => {
+    const ownerId = buildingIndex < CONFIG_GAME.buildings[type].numberOwned ? playerId : undefined
     const building = {
       type: type,
-      ownerId: (type === 'base' || type === 'factory') ? playerId : undefined
-      // ownerId: playerId
+      ownerId: ownerId
     }
 
     if (type === 'factory' || type === 'port' || type === 'airport') {
@@ -132,7 +132,7 @@ const Buildings = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map, RNG) => {
     for (const player of CONFIG_PLAYERS) {
       for (let n = 0; n < CONFIG_GAME.buildings[type].number; n++) {
 
-        const isBuildingPlaced = setBuildingRandomPosition(type, player.id)
+        const isBuildingPlaced = setBuildingRandomPosition(type, player.id, n)
 
         if (isBuildingPlaced) {
           nBuildingsPlaced++
