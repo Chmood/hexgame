@@ -40,6 +40,7 @@ h4 {
 	margin-top: 0;
 	margin-bottom: $gutter-half;
 	text-transform: capitalize;
+	color: #666;
 }
 
 p {
@@ -163,10 +164,10 @@ button {
 		text-align: left;
 		margin-bottom: $gutter-quarter;
 
-		@media (min-width: 40em) {
-			text-align: right;
-			padding-right: $gutter-half;
-		}
+		// @media (min-width: 40em) {
+		// 	text-align: right;
+		// 	padding-right: $gutter-half;
+		// }
 	}
 
 	> .input-with-unit {
@@ -392,15 +393,17 @@ input[type="number"] {
 .game-configuration-btn--next { bottom: $gutter-half; right: 0; }
 
 .game-configuration-wrapper {
-	width: 500%;
+	width: 700%;
 	display: flex;
 	transition: transform 0.25s;
 
 	.step-0 & { transform: translateX(0); }
-	.step-1 & { transform: translateX(-20%); }
-	.step-2 & { transform: translateX(-40%); }
-	.step-3 & { transform: translateX(-60%); }
-	.step-4 & { transform: translateX(-80%); }
+	.step-1 & { transform: translateX(-(100% * 1 / 7)); }
+	.step-2 & { transform: translateX(-(100% * 2 / 7)); }
+	.step-3 & { transform: translateX(-(100% * 3 / 7)); }
+	.step-4 & { transform: translateX(-(100% * 4 / 7)); }
+	.step-5 & { transform: translateX(-(100% * 5 / 7)); }
+	.step-6 & { transform: translateX(-(100% * 6 / 7)); }
 }
 
 .game-configuration-section {

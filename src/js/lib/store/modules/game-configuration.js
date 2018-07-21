@@ -111,8 +111,8 @@ const mutations = {
 
     if (currentGameConfigurationStep < 0) {
       currentGameConfigurationStep = 0
-    } else if (currentGameConfigurationStep >= 5) {
-      currentGameConfigurationStep = 4
+    } else if (currentGameConfigurationStep >= 7) {
+      currentGameConfigurationStep = 6
     }
 
     if (currentGameConfigurationStep !== state.currentGameConfigurationStep) {
@@ -178,9 +178,6 @@ const mutations = {
       state.config.map.mapNoise[type].frequencyRatio * state.config.map.mapSize.width
   },
   updateMapNoiseHarmonics (state, { level, harmonicId, type }) {
-    if (type === 'elevation') {
-      type = 'height'
-    }
     const otherId = harmonicId === 1 ? 2 : 1,
           tonicLevel = state.config.map.mapNoise[type].harmonics[0],
           harmonicLevel = state.config.map.mapNoise[type].harmonics[harmonicId],
@@ -223,6 +220,9 @@ const mutations = {
   },
   updateMapPostprocessRedistributionPower (state, { power, type }) {
     state.config.map.mapPostprocess[type].redistributionPower = power
+  },
+  updateMapPostprocessOffset (state, { offset, type }) {
+    state.config.map.mapPostprocess[type].offset = offset
   },
   updateMapPostprocessNormalize (state, { normalize, type }) {
     state.config.map.mapPostprocess[type].normalize = normalize

@@ -15,7 +15,7 @@
       >&lt;</button>
       
       <button class="game-configuration-btn game-configuration-btn--next"
-        :disabled="currentGameConfigurationStep === 4"
+        :disabled="currentGameConfigurationStep === 6"
         @click="changeStep(+1)"
       >Next</button>
 
@@ -91,10 +91,10 @@
           </footer>
         </section>
 
-        <!-- TERRAIN -->
+        <!-- TERRAIN - MAP -->
         <section class="game-configuration-section">
           <header class="game-configuration-section__header">
-            <h3>Terrain</h3>
+            <h3>Terrain - map</h3>
           </header>
           <main class="game-configuration-section__body">
             <button class="btn--small"
@@ -103,6 +103,8 @@
 
             <section class="grid grid-1-of-2">
               <article>
+                <h4>Map</h4>
+
                 <div class="input-block">
                   <span class="label">Map size</span>
                   <div class="input-with-unit">
@@ -137,6 +139,8 @@
               </article>
 
               <article>
+                <h4>Island mode</h4>
+
                 <div class="input-block">
                   <label for="options-postprocess-island-elevation">Island mode</label>
                   <div class="input-with-unit">
@@ -150,7 +154,7 @@
                   </div>
                 </div>
                 <div class="input-block">
-                  <label for="options-postprocess-island-elevation-redistribution-power">Island redistribution power</label>
+                  <label for="options-postprocess-island-elevation-redistribution-power">Redistribution power</label>
                   <div class="slidey"
                     :class="{ 'slidey--disabled': !config.map.mapPostprocess.elevation.islandMode }"
                   >
@@ -169,12 +173,28 @@
               </article>
             </section>
 
+          </main>
+          <footer class="game-configuration-section__footer">
+          </footer>
+        </section>
+
+        <!-- TERRAIN - ELEVATION & MOISTURE -->
+        <section class="game-configuration-section"
+          v-for="type in ['elevation', 'moisture']"
+          :key="type"
+        >
+          <header class="game-configuration-section__header">
+            <h3>Terrain - {{ type }}</h3>
+          </header>
+          <main class="game-configuration-section__body">
+            <button class="btn--small"
+              @click="doAction('terrain', true)"
+            >New terrain</button>
+
             <section class="grid grid-1-of-2">
-              <article
-                v-for="type in ['elevation', 'moisture']"
-                :key="type"
-              >
-                <h4>{{ type }}</h4>
+              <article>
+                <h4>Synthesis</h4>
+
                 <div class="input-block">
                   <label :for="`options-noise-${type}-frequency`">Tonic period</label>
                   <div class="slidey">
@@ -226,6 +246,11 @@
                     </span> 
                   </div>
                 </div>
+              </article>
+
+              <article>
+                <h4>Post-process</h4>
+
                 <div class="input-block">
                   <label :for="`options-postprocess-${type}-redistribution-power`">Redistribution power</label>
                   <div class="slidey">
@@ -263,9 +288,22 @@
                     </div>
                   </div>
                 </div>
+                <div class="input-block">
+                  <label :for="`options-postprocess-${type}-offset`">Offset</label>
+                  <div class="slidey">
+                    <input :id="`options-postprocess-${type}-offset`"
+                      type="range" min="-10" max="10" step="1"
+                      :value="config.map.mapPostprocess[type].offset"
+                      @input="updateMapPostprocessOffset($event, type)"
+                    >
+                    <span class="slidey-value">
+                      {{ config.map.mapPostprocess[type].offset }}
+                    </span> 
+                  </div>
+                </div>
               </article>
-
             </section>
+
           </main>
           <footer class="game-configuration-section__footer">
           </footer>
@@ -492,6 +530,14 @@ export default {
     updateMapPostprocessRedistributionPower(e, type) {
       this.$store.commit('gameConfiguration/updateMapPostprocessRedistributionPower', { 
         power: parseFloat(e.target.value),
+        type
+      })
+
+      this.doAction('postprocess-map')
+    },
+    updateMapPostprocessOffset(e, type) {
+      this.$store.commit('gameConfiguration/updateMapPostprocessOffset', { 
+        offset: parseFloat(e.target.value),
         type
       })
 
