@@ -764,7 +764,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         // MUTATE player
         // Shouldn't change money amount
-        player.money = realPlayerMoney + nBuildings * CONFIG.game.moneyEarnedPerBuilding
+        player.money = realPlayerMoney + nBuildings * CONFIG.players[player.id].moneyPerBuilding
 
       } else if (action.type === 'MOVE') {
 

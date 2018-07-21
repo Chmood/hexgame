@@ -70,6 +70,13 @@
                   @input="updatePlayerMoney($event, player)"
                 ><span class="input-unit">$</span>
               </div>
+              <div>
+                <input :id="`options-players-money-per-building-${index}`"
+                  type="number" step="100" min="0"
+                  :value="player.moneyPerBuilding"
+                  @input="updatePlayerMoneyPerBuilding($event, player)"
+                ><span class="input-unit">$</span>
+              </div>
               <button class="btn--small btn--highlight"
                 @click="deletePlayer(player)"
               >X</button>
@@ -472,6 +479,12 @@ export default {
       this.$store.commit('gameConfiguration/createPlayer', { player: undefined })
       this.emitGameEvent('gameConfigurationActionUpdatePlayers', {})
     },
+    deletePlayer(player) {
+      // We clear players' buildings and units BEFORE deleting a player
+      this.emitGameEvent('gameConfigurationActionClearPlayers', {})
+      this.$store.commit('gameConfiguration/deletePlayer', { player })
+      this.emitGameEvent('gameConfigurationActionUpdatePlayers', {})
+    },
     updatePlayerColor(player) {// FOOOO
       this.$store.commit('gameConfiguration/updatePlayerColor', { player })
       this.emitGameEvent('gameConfigurationActionUpdatePlayersColor', {})
@@ -485,11 +498,8 @@ export default {
     updatePlayerMoney(e, player) {
       this.$store.commit('gameConfiguration/updatePlayerMoney', { player, money: parseInt(e.target.value) })
     },
-    deletePlayer(player) {
-      // We clear players' buildings and units BEFORE deleting a player
-      this.emitGameEvent('gameConfigurationActionClearPlayers', {})
-      this.$store.commit('gameConfiguration/deletePlayer', { player })
-      this.emitGameEvent('gameConfigurationActionUpdatePlayers', {})
+    updatePlayerMoneyPerBuilding(e, player) {
+      this.$store.commit('gameConfiguration/updatePlayerMoneyPerBuilding', { player, money: parseInt(e.target.value) })
     },
 
     updateMapSize(e, dimension) {

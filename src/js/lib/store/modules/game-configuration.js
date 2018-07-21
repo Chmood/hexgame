@@ -133,7 +133,8 @@ const mutations = {
       color: randomColor.color[500], 
       colorDesaturated: randomColor.color[900],
       colors: randomColor,
-      money: 5000
+      money: 5000,
+      moneyPerBuilding: 1000
     })
 
     setPlayersId(state)
@@ -160,6 +161,9 @@ const mutations = {
   },
   updatePlayerMoney (state, { player, money }) {
     player.money = money
+  },
+  updatePlayerMoneyPerBuilding (state, { player, money }) {
+    player.moneyPerBuilding = money
   },
 
   updateMapSize (state, { width, height }) {

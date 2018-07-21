@@ -430,8 +430,8 @@ const GameUI = (game) => {
         )
 
         for (const building of buildings) {
-          // 'Forbidden' mutation that may be canceled in ACTION_DO
-          player.money += CONFIG.game.moneyEarnedPerBuilding
+          // 'Forbidden' mutation that will be canceled in game.ACTION_DO('EARN_MONEY')
+          player.money += game.CONFIG.players[player.id].moneyPerBuilding
       
           game.dom.updateTopPanel(player)
           game.renderer3d.updateCameraPosition(building.hex)

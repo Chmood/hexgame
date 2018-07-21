@@ -5,7 +5,6 @@ const CONFIG_GAME = {
 
   seed: 'staticgameseed', // undefined for a random seed
   playerStartingZoneRatio: 2, // portion of the map dedicated to player's units initial placement
-  moneyEarnedPerBuilding: 1000,
   animationsSpeed: 2,
   throttleKeyboardTime: 128, // In milliseconds
 

@@ -12,7 +12,10 @@
 
 ## Live game configuration
 
-* Being able to re-draw a building without re-drawing (and randomizing) its terrain cell
+* Starting money, earning money
+* Disabled and created units
+* Owned and created buildings
+* All terrain configuration
 
 ## Improvements
 

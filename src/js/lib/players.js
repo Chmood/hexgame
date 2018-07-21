@@ -89,13 +89,14 @@ const Players = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map, RNG) => {
     const playerId = currentId
 
     let player = Player(
-      CONFIG_MAP, 
-      CONFIG_GAME, 
+      CONFIG_MAP,
+      CONFIG_GAME,
       {
         id: playerId,
         name: CONFIG_PLAYERS[playerId].name,
         isHuman: CONFIG_PLAYERS[playerId].isHuman,
-        color: CONFIG_PLAYERS[playerId].color
+        color: CONFIG_PLAYERS[playerId].color,
+        money: CONFIG_PLAYERS[playerId].money
       }
     )
 
