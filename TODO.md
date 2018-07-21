@@ -12,7 +12,6 @@
 
 ## Live game configuration
 
-* Disabled and created units
 * All terrain configuration
 
 ## Improvements

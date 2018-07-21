@@ -168,6 +168,7 @@ const DomUI = () => {
     element.click()
   }
 
+  ////////////////////////////////////////
   // GAME CONFIGURATION
   dom.setGameConfigurationPanel = (active) => {
     store.commit('gameConfiguration/setActive', { active })
@@ -175,18 +176,20 @@ const DomUI = () => {
 
   window.addEventListener('gameConfigurationAction', (event) => {
     if (event.detail.action === 'terrain') {
-      game.generateTerrain(true) // New random seed
+      game.generateTerrain(event.detail.newSeed)
 
     } else if (event.detail.action === 'buildings') {
-      game.generateBuildings(true) // New random seed
+      game.generateBuildings(event.detail.newSeed)
 
     } else if (event.detail.action === 'units') {
-      game.generateUnits(true) // New random seed
+      game.generateUnits(event.detail.newSeed)
 
     } else if (event.detail.action === 'start') {
       game.startGame()
     }
   })
+
+  // Players
 
   window.addEventListener('gameConfigurationActionUpdatePlayersColor', (event) => {
     console.log('GAME CONFIGURATION EVENT: updating players color' )
@@ -212,11 +215,7 @@ const DomUI = () => {
     game.generateUnits()
   })
 
-  window.addEventListener('gameConfigurationActionUpdateBuildings', (event) => {
-    console.log('GAME CONFIGURATION EVENT: updating buildings')
-    game.generateBuildings()
-  })
-
+  ////////////////////////////////////////
   // BIG BANNER
   dom.displayBigBanner = (message) => {
     const delay = 500

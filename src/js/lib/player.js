@@ -69,21 +69,31 @@ const Player = (CONFIG_MAP, CONFIG_GAME, config) => {
   }
 
   // UNITS
-  for (let n = 0; n < 5; n++) {
-    // player.addUnit(setUnitRandomType()) // All types
-    player.addUnit(setUnitRandomType([
-      'soldier',
-      'bazooka',
-      'jeep',
-      'artillery',
-      'tank',
-      // 'heavy-tank',
-      'cruiser',
-      'helicopter'
-      // 'bomber'
-    ])) // Selected types
-    // player.addUnit('air-transport') // Single type
-  }
+  Object.entries(CONFIG_GAME.units).forEach(([unitType, unit]) => {
+
+    if (!unit.isDisabled) {
+      for (let n = 0; n < unit.number; n++) {
+        player.addUnit(unitType)    
+      }
+    }
+  })
+
+  // RANDOM UNITS
+  // for (let n = 0; n < 5; n++) {
+  //   // player.addUnit(setUnitRandomType()) // All types
+  //   player.addUnit(setUnitRandomType([
+  //     'soldier',
+  //     'bazooka',
+  //     'jeep',
+  //     'artillery',
+  //     'tank',
+  //     // 'heavy-tank',
+  //     'cruiser',
+  //     'helicopter'
+  //     // 'bomber'
+  //   ])) // Selected types
+  //   // player.addUnit('air-transport') // Single type
+  // }
 
   return player
 }

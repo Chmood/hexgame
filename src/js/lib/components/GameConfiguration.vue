@@ -98,7 +98,7 @@
           </header>
           <main class="game-configuration-section__body">
             <button class="btn--small"
-              @click="doAction('terrain')"
+              @click="doAction('terrain', true)"
             >New terrain</button>
 
             <section class="grid grid-1-of-2">
@@ -338,7 +338,7 @@
           </header>
           <main class="game-configuration-section__body">
             <button class="btn--small"
-              @click="doAction('buildings')"
+              @click="doAction('buildings', true)"
             >New buildings</button>
 
             <div class="input-block"
@@ -372,7 +372,7 @@
           </header>
           <main class="game-configuration-section__body">
             <button class="btn--small"
-              @click="doAction('units')"
+              @click="doAction('units', true)"
             >New units</button>
 
             <section class="grid grid-1-of-2">
@@ -468,8 +468,11 @@ export default {
       const event = new CustomEvent(name, eventData)
       window.dispatchEvent(event)
     },
-    doAction(action) {
-      this.emitGameEvent('gameConfigurationAction', { detail: {'action': action }})
+    doAction(action, newSeed = false) {
+      this.emitGameEvent('gameConfigurationAction', { detail: {
+        'action': action,
+        'newSeed': newSeed
+      }})
     },
     changeStep(increment) {
       this.$store.commit('gameConfiguration/changeStep', { increment })
@@ -564,7 +567,7 @@ export default {
         building,
         owned
       })
-      this.emitGameEvent('gameConfigurationActionUpdateBuildings', {})
+      this.doAction('buildings')
     },
 
     // UNITS
@@ -573,12 +576,14 @@ export default {
         number: parseInt(e.target.value),
         unit
       })
+      this.doAction('units')
     },
     updateGameUnitsIsDisabled(e, unit) {
       this.$store.commit('gameConfiguration/updateGameUnitsIsDisabled', { 
         isDisabled: !e.target.checked,
         unit
       })
+      this.doAction('units')
     },
     
   },
