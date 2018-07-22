@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import homepagePanel from './modules/homepage-panel'
-import optionsPanel from './modules/options-panel'
-import configurationPanel from './modules/configuration-panel'
+import homepage from './modules/homepage'
+import options from './modules/options'
+import configuration from './modules/configuration'
 
 import minimap from './modules/minimap'
 import topbar from './modules/topbar'
@@ -17,9 +17,9 @@ const debug = process.env.NODE_ENV !== 'production'
 
 export default new Vuex.Store({
   modules: {
-    homepagePanel,
-    configurationPanel,
-    optionsPanel,
+    homepage,
+    configuration,
+    options,
 
     minimap,
     topbar,

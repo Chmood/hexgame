@@ -8,13 +8,13 @@
     </div>
 
     <!-- Game configuration panel -->
-    <configuration-panel />
+    <configuration />
 
     <!-- Homepage screen panel -->
-    <homepage-panel />
+    <homepage />
 
     <!-- Option panel -->
-    <options-panel />
+    <options />
 
     <!-- 2d canvas -->
     <minimap />
@@ -35,9 +35,9 @@
 </template>
 
 <script>
-import HomepagePanel from './components/HomepagePanel.vue'
-import OptionsPanel from './components/OptionsPanel.vue'
-import ConfigurationPanel from './components/ConfigurationPanel.vue'
+import Homepage from './components/Homepage.vue'
+import Options from './components/Options.vue'
+import Configuration from './components/Configuration.vue'
 
 import Minimap from './components/Minimap.vue'
 import Topbar from './components/Topbar.vue'
@@ -45,9 +45,9 @@ import GameMenu from './components/GameMenu.vue'
 
 export default {
   components: {
-    HomepagePanel,
-    OptionsPanel,
-    ConfigurationPanel,
+    Homepage,
+    Options,
+    Configuration,
 
     Minimap,
     Topbar,

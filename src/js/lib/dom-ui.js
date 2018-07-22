@@ -20,7 +20,7 @@ const DomUI = () => {
     render: h => h(VueApp)
   })
 
-  const config = store.getters['configurationPanel/getGameConfig']
+  const config = store.getters['configuration/getGameConfig']
   
   // GET ELEMENTS
   dom.getElements = () => {
@@ -171,9 +171,9 @@ const DomUI = () => {
   // SET PANEL
   dom.setPanel = (panel) => {
     // Hide panels
-    store.commit('homepagePanel/setActive', { active: false })
-    store.commit('optionsPanel/setActive', { active: false })
-    store.commit('configurationPanel/setActive', { active: false })
+    store.commit('homepage/setActive', { active: false })
+    store.commit('options/setActive', { active: false })
+    store.commit('configuration/setActive', { active: false })
     store.commit('topbar/setActive', { active: false })
  
     dom.canvas3d.classList.remove('half-top')
@@ -181,7 +181,7 @@ const DomUI = () => {
     if (panel === 'game') {
 
     } else {
-      store.commit(`${panel}Panel/setActive`, { active: true })
+      store.commit(`${panel}/setActive`, { active: true })
 
       if (panel === 'configuration') {
         dom.canvas3d.classList.add('half-top')

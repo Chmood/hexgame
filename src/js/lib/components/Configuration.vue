@@ -1,32 +1,32 @@
 <template>
 
-  <div id="game-panel"
+  <div id="configuration"
     :class="{ active: isActive }"
   >
     <h2>Configure the game!</h2>
 
       <!-- KEYS: arrows to move cursor, X to do action, C to cancel, E and R to zoom in and out, T and Y to rotate camera&nbsp;&nbsp; -->
-    <div id="game-configuration-panel" class="game-configuration"
-      :class="[`step-${currentGameConfigurationStep}`]"
+    <div class="configuration"
+      :class="[`step-${currentConfigurationStep}`]"
     >
-      <button class="game-configuration-btn game-configuration-btn--previous"
-        :disabled="currentGameConfigurationStep === 0"
+      <button class="configuration-btn configuration-btn--previous"
+        :disabled="currentConfigurationStep === 0"
         @click="changeStep(-1)"
       >&lt;</button>
       
-      <button class="game-configuration-btn game-configuration-btn--next"
-        :disabled="currentGameConfigurationStep === 6"
+      <button class="configuration-btn configuration-btn--next"
+        :disabled="currentConfigurationStep === 6"
         @click="changeStep(+1)"
       >Next</button>
 
-      <div class="game-configuration-wrapper">
+      <div class="configuration-wrapper">
 
         <!-- PLAYERS -->
-        <section class="game-configuration-section">
-          <header class="game-configuration-section__header">
+        <section class="configuration-section">
+          <header class="configuration-section__header">
             <h3>Players</h3>
           </header>
-          <main class="game-configuration-section__body">
+          <main class="configuration-section__body">
 
             <!-- <div class="colors">
               <span
@@ -36,11 +36,11 @@
               >{{ colorName }}</span>
             </div> -->
 
-            <div class="game-configuration-player"
+            <div class="configuration-player"
               v-for="(player, index) in config.players"
               :key="player.id"
             >
-              <label class="game-configuration-player__p-color" :for="`options-players-name-${index}`"
+              <label class="configuration-player__p-color" :for="`options-players-name-${index}`"
                 :style="{ 'background-color': player.color, 'border-color': player.color }"
                 @click="updatePlayerColor(player)"
               >
@@ -86,17 +86,17 @@
               :disabled="config.players.length > 3"
             >New player</button>
           </main>
-          <footer class="game-configuration-section__footer">
+          <footer class="configuration-section__footer">
             <p class="small">Order matters, it will be used for players' turns.</p>
           </footer>
         </section>
 
         <!-- TERRAIN - MAP -->
-        <section class="game-configuration-section">
-          <header class="game-configuration-section__header">
+        <section class="configuration-section">
+          <header class="configuration-section__header">
             <h3>Terrain - map</h3>
           </header>
-          <main class="game-configuration-section__body">
+          <main class="configuration-section__body">
             <button class="btn--small"
               @click="doAction('terrain', true)"
             >New terrain</button>
@@ -174,19 +174,19 @@
             </section>
 
           </main>
-          <footer class="game-configuration-section__footer">
+          <footer class="configuration-section__footer">
           </footer>
         </section>
 
         <!-- TERRAIN - ELEVATION & MOISTURE -->
-        <section class="game-configuration-section"
+        <section class="configuration-section"
           v-for="type in ['elevation', 'moisture']"
           :key="type"
         >
-          <header class="game-configuration-section__header">
+          <header class="configuration-section__header">
             <h3>Terrain - {{ type }}</h3>
           </header>
-          <main class="game-configuration-section__body">
+          <main class="configuration-section__body">
             <button class="btn--small"
               @click="doAction('terrain', true)"
             >New terrain</button>
@@ -307,16 +307,16 @@
             </section>
 
           </main>
-          <footer class="game-configuration-section__footer">
+          <footer class="configuration-section__footer">
           </footer>
         </section>
 
         <!-- BUILDINGS -->
-        <section class="game-configuration-section">
-          <header class="game-configuration-section__header">
+        <section class="configuration-section">
+          <header class="configuration-section__header">
             <h3>Buildings</h3>
           </header>
-          <main class="game-configuration-section__body">
+          <main class="configuration-section__body">
             <button class="btn--small"
               @click="doAction('buildings', true)"
             >New buildings</button>
@@ -342,17 +342,17 @@
               </div>
             </section>
           </main>
-          <footer class="game-configuration-section__footer">
+          <footer class="configuration-section__footer">
             <p class="small">All buildings are per player.</p>
           </footer>
         </section>
 
         <!-- UNITS -->
-        <section class="game-configuration-section">
-          <header class="game-configuration-section__header">
+        <section class="configuration-section">
+          <header class="configuration-section__header">
             <h3>Units</h3>
           </header>
-          <main class="game-configuration-section__body">
+          <main class="configuration-section__body">
             <button class="btn--small"
               @click="doAction('units', true)"
             >New units</button>
@@ -385,16 +385,16 @@
 
 
           </main>
-          <footer class="game-configuration-section__footer">
+          <footer class="configuration-section__footer">
           </footer>
         </section>
 
         <!-- START -->
-        <section class="game-configuration-section">
-          <header class="game-configuration-section__header">
+        <section class="configuration-section">
+          <header class="configuration-section__header">
             <h3>Start the game</h3>
           </header>
-          <main class="game-configuration-section__body">
+          <main class="configuration-section__body">
             <p>
               {{ config.players.length }} players
             </p>
@@ -416,7 +416,7 @@
               @click="doAction('start')"
             >Play!</button>
           </main>
-          <footer class="game-configuration-section__footer">
+          <footer class="configuration-section__footer">
           </footer>
         </section>
       </div>
@@ -430,33 +430,33 @@ import { mapState, mapActions } from 'vuex'
 
 export default {
   computed: mapState({
-    isActive: state => state.configurationPanel.isActive,
-    currentGameConfigurationStep: state => state.configurationPanel.currentGameConfigurationStep,
+    isActive: state => state.configuration.isActive,
+    currentConfigurationStep: state => state.configuration.currentConfigurationStep,
 
-    config: state => state.configurationPanel.config,
-    isReady: state => state.configurationPanel.isReady,
-    colors: state => state.configurationPanel.colors,
+    config: state => state.configuration.config,
+    isReady: state => state.configuration.isReady,
+    colors: state => state.configuration.colors,
 
     countBuildings (state) {
       let count = 0
-      Object.entries(state.configurationPanel.config.game.buildings).forEach(
+      Object.entries(state.configuration.config.game.buildings).forEach(
         ([type, building]) => {
           count += building.number  
         }
       )
 
-      return count * state.configurationPanel.config.players.length
+      return count * state.configuration.config.players.length
     },
     countUnits (state) {
       let count = 0
       
-      Object.entries(state.configurationPanel.config.game.units).forEach(
+      Object.entries(state.configuration.config.game.units).forEach(
         ([type, unit]) => {
           count += unit.number  
         }
       )
 
-      return count * state.configurationPanel.config.players.length
+      return count * state.configuration.config.players.length
     }
   }),
 
@@ -472,46 +472,46 @@ export default {
       }})
     },
     changeStep(increment) {
-      this.$store.commit('configurationPanel/changeStep', { increment })
+      this.$store.commit('configuration/changeStep', { increment })
     },
 
     // PLAYERS
     createPlayer() {
-      this.$store.commit('configurationPanel/createPlayer', { player: undefined })
+      this.$store.commit('configuration/createPlayer', { player: undefined })
       this.emitGameEvent('configurationActionUpdatePlayers', {})
     },
     deletePlayer(player) {
       // We clear players' buildings and units BEFORE deleting a player
       this.emitGameEvent('configurationActionClearPlayers', {})
-      this.$store.commit('configurationPanel/deletePlayer', { player })
+      this.$store.commit('configuration/deletePlayer', { player })
       this.emitGameEvent('configurationActionUpdatePlayers', {})
     },
     updatePlayerColor(player) {// FOOOO
-      this.$store.commit('configurationPanel/updatePlayerColor', { player })
+      this.$store.commit('configuration/updatePlayerColor', { player })
       this.emitGameEvent('configurationActionUpdatePlayersColor', {})
     },
     updatePlayerName(e, player) {
-      this.$store.commit('configurationPanel/updatePlayerName', { player, name: e.target.value })
+      this.$store.commit('configuration/updatePlayerName', { player, name: e.target.value })
     },
     updatePlayerType(e, player, isHuman) {
-      this.$store.commit('configurationPanel/updatePlayerType', { player, isHuman })
+      this.$store.commit('configuration/updatePlayerType', { player, isHuman })
     },
     updatePlayerMoney(e, player) {
-      this.$store.commit('configurationPanel/updatePlayerMoney', { player, money: parseInt(e.target.value) })
+      this.$store.commit('configuration/updatePlayerMoney', { player, money: parseInt(e.target.value) })
     },
     updatePlayerMoneyPerBuilding(e, player) {
-      this.$store.commit('configurationPanel/updatePlayerMoneyPerBuilding', { player, money: parseInt(e.target.value) })
+      this.$store.commit('configuration/updatePlayerMoneyPerBuilding', { player, money: parseInt(e.target.value) })
     },
 
     // MAP TERRAIN
     updateMapSize(e, dimension) {
       if (dimension === 'width') {
-        this.$store.commit('configurationPanel/updateMapSize', { 
+        this.$store.commit('configuration/updateMapSize', { 
           width: parseInt(e.target.value), 
           height: this.config.map.mapSize.height
         })
       } else {
-        this.$store.commit('configurationPanel/updateMapSize', { 
+        this.$store.commit('configuration/updateMapSize', { 
           width: this.config.map.mapSize.width,
           height: parseInt(e.target.value)
         })
@@ -525,10 +525,10 @@ export default {
     },
     updateMapTopping(topped) {
       // TODO: make reactive
-      this.$store.commit('configurationPanel/updateMapTopping', { topped })
+      this.$store.commit('configuration/updateMapTopping', { topped })
     },
     updateMapNoiseFrequencyRatio(e, type) {
-      this.$store.commit('configurationPanel/updateMapNoiseFrequencyRatio', { 
+      this.$store.commit('configuration/updateMapNoiseFrequencyRatio', { 
         ratio: parseFloat(e.target.value),
         type
       })
@@ -536,7 +536,7 @@ export default {
       this.doAction('resynth-map')
     },
     updateMapNoiseHarmonics(e, harmonicId, type) {
-      this.$store.commit('configurationPanel/updateMapNoiseHarmonics', { 
+      this.$store.commit('configuration/updateMapNoiseHarmonics', { 
         level: parseFloat(e.target.value),
         harmonicId,
         type
@@ -547,7 +547,7 @@ export default {
     },
     // Post-processing
     updateMapPostprocessRedistributionPower(e, type) {
-      this.$store.commit('configurationPanel/updateMapPostprocessRedistributionPower', { 
+      this.$store.commit('configuration/updateMapPostprocessRedistributionPower', { 
         power: parseFloat(e.target.value),
         type
       })
@@ -555,7 +555,7 @@ export default {
       this.doAction('postprocess-map')
     },
     updateMapPostprocessOffset(e, type) {
-      this.$store.commit('configurationPanel/updateMapPostprocessOffset', { 
+      this.$store.commit('configuration/updateMapPostprocessOffset', { 
         offset: parseFloat(e.target.value),
         type
       })
@@ -563,7 +563,7 @@ export default {
       this.doAction('postprocess-map')
     },
     updateMapPostprocessNormalize(e, type) {
-      this.$store.commit('configurationPanel/updateMapPostprocessNormalize', { 
+      this.$store.commit('configuration/updateMapPostprocessNormalize', { 
         normalize: e.target.checked,
         type
       })
@@ -571,7 +571,7 @@ export default {
       this.doAction('postprocess-map')
     },
     updateMapPostprocessInvert(e, type) {
-      this.$store.commit('configurationPanel/updateMapPostprocessInvert', { 
+      this.$store.commit('configuration/updateMapPostprocessInvert', { 
         invert: e.target.checked,
         type
       })
@@ -579,14 +579,14 @@ export default {
       this.doAction('postprocess-map')
     },
     updateMapPostprocessIslandMode(e) {
-      this.$store.commit('configurationPanel/updateMapPostprocessIslandMode', { 
+      this.$store.commit('configuration/updateMapPostprocessIslandMode', { 
         islandMode: e.target.checked
       })
 
       this.doAction('postprocess-map')
     },
     updateMapPostprocessIslandRedistributionPower(e) {
-      this.$store.commit('configurationPanel/updateMapPostprocessIslandRedistributionPower', { 
+      this.$store.commit('configuration/updateMapPostprocessIslandRedistributionPower', { 
         power: parseFloat(e.target.value)
       })
 
@@ -595,7 +595,7 @@ export default {
 
     // BUILDINGS
     updateGameBuildingsNumber(e, building, owned) {
-      this.$store.commit('configurationPanel/updateGameBuildingsNumber', { 
+      this.$store.commit('configuration/updateGameBuildingsNumber', { 
         number: parseInt(e.target.value),
         building,
         owned
@@ -605,14 +605,14 @@ export default {
 
     // UNITS
     updateGameUnitsNumber(e, unit) {
-      this.$store.commit('configurationPanel/updateGameUnitsNumber', { 
+      this.$store.commit('configuration/updateGameUnitsNumber', { 
         number: parseInt(e.target.value),
         unit
       })
       this.doAction('units')
     },
     updateGameUnitsIsDisabled(e, unit) {
-      this.$store.commit('configurationPanel/updateGameUnitsIsDisabled', { 
+      this.$store.commit('configuration/updateGameUnitsIsDisabled', { 
         isDisabled: !e.target.checked,
         unit
       })

@@ -14,7 +14,7 @@ import Renderer3d from './renderer3d'
 // GAME
 
 // Store is ready, we get a reference to it
-const CONFIG = store.getters['configurationPanel/getGameConfig']
+const CONFIG = store.getters['configuration/getGameConfig']
 
 const Game = (ctx2d, canvas3d, dom, main) => {
 

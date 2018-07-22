@@ -1,6 +1,6 @@
 <template>
   
-  <div id="homepage-panel"
+  <div id="homepage"
     :class="{ active: isActive }"
   >
     <h1>Hex Wars</h1>
@@ -26,7 +26,7 @@ import { mapState } from 'vuex'
 
 export default {
   computed: mapState({
-    isActive: state => state.homepagePanel.isActive
+    isActive: state => state.homepage.isActive
   }),
 
   methods: {

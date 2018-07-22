@@ -7,7 +7,7 @@ import MaterialColors from '../../../vendor/material-colors'
 // initial state
 const state = {
   isActive: false,
-  currentGameConfigurationStep: 0,
+  currentConfigurationStep: 0,
 
   config: {
     game: JSON.parse(JSON.stringify(CONFIG_GAME)),
@@ -114,16 +114,16 @@ const mutations = {
   },
 
   changeStep (state, { increment }) {
-    let currentGameConfigurationStep = state.currentGameConfigurationStep + increment
+    let currentConfigurationStep = state.currentConfigurationStep + increment
 
-    if (currentGameConfigurationStep < 0) {
-      currentGameConfigurationStep = 0
-    } else if (currentGameConfigurationStep >= 7) {
-      currentGameConfigurationStep = 6
+    if (currentConfigurationStep < 0) {
+      currentConfigurationStep = 0
+    } else if (currentConfigurationStep >= 7) {
+      currentConfigurationStep = 6
     }
 
-    if (currentGameConfigurationStep !== state.currentGameConfigurationStep) {
-      state.currentGameConfigurationStep = currentGameConfigurationStep
+    if (currentConfigurationStep !== state.currentConfigurationStep) {
+      state.currentConfigurationStep = currentConfigurationStep
     }
   },
 
