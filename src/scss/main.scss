@@ -61,6 +61,11 @@ p {
 	position: relative;
 }
 
+.game-viewport {
+	height: 100vh;
+	background-color: white;
+}
+
 // CANVAS 3D
 
 #canvas3d {
@@ -68,6 +73,11 @@ p {
 	width: 100vw;
 	height: 100vh;
 	touch-action: none;
+	transition: all 0.5s; // BEWARE: linked to await game.wait time (500ms)
+
+	&.half-top {
+		height: 50vh;
+	}
 }
 
 // CANVAS 2D
@@ -163,6 +173,7 @@ button {
 	> .label {
 		text-align: left;
 		margin-bottom: $gutter-quarter;
+		text-transform: capitalize;
 
 		// @media (min-width: 40em) {
 		// 	text-align: right;
@@ -315,9 +326,9 @@ input[type="number"] {
 	}
 }
 
-
+#homepage-panel,
 #game-panel,
-#render-panel,
+#option-panel,
 #top-panel,
 #game-menu {
 	position: fixed;
@@ -326,7 +337,57 @@ input[type="number"] {
 	color: white;
 }
 
+// HOMEPAGE PANEL
+#homepage-panel,
+#option-panel {
+	padding: $gutter;
+	top: 50%;
+	left: 50%;
+	transform: translate3d(-50%, calc(-100vh - 50%), 0);
+	transition: all 0.5s;
+
+	&.active {
+		transform: translate3d(-50%, -50%, 0);
+	}
+}
+
+#homepage-panel {
+
+	> .game-version {
+		@extend .small;
+		text-align: right;
+	}
+
+	> h1 {
+		font-size: 4rem;
+		margin-top: $gutter;
+		margin-bottom: 0;
+	}
+
+	> p.small {
+		margin-bottom: $gutter;
+	}
+
+	> button {
+		display: block;
+		width: 100%;
+
+		&:not(:last-child) {
+			margin-bottom: $gutter-half;
+		}
+	}
+}
+
+#option-panel {
+	text-align: center;
+
+	> h2 {
+		margin-top: $gutter-half;
+	}
+}
+
 // TOP PANEL
+
 #top-panel {
 	top: 0;
 	left: 0;
@@ -354,11 +415,11 @@ input[type="number"] {
 	}
 }
 
-// GAME AND RENDER PANEL
+// GAME PANEL
 
-#game-panel,
-#render-panel {
-	bottom: -0;
+#game-panel {
+	overflow: hidden;
+	bottom: 0;
 	left: 0;
 	width: 100vw;
 	text-align: center;
@@ -368,6 +429,11 @@ input[type="number"] {
 	&.active {
 		transform: translateY(0);
 	}
+}
+
+#game-panel {
+	height: 50vh;
+	background-color: #222;
 }
 
 // GAME CONFIGURATION
@@ -380,8 +446,8 @@ input[type="number"] {
 		margin-right: 4rem;
 	}
 	@media (min-width: 60em) {
-		margin-left: 10rem;
-		margin-right: 10rem;
+		margin-left: 6rem;
+		margin-right: 6rem;
 	}
 }
 
@@ -407,12 +473,12 @@ input[type="number"] {
 }
 
 .game-configuration-section {
-	flex-basis: 20%;
+	flex-basis: (100% / 7);
 	margin-left: 1rem;
 	margin-right: 1rem;
 	padding: $gutter-half;
 	padding-top: 0; // H3 handles top space
-	background: rgba(0,0,0,0.75);
+	background-color: #111;
 
 	display: flex;
 	flex-direction: column;
@@ -431,6 +497,8 @@ input[type="number"] {
 }
 .game-configuration-section__body {
 	flex-grow: 1;
+	max-height: 27vh; // Magic value!
+	overflow-y: auto;
 
 	button:first-child {
 		margin-bottom: $gutter;
@@ -457,10 +525,6 @@ input[type="number"] {
 			margin-right: 0;
 		}
 	}
-
-	// > *:nth-child(1) { flex-basis: auto; }
-	// > *:nth-child(2) { flex-basis: 40%; }
-	// > *:nth-child(3) { flex-basis: auto; }
 }
 
 .game-configuration-player__p-color {
@@ -558,10 +622,6 @@ input[type="number"] {
 
 .grid-1-of-2 {
 
-	@media (min-width: 20em) {
-		// flex-wrap: nowrap;
-	}
-
 	> * {
 		flex-basis: 100%;
 		margin-bottom: $gutter;
@@ -572,9 +632,12 @@ input[type="number"] {
 	}
 }
 
-// COLORS
+.grid-1-of-3 {
 
-.colors {
-	display: flex;
-	flex-wrap: wrap;
+	> * {
+
+		@media (min-width: 40em) {
+			flex-basis: calc(33.33% - 0.5rem);
+		}
+	}
 }

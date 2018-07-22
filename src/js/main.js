@@ -21,28 +21,32 @@ const Main = () => {
           canvasWrapperHeight = canvasWrapper.offsetHeight
 
     // TODO: better & more accurate
-    // Topped
-    const fitWidth = Math.floor(canvasWrapperWidth * (3 / 4) / (game.CONFIG.map.mapSize.width + 3)),
-          fitHeight = Math.floor((canvasWrapperHeight / CONFIG_RENDER_2D.cellSizeRatio) / ((game.CONFIG.map.mapSize.height + 2) * Math.sqrt(3))),
-          fitSize = Math.min(fitWidth, fitHeight)
-
-    // Computed vars
-    game.renderer2d.cellSizeBase = fitSize
-    game.renderer2d.cellSize = {}
-    game.renderer2d.cellSize.width = game.renderer2d.cellSizeBase
-    game.renderer2d.cellSize.height = Math.floor(game.renderer2d.cellSizeBase * CONFIG_RENDER_2D.cellSizeRatio)
+    if (game) {
+      // Topped
+      const fitWidth = Math.floor(canvasWrapperWidth * (3 / 4) / (game.CONFIG.map.mapSize.width + 3)),
+            fitHeight = Math.floor((canvasWrapperHeight / CONFIG_RENDER_2D.cellSizeRatio) / ((game.CONFIG.map.mapSize.height + 2) * Math.sqrt(3))),
+            fitSize = Math.min(fitWidth, fitHeight)
+  
+      // Computed vars
+      game.renderer2d.cellSizeBase = fitSize
+      game.renderer2d.cellSize = {}
+      game.renderer2d.cellSize.width = game.renderer2d.cellSizeBase
+      game.renderer2d.cellSize.height = Math.floor(game.renderer2d.cellSizeBase * CONFIG_RENDER_2D.cellSizeRatio)
+    }
   }
 
   // SIZE CANVAS
   const size2dCanvas = (canvas, game) => {
-    canvas.width = game.renderer2d.mapRenderSize.width
-    canvas.height = game.renderer2d.mapRenderSize.height
-
-    // Get canvas offset (from top-left viewport corner)
-    // (the canvas is supposed to be positionned in CSS)
-    game.renderer2d.canvasOffset = {
-      x: canvas.offsetLeft,
-      y: canvas.offsetTop
+    if (game) {
+      canvas.width = game.renderer2d.mapRenderSize.width
+      canvas.height = game.renderer2d.mapRenderSize.height
+  
+      // Get canvas offset (from top-left viewport corner)
+      // (the canvas is supposed to be positionned in CSS)
+      game.renderer2d.canvasOffset = {
+        x: canvas.offsetLeft,
+        y: canvas.offsetTop
+      }
     }
   }
 
@@ -68,6 +72,9 @@ const Main = () => {
 
   // Set DOM game reference
   dom.setGame(main.game)
+
+  // Init the game
+  // main.game.init()
 
   // // 2D
   // window.setTimeout(() => {

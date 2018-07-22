@@ -35,18 +35,24 @@ const CONFIG_MAP = {
 
   mapPostprocess: {
     elevation: {
-      invert: false,
-      redistributionPower: 2, // >1 => more sea / <1 more mountains
       normalize: true, // Spread the whole height range
+      redistributionPower: 1.25, // >1 => more sea / <1 more mountains
+      invert: false,
+
       islandMode: true, // All map borders are sea
-      islandRedistributionPower: 0.85,
-      islandMargin: 0 // numbers of ocean cells at map boundaries
+      islandRedistributionPower: 0.65,
+      islandMargin: 0, // numbers of ocean cells at map boundaries
+
+      offset: 0
     },
     moisture: {
-      invert: false,
-      redistributionPower: 1,
       normalize: true, // Spread the whole value range
-      islandMode: false // All map borders have zero moisture (useless)
+      redistributionPower: 1,
+      invert: false,
+
+      islandMode: false, // All map borders have zero moisture (useless)
+
+      offset: 0
     }
   },
   terrain: CONFIG_TERRAIN

@@ -168,10 +168,53 @@ const DomUI = () => {
     element.click()
   }
 
+  // HOMEPAGE PANEL
+  dom.setHomepagePanel = (active) => {
+    store.commit('homepagePanel/setActive', { active })
+  }
+
+  window.addEventListener('hompageAction', (event) => {
+    if (event.detail.action === 'new-game') {
+      game.openConfigurationScreen()
+
+    } else if (event.detail.action === 'open-options') {
+      // TODO: backup options (in case of canceling)
+
+      game.openOptionScreen()
+
+    } else if (event.detail.action === 'quit') {
+      // TODO
+    }
+  })
+  
+  // OPTION PANEL
+  dom.setOptionPanel = (active) => {
+    store.commit('optionPanel/setActive', { active })
+  }
+
+  window.addEventListener('optionPanelAction', (event) => {
+    if (event.detail.action === 'apply') {
+      game.openHomepageScreen()
+
+    } else if (event.detail.action === 'cancel') {
+      // TODO: restore options
+
+      game.openHomepageScreen()
+    }
+  })
+
   ////////////////////////////////////////
   // GAME CONFIGURATION
   dom.setGameConfigurationPanel = (active) => {
     store.commit('gameConfiguration/setActive', { active })
+
+    if (active) {
+      dom.canvas3d.classList.add('half-top')
+    } else {
+      dom.canvas3d.classList.remove('half-top')
+    }
+
+    // game.resizeGame()
   }
 
   window.addEventListener('gameConfigurationAction', (event) => {
@@ -192,6 +235,9 @@ const DomUI = () => {
 
     } else if (event.detail.action === 'start') {
       game.startGame()
+
+    } else if (event.detail.action === 'cancel') {
+      game.openHomepageScreen()
     }
   })
 

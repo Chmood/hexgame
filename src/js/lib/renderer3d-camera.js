@@ -288,8 +288,8 @@ const Camera = (CONFIG_RENDER_3D, canvas, game) => {
     const camera = new BABYLON.ArcRotateCamera(
       'Camera',
       0, // alpha angle
-      CONFIG_RENDER_3D.camera.beta, // beta angle
-      ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatio, // radius (aka distance)
+      CONFIG_RENDER_3D.camera.betaFreeCamera, // beta angle
+      ratioBaseSize * CONFIG_RENDER_3D.camera.distanceRatioCameraFree, // radius (aka distance)
       new BABYLON.Vector3( // target
         0,
         // focus height is one stepsize above water level

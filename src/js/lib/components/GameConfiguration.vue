@@ -252,19 +252,6 @@
                 <h4>Post-process</h4>
 
                 <div class="input-block">
-                  <label :for="`options-postprocess-${type}-redistribution-power`">Redistribution power</label>
-                  <div class="slidey">
-                    <input :id="`options-postprocess-${type}-redistribution-power`"
-                      type="range" min="0.1" max="4" step="0.1"
-                      :value="config.map.mapPostprocess[type].redistributionPower"
-                      @input="updateMapPostprocessRedistributionPower($event, type)"
-                    >
-                    <span class="slidey-value">
-                      {{ config.map.mapPostprocess[type].redistributionPower }}
-                    </span> 
-                  </div>
-                </div>
-                <div class="input-block">
                   <label :for="`options-postprocess-${type}-normalize`">Normalize</label>
                   <div class="input-with-unit">
                     <div class="checky">
@@ -274,6 +261,19 @@
                       >
                       <label :for="`options-postprocess-${type}-normalize`">Normalize</label>
                     </div>
+                  </div>
+                </div>
+                <div class="input-block">
+                  <label :for="`options-postprocess-${type}-redistribution-power`">Redistribution power</label>
+                  <div class="slidey">
+                    <input :id="`options-postprocess-${type}-redistribution-power`"
+                      type="range" min="0.1" max="10" step="0.1"
+                      :value="config.map.mapPostprocess[type].redistributionPower"
+                      @input="updateMapPostprocessRedistributionPower($event, type)"
+                    >
+                    <span class="slidey-value">
+                      {{ config.map.mapPostprocess[type].redistributionPower }}
+                    </span> 
                   </div>
                 </div>
                 <div class="input-block">
@@ -292,7 +292,9 @@
                   <label :for="`options-postprocess-${type}-offset`">Offset</label>
                   <div class="slidey">
                     <input :id="`options-postprocess-${type}-offset`"
-                      type="range" min="-10" max="10" step="1"
+                      type="range" step="1"
+                      :min="-config.map.mapValueRange[type]"
+                      :max="config.map.mapValueRange[type]"
                       :value="config.map.mapPostprocess[type].offset"
                       @input="updateMapPostprocessOffset($event, type)"
                     >
@@ -319,24 +321,26 @@
               @click="doAction('buildings', true)"
             >New buildings</button>
 
-            <div class="input-block"
-              v-for="(building, buildingType) in config.game.buildings"              
-              :key="buildingType"
-            >
-              <label :for="`options-buildings-${buildingType}`">{{ buildingType }}</label>
-              <div class="input-with-unit">
-                <input :id="`options-buildings-${buildingType}`" type="number"  min="0"
-                  class="number--small"
-                  :value="config.game.buildings[buildingType].number"
-                  @input="updateGameBuildingsNumber($event, building)"
-                ><span class="input-unit">x</span>
-                <input id="options-buildings-" type="number" min="0"
-                  class="number--small"
-                  :value="config.game.buildings[buildingType].numberOwned"
-                  @input="updateGameBuildingsNumber($event, building, true)"
-                ><span class="input-unit">x</span>
+            <section class="grid grid-1-of-2 grid-1-of-3">
+              <div class="input-block"
+                v-for="(building, buildingType) in config.game.buildings"              
+                :key="buildingType"
+              >
+                <label :for="`options-buildings-${buildingType}`">{{ buildingType }}</label>
+                <div class="input-with-unit">
+                  <input :id="`options-buildings-${buildingType}`" type="number"  min="0"
+                    class="number--small"
+                    :value="config.game.buildings[buildingType].number"
+                    @input="updateGameBuildingsNumber($event, building)"
+                  ><span class="input-unit">x</span>
+                  <input id="options-buildings-" type="number" min="0"
+                    class="number--small"
+                    :value="config.game.buildings[buildingType].numberOwned"
+                    @input="updateGameBuildingsNumber($event, building, true)"
+                  ><span class="input-unit">x</span>
+                </div>
               </div>
-            </div>
+            </section>
           </main>
           <footer class="game-configuration-section__footer">
             <p class="small">All buildings are per player.</p>
@@ -353,7 +357,7 @@
               @click="doAction('units', true)"
             >New units</button>
 
-            <section class="grid grid-1-of-2">
+            <section class="grid grid-1-of-2 grid-1-of-3">
               <div class="input-block"
                 style="margin-bottom: 0.5rem;"
                 v-for="(unit, unitType) in config.game.units"              
@@ -402,7 +406,11 @@
             <p>
               {{ countBuildings }} buildings
             </p>
+            <p>
+              {{ countUnits }} units
+            </p>
             <button
+              @click="doAction('cancel')"
             >Cancel</button>
             <button class="btn--strong btn--highlight"
               @click="doAction('start')"
@@ -434,6 +442,17 @@ export default {
       Object.entries(state.gameConfiguration.config.game.buildings).forEach(
         ([type, building]) => {
           count += building.number  
+        }
+      )
+
+      return count * state.gameConfiguration.config.players.length
+    },
+    countUnits (state) {
+      let count = 0
+      
+      Object.entries(state.gameConfiguration.config.game.units).forEach(
+        ([type, unit]) => {
+          count += unit.number  
         }
       )
 

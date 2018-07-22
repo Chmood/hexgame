@@ -7,7 +7,7 @@ import MaterialColors from '../../../vendor/material-colors'
 // initial state
 const state = {
   isActive: false,
-  currentGameConfigurationStep: 1,
+  currentGameConfigurationStep: 0,
 
   config: {
     game: JSON.parse(JSON.stringify(CONFIG_GAME)),
@@ -87,6 +87,13 @@ setPlayersId(state)
 for (const player of state.config.players) {
   setPlayerRandomColor(player)
 }
+
+// Units
+Object.entries(state.config.game.units).forEach(
+  ([type, unit]) => {
+    unit.number = 0
+  }
+)
 
 // Map
 state.config.map.mapNoise.elevation.frequency =

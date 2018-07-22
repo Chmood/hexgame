@@ -395,6 +395,74 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Current player
     currentPlayer: undefined, // Player
 
+    async openHomepageScreen() {
+      console.warn('Open screen: HOMEPAGE')
+
+      dom.setHomepagePanel(true)
+      dom.setOptionPanel(false)
+      dom.setGameConfigurationPanel(false)
+
+      game.ui.changeMode('homepage')
+
+      game.renderer3d.setActiveCamera('cameraFree')
+      game.renderer3d.setCameraFreeAutorotate(true)
+
+      await game.wait()
+      game.resizeGame()
+    },
+
+    openOptionScreen() {
+      console.warn('Open screen: OPTIONS')
+
+      dom.setHomepagePanel(false)
+      dom.setOptionPanel(true)
+      dom.setGameConfigurationPanel(false)
+
+      game.ui.changeMode('options')
+
+      game.renderer3d.setActiveCamera('cameraFree')
+      game.renderer3d.setCameraFreeAutorotate(true)
+
+      game.resizeGame()
+    },
+
+    async openConfigurationScreen() {
+      console.warn('Open screen: GAME CONFIGURATION')
+
+      dom.setHomepagePanel(false)
+      dom.setOptionPanel(false)
+      dom.setGameConfigurationPanel(true)
+
+      game.ui.changeMode('configure')
+
+      game.renderer3d.setActiveCamera('cameraFree')
+      game.renderer3d.setCameraFreeAutorotate(false)
+
+      await game.wait()
+      game.resizeGame()
+    },
+
+    async openGameScreen() {
+      console.warn('Open screen: GAME')
+
+      dom.setHomepagePanel(false)
+      dom.setOptionPanel(false)
+      dom.setGameConfigurationPanel(false)
+
+      // Activate the topbar
+      dom.vm.$store.commit('topbar/setActive', { active: true })
+
+      game.ui.changeMode('configure')
+
+      game.renderer3d.setActiveCamera('camera')
+      game.renderer3d.setCameraFreeAutorotate(false)
+
+      game.ui.resetUI()
+
+      await game.wait()
+      game.resizeGame()
+    },
+
     isGameReady() {
       // console.warn('buildings', game.map.data.buildings.length, 'players', game.players.length)
       const isReady = (
@@ -412,14 +480,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       }
 
       console.warn('GAME STARTED')
-      // Hide the game configuration panel
-      dom.vm.$store.commit('gameConfiguration/setActive', { active: false })
-      // Activate the topbar
-      dom.vm.$store.commit('topbar/setActive', { active: true })
+      game.openGameScreen()
     
-      game.renderer3d.setActiveCamera('camera')
-      game.ui.resetUI()
-
       // BOT
       game.bot = GameBot(game, RNG, CONFIG)
 
@@ -1054,19 +1116,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     }
   }
 
-  // We need Game to be ready from now
-  // GAME UI
-  game.ui = GameUI(game)
-
-  // Alias functions
-  game.doAction = game.ui.doAction
-  game.onKeyDown = game.ui.onKeyDown
-  game.updateCursor = game.ui.updateCursor
-
-  // GAME RENDERERS
-  game.renderer2d = Renderer2d(game, ctx2d)
-  game.renderer3d = Renderer3d(game, canvas3d)
-
   const getEnnemyModifiers = (unit, ennemyUnit) => {
     let stats = {}
 
@@ -1218,15 +1267,33 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     }
   }
 
+  ////////////////////////////////////////
   // INIT
-  game.ui.changeMode('configure')
 
-  dom.setGameConfigurationPanel(true)
-  game.renderer3d.setActiveCamera('cameraFree')
+  // We need Game to be ready from now
 
+  // GAME UI
+  game.ui = GameUI(game)
+
+  // Set DOM game reference
+  // dom.setGame(game)
+
+  // Alias functions
+  game.doAction = game.ui.doAction
+  game.onKeyDown = game.ui.onKeyDown
+  game.updateCursor = game.ui.updateCursor
+
+  // GAME RENDERERS
+  game.renderer2d = Renderer2d(game, ctx2d)
+  game.renderer3d = Renderer3d(game, canvas3d)
+
+  // FIRST MAP CREATION
   game.generateTerrain()
   game.generateBuildings()
   game.generateUnits()
+  
+  // FIRST SCREEN INIT
+  game.openHomepageScreen()
 
   return game
 }

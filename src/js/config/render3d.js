@@ -16,7 +16,7 @@ const RENDER_3D = {
   betterOcean: false,
 
   // Render quality options
-  postprocess: 'multi', // 'ssao', 'multi' or 'none'
+  postprocess: 'ssao', // 'ssao', 'multi' or 'none'
   shadows: false,
   healthbars: {
     width: 1 / 20, // Relative to cellsize (one HP width)
@@ -29,10 +29,12 @@ const RENDER_3D = {
   // Camera
   camera: {
     distanceRatio: 1, // Size of the map / camera distance (radius)
+    distanceRatioCameraFree: 2, // Size of the map / camera distance (radius)
     distanceRatioMin: 0.1,
     distanceRatioMax: 2,
     distanceRatioStep: 0.25,
     beta: Math.PI / 6, // 0 : top-down / Math.PI / 2 : side view 
+    betaFreeCamera: Math.PI / 3, // 0 : top-down / Math.PI / 2 : side view 
     activeCamera: 'camera', // 'camera' or 'cameraFree'
     cameraFreeAutoRotate: false,
     cameraDampbox: true, // Make the camera less shaky

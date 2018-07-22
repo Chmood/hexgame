@@ -2,23 +2,24 @@
 
   <div class="game-wrapper">
 
-    <!-- 3d canvas -->
-    <canvas id="canvas3d" touch-action="none"></canvas>
+    <div class="game-viewport">
+      <!-- 3d canvas -->
+      <canvas id="canvas3d" touch-action="none"></canvas>
+
+      <!-- Game configuration panel -->
+      <game-configuration />
+    </div>
 
     <!-- 2d canvas -->
     <div id="canvas2d-wrapper">
-      <canvas id="canvas2d">
-        Your browser is old, or you don't have JavaScript enabled!
-      </canvas>
+      <canvas id="canvas2d"></canvas>
     </div>
 
     <!-- Top panel -->
     <topbar />
 
-    <!-- Game configuration panel -->
-    <game-configuration />
-    <!-- Render configuration panel -->
-    <render-configuration />
+    <!-- Option panel -->
+    <option-panel />
 
     <!-- Game menu panel -->
     <game-menu />
@@ -28,22 +29,27 @@
       <div id="big-banner-content"></div>
     </div>
 
+    <!-- Homepage screen panel -->
+    <homepage-panel />
+
   </div>
 
 </template>
 
 <script>
+import HomepagePanel from './components/HomepagePanel.vue'
+import OptionPanel from './components/OptionPanel.vue'
 import Topbar from './components/Topbar.vue'
 import GameMenu from './components/GameMenu.vue'
 import GameConfiguration from './components/GameConfiguration.vue'
-import RenderConfiguration from './components/RenderConfiguration.vue'
 
 export default {
   components: {
+    HomepagePanel,
+    OptionPanel,
     Topbar,
     GameMenu,
-    GameConfiguration,
-    RenderConfiguration
+    GameConfiguration
   },
 
   data() {

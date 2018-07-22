@@ -334,60 +334,6 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
     console.log('MAP RANGE', type, 'min', range.min, 'max', range.max)
   }
 
-  // MAP NORMALIZE
-  const normalizeMap = (type, targetRange) => {
-    const range = mapGetRange(type)
-
-    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
-      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
-        const ratio = (map.data.terrain[x][y][type] - range.min) / (range.max - range.min)
-        const newHeight = ratio * (targetRange - 0.00001)
-        map.data.terrain[x][y][type] = newHeight
-      }
-    }
-  }
-
-  // MAKE ISLAND
-  const makeIsland = (type) => {
-    const halfWidth = Math.floor(CONFIG_MAP.mapSize.width / 2),
-          halfHeight = Math.floor(CONFIG_MAP.mapSize.height / 2),
-
-          offsetCenter = HEXLIB.hexOffset(halfWidth, halfHeight),
-          offsetVertical = HEXLIB.hexOffset(halfWidth, 0),
-          offsetHorizontal = HEXLIB.hexOffset(0, halfHeight),
-
-          hexCenter = HEXLIB.offset2Hex(offsetCenter, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
-          hexVertical = HEXLIB.offset2Hex(offsetVertical, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
-          hexHorizontal = HEXLIB.offset2Hex(offsetHorizontal, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
-
-          distanceMaxVertical = HEXLIB.hexDistance(hexCenter, hexVertical),
-          distanceMaxHorizontal = HEXLIB.hexDistance(hexCenter, hexHorizontal),
-          distanceMax = Math.min(distanceMaxVertical, distanceMaxHorizontal) - 
-            CONFIG_MAP.mapPostprocess.elevation.islandMargin // Make sure map border are ocean
-
-    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
-      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
-        const offsetTile = HEXLIB.hexOffset(x, y),
-          hexTile = HEXLIB.offset2Hex(offsetTile, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
-
-        const distance = HEXLIB.hexDistance(hexTile, hexCenter)
-        let ratio = distance / distanceMax // from 0 (border) to 1 (center)
-        if (ratio < 0) {
-          ratio = 0
-        } else if (ratio > 1) {
-          ratio = 1
-        }
-        ratio = 1 - ratio
-        ratio = Math.pow(ratio, CONFIG_MAP.mapPostprocess.elevation.islandRedistributionPower)
-        // Add random peaks to border area of the map (otherwise only 'deepsea')
-        if (ratio < 0.5) {
-          ratio += (RNG() / 5)
-        }
-        map.data.terrain[x][y][type] *= ratio
-      }
-    }
-  }
-
   // GET BIOME
   const getBiome = (elevation, moisture) => {
 
@@ -481,27 +427,17 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
         CONFIG_MAP.mapNoise[type].frequency /
         Math.pow(2, h)
 
-    nz[h] = normalizeNoise(
-      noise.simplex2(
-        x / frequencyDivider,
-        y / frequencyDivider
+      nz[h] = normalizeNoise(
+        noise.simplex2(
+          x / frequencyDivider,
+          y / frequencyDivider
+        )
       )
-    )
 
-    // Redistribution (raise the elevation to a power)
-    nz[h] = Math.pow(
-      nz[h],
-      CONFIG_MAP.mapPostprocess[type].redistributionPower
-    )
-
-    // Revert values
-    if (CONFIG_MAP.mapPostprocess[type].invert) {
-      nz[h] = 1 - nz[h]
+      value += nz[h] * CONFIG_MAP.mapNoise[type].harmonics[h]
     }
 
-    value += nz[h] * CONFIG_MAP.mapNoise[type].harmonics[h]
-  }
-  return value
+    return value
   }
 
   // CREATE MAP DATA
@@ -524,6 +460,81 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
     }
   }
 
+  ////////////////////////////////////////
+  // POST-PROCESS
+
+  // POSTPROCESS MAKE ISLAND
+  const postprocessMakeIsland = (type, value, offsetTile, hexCenter, distanceMax) => {
+
+    const hexTile = HEXLIB.offset2Hex(offsetTile, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
+    const distance = HEXLIB.hexDistance(hexTile, hexCenter)
+
+    let ratio = distance / distanceMax // from 0 (border) to 1 (center)
+
+    if (ratio < 0) {
+      ratio = 0
+    } else if (ratio > 1) {
+      ratio = 1
+    }
+
+    ratio = 1 - ratio
+    ratio = Math.pow(ratio, CONFIG_MAP.mapPostprocess.elevation.islandRedistributionPower)
+
+    // Add random peaks to border area of the map (otherwise only 'deepsea')
+    // if (ratio < 0.5) {
+    //   ratio += (RNG() / 5)
+    // }
+    value *= ratio
+
+    return value
+  }
+
+  // POSTPROCESS NORMALIZE
+  const postprocessNormalize = (type, targetRange, value) => {
+    const range = mapGetRange(type),
+          ratio = (value - range.min) / (range.max - range.min)
+    
+    return ratio * (targetRange - 0.00001)
+  }
+
+  // POSTPROCESS REDISTRIBUTE
+  // Redistribution (raise the value to a power)
+  const postprocessRedistribute = (type, value, range) => {
+
+    // Get [0-1] value
+    let valueUnit = value / range
+
+    valueUnit = Math.pow(
+      valueUnit,
+      CONFIG_MAP.mapPostprocess[type].redistributionPower
+    )
+
+    return valueUnit * range
+  }
+
+  // POSTPROCESS INVERT
+  const postprocessInvert = (type, value, range) => {
+
+    value = range - value
+
+    return value
+  }
+
+  // POSTPROCESS OFFSET
+  const postprocessOffset = (type, value, range) => {
+    const offset = CONFIG_MAP.mapPostprocess[type].offset
+
+    value += offset
+
+    if (value < 0) {
+      value = 0
+    } else if (value > range) {
+      value = range
+    }
+
+    return value
+  }
+
   // POSTPROCESS MAP DATA
   const postprocessMapData = (type, range) => {
     // Reset terrain to original
@@ -533,16 +544,67 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       }
     }
 
-    // Island mode
+    let hexCenter, distanceMax
+    
     if (CONFIG_MAP.mapPostprocess[type].islandMode) {
-      makeIsland(type)
-    }
 
-    // Normalizing values
-    if (CONFIG_MAP.mapPostprocess[type].normalize) {
-      normalizeMap(type, CONFIG_MAP.mapValueRange[type])
+      const halfWidth = Math.floor(CONFIG_MAP.mapSize.width / 2),
+            halfHeight = Math.floor(CONFIG_MAP.mapSize.height / 2),
+
+            offsetCenter = HEXLIB.hexOffset(halfWidth, halfHeight),
+            offsetVertical = HEXLIB.hexOffset(halfWidth, 0),
+            offsetHorizontal = HEXLIB.hexOffset(0, halfHeight)
+
+      hexCenter = HEXLIB.offset2Hex(offsetCenter, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity)
+
+      const hexVertical = HEXLIB.offset2Hex(offsetVertical, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
+            hexHorizontal = HEXLIB.offset2Hex(offsetHorizontal, CONFIG_MAP.mapTopped, CONFIG_MAP.mapParity),
+
+            distanceMaxVertical = HEXLIB.hexDistance(hexCenter, hexVertical),
+            distanceMaxHorizontal = HEXLIB.hexDistance(hexCenter, hexHorizontal)
+      
+      distanceMax = Math.min(distanceMaxVertical, distanceMaxHorizontal) - 
+        CONFIG_MAP.mapPostprocess.elevation.islandMargin // Make sure map border are ocean
+    }
+    
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+        
+        let value = map.data.terrain[x][y][type]
+        const range = CONFIG_MAP.mapValueRange[type]
+        
+        // 1 - Island mode
+        if (CONFIG_MAP.mapPostprocess[type].islandMode) {
+          const offsetTile = HEXLIB.hexOffset(x, y)
+
+          value = postprocessMakeIsland(type, value, offsetTile, hexCenter, distanceMax)
+        }
+
+        // 2 - Normalizing values
+        if (CONFIG_MAP.mapPostprocess[type].normalize) {
+          value = postprocessNormalize(type, CONFIG_MAP.mapValueRange[type], value)
+        }
+    
+        // 3 - Redistribute value
+        if (CONFIG_MAP.mapPostprocess[type].redistributionPower !== 1) {
+          value = postprocessRedistribute(type, value, range)
+        }
+    
+        // 4 - Invert values
+        if (CONFIG_MAP.mapPostprocess[type].invert) {
+          value = postprocessInvert(type, value, range)
+        }
+    
+        // 5 - Offset
+        if (CONFIG_MAP.mapPostprocess[type].offset !== 0) {
+          value = postprocessOffset(type, value, range)
+        }
+
+        map.data.terrain[x][y][type] = value
+      }
     }
   }
+
 
   // CREATE MAP BUILDINGS
   const createdMapBuildings = () => {

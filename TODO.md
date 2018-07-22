@@ -2,7 +2,7 @@
 
 ## Known bugs
 
-* Fix the 2D map
+* Fix the 2D map (issues with game not being ready for dom-ui (resizeGame, 2d map))
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
 * Sometimes (!) keybord is broken, cursor moves on all keys (keys[] broken?)
 * Switching post-processing ('multi'/'ssao') cause lighting issues (too dark / too bright)
@@ -10,9 +10,15 @@
 * bot units sometimes move an incredibly long path to attack (validate move) [TO BE CONFIRMED]
 * Units can be built on occupied factories / port / airport??? [TO BE CONFIRMED]
 
+## Homepage
+
+* disable user control on the free camera when in homepage
+* hide 2d map
+
 ## Live game configuration
 
-* All terrain configuration
+* Size and topping terrain configuration
+* Player type doesn't work if changed
 
 ## Improvements
 
