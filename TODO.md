@@ -14,11 +14,13 @@
 
 * disable user control on the free camera when in homepage (zoom + beta angle)
 * hide 2d map
+* loader progress bar for game creation
 
 ## Live game configuration
 
 * Size and topping terrain configuration
 * Player type doesn't work if changed
+* Export / import game configs (JSON parsing)
 
 ## Improvements
 

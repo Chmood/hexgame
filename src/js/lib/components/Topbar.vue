@@ -5,10 +5,16 @@
   >
     <section class="itembar">
       <div class="itembar-item">
-        Player <span>{{ player.name }}</span>
+        Player
+        <span
+          :style="{ 'color': player.color }"
+        >{{ player.name }}</span>
       </div>
       <div class="itembar-item">
-        Money <span>{{ player.money }}</span>$
+        Money
+        <span
+          :style="{ 'color': player.color }"
+        >{{ player.money }}$</span>
       </div>
     </section>
 
