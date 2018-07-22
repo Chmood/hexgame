@@ -1,0 +1,231 @@
+// FORMS
+
+@mixin btn-color($color) {
+	color: $color;
+	background-color: transparent;
+	border-color: $color;
+
+	&:hover,
+	&:focus {
+		background-color: $color;
+		color: #111;
+	}
+
+	&:active {
+		background-color: $color-primary;
+		border-color: $color-primary;
+		color: white;
+	}
+}
+
+button {
+	display: inline-block;
+	border: 0.2rem solid;
+
+	@include btn-color(white);
+
+	padding: $gutter-quarter $gutter-half;
+	font-weight: bold;
+	text-transform: capitalize;
+	transition: all 0.25s;
+
+	&:hover,
+	&:focus {
+		outline: none;
+	}
+
+	&:disabled {
+		opacity: 0.5;
+	}
+	
+	&.btn--strong {
+		text-transform: uppercase;
+	}
+	
+	&.btn--highlight {
+		@include btn-color($color-primary);
+	}
+	
+	&.btn--small {
+		padding: $gutter-heighth $gutter-quarter;
+		font-weight: normal;
+	}
+}	
+
+// FORM UI
+
+.input-block {
+	display: flex;
+	align-items: end;
+	flex-wrap: wrap;
+	margin-bottom: $gutter-half;
+	@media (min-width: 40em) {
+		flex-wrap: nowrap;
+	}
+
+	> * {
+		flex-basis: 100%;
+
+		@media (min-width: 40em) {
+			flex-basis: 50%;
+			max-width: 50%;
+		}
+	}
+
+	> label,
+	> .label {
+		text-align: left;
+		margin-bottom: $gutter-quarter;
+		text-transform: capitalize;
+
+		// @media (min-width: 40em) {
+		// 	text-align: right;
+		// 	padding-right: $gutter-half;
+		// }
+	}
+
+	> .input-with-unit {
+		text-align: left;
+	}
+}
+
+input[type="text"],
+input[type="number"],
+.checky,
+.raydio {
+	display: inline-block;
+	border: 0.2rem solid #666;
+}
+
+label, 
+.label,
+input[type="text"],
+input[type="number"] {
+	padding: $gutter-heighth $gutter-quarter;
+	background-color: transparent;
+	color: white;
+}
+
+label,
+.label {
+	padding: $gutter-heighth 0;
+	display: inline-block;
+	color: $color-primary;
+	line-height: 1;
+}
+
+input[type="text"] {
+	max-width: $gutter * 5;
+}
+input[type="number"] {
+	max-width: $gutter * 3;
+	text-align: right;
+
+	&.number--small {
+		max-width: $gutter * 2;
+	}
+}
+
+.input-unit {
+	padding: $gutter-heighth;
+	padding-left: 0;
+	background-color: #666;
+	border: 0.2rem solid #666;
+	color: white;
+}
+
+.checky {
+	> input[type="checkbox"] {
+		position: absolute;
+		left: -1000rem;
+	}
+
+	> input[type="checkbox"] + label {
+		display: inline-block;
+		color: #666;
+		font-size: 0;
+		padding: 0;
+
+		&::before,
+		&::after {
+			font-size: 1.4rem;
+			display: inline-block;
+			padding: ($gutter-heighth + 0.2rem) ($gutter-quarter + 0.2rem);
+			transition: color 0.25s, background-color 0.5s;
+		}
+		&::before {
+			content: "on";
+		}
+		&::after {
+			content: "off";
+			color: white;
+			background-color: #666;
+		}
+
+		&:hover {
+			color: white;
+		}
+	}
+
+	> input[type="checkbox"]:checked + label {
+		&::before {
+			color: white;
+			background-color: $color-primary;
+		}
+		&::after {
+			color: #666;
+			background-color: transparent;
+		}
+		&:hover {
+			&::after {
+				color: white;
+			}
+		}
+	}
+}
+
+.raydio {
+	> input[type="radio"] {
+		position: absolute;
+		left: -1000rem;
+		// display: none;
+	}
+
+	> input[type="radio"] + label {
+		display: inline-block;
+		padding: ($gutter-heighth + 0.2rem) ($gutter-quarter + 0.2rem);
+		color: #666;
+		transition: color 0.25s, background-color 0.5s;
+
+		&:hover {
+			color: white;
+		}
+	}
+
+	> input[type="radio"]:checked + label {
+		background: $color-primary;
+		color: white;
+	}
+}
+
+.slidey {
+	display: flex;
+	border: 0.2rem solid #666;
+
+	> input[type="range"] {
+		flex-grow: 1;
+		min-width: 0;
+	}
+	
+	> .slidey-value {
+		min-width: $gutter-double;
+		padding: $gutter-heighth $gutter-quarter;
+		text-align: left;
+		background-color: #666;
+	}
+
+	&.slidey--disabled {
+		opacity: 0.5;
+	}
+}
+

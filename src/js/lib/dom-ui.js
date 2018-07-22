@@ -171,27 +171,40 @@ const DomUI = () => {
   // SET PANEL
   dom.setPanel = (panel) => {
     // Hide panels
+    store.commit('intro/setActive', { active: false })
     store.commit('homepage/setActive', { active: false })
     store.commit('options/setActive', { active: false })
     store.commit('configuration/setActive', { active: false })
     store.commit('topbar/setActive', { active: false })
  
+    dom.canvas3d.classList.remove('collapsed')
     dom.canvas3d.classList.remove('half-top')
 
     if (panel === 'game') {
+      // Also show the topbar
       store.commit('topbar/setActive', { active: true })
 
     } else {
-      // Show the panel
+      // Show the desired panel
       store.commit(`${panel}/setActive`, { active: true })
 
+      // Intro panel doesn't show 3D canvas
+      if (panel === 'intro') {
+        dom.canvas3d.classList.add('collapsed')
+        
       // Configuration panel uses 50% of the height
-      if (panel === 'configuration') {
+      } else if (panel === 'configuration') {
         dom.canvas3d.classList.add('half-top')
-      }
+      } 
     }
   }
 
+  // INTRO
+  window.addEventListener('introAction', (event) => {
+    if (event.detail.action === 'start') {
+      game.openScreen('homepage')
+    }
+  })
   // HOMEPAGE
   window.addEventListener('hompageAction', (event) => {
     if (event.detail.action === 'new-game') {
@@ -203,8 +216,7 @@ const DomUI = () => {
       game.openScreen('options')
 
     } else if (event.detail.action === 'quit') {
-      // TODO
-      console.error('TODO: QUIT APP!')
+      game.openScreen('intro')
     }
   })
   // OPTION PANEL

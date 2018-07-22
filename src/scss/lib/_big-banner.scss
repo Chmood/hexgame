@@ -1,0 +1,43 @@
+// BIG BANNER
+
+#big-banner {
+	position: fixed;
+	width: 100vw;
+	min-height: 50vh;
+	top: 50%;
+	left: 0;
+	transform: translateY(-50%);
+	background-color: white;
+	transition: all 1s;
+	display: none;
+
+	&.active {
+		display: block;
+	}
+	&.above {
+		transform: translateY(-250%);
+	}
+	&.below {
+		transform: translateY(150%);
+	}
+}
+
+#big-banner-content {
+	position: absolute;
+	width: 100%;
+	top: 50%;
+	left: 50%;
+	transform: translate3d(-50%, -50%, 0);
+	color: #444;
+	font-size: calc(2rem + 2vw);
+	text-align: center;
+	transition: all 1s;
+
+	.text-left & {
+		transform: translate3d(-150%, -50%, 0);
+	}
+	.text-right & {
+		transform: translate3d(50%, -50%, 0);
+	}
+}
+

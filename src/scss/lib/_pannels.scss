@@ -1,0 +1,209 @@
+#intro,
+#homepage,
+#configuration,
+#options,
+#top-panel,
+#game-menu {
+	position: fixed;
+	padding: $gutter-half;
+	background-color: rgba(0,0,0,0.75);
+	color: white;
+}
+
+// CENTERED PANELS
+#intro,
+#homepage,
+#options {
+	padding: $gutter;
+	top: 50%;
+	left: 50%;
+	transform: translate3d(-50%, calc(-100vh - 50%), 0);
+	transition: all 0.5s;
+
+	&.active {
+		transform: translate3d(-50%, -50%, 0);
+	}
+}
+
+#intro,
+#homepage {
+
+	> .game-version {
+		@extend .small;
+		text-align: right;
+	}
+
+	> h1 {
+		font-size: 4rem;
+		margin-top: $gutter;
+		margin-bottom: 0;
+	}
+
+	> p.small {
+		margin-bottom: $gutter;
+	}
+
+	> button {
+		display: block;
+		width: 100%;
+
+		&:not(:last-child) {
+			margin-bottom: $gutter-half;
+		}
+	}
+}
+
+#intro {}
+
+#options {
+	text-align: center;
+
+	> h2 {
+		margin-top: $gutter-half;
+	}
+}
+
+// TOP PANEL
+
+#top-panel {
+	top: 0;
+	left: 0;
+	width: 100vw;
+	padding: 0;
+	display: flex;
+	justify-content: space-between;
+	transform: translate3d(0, -100%, 0);
+	transition: transform 0.25s;
+
+	&.active {
+		transform: translate3d(0, 0, 0);
+	}
+}
+
+.itembar {
+	display: flex;
+}
+
+.itembar-item {
+	padding: $gutter-half;
+
+	> span {
+		font-weight: bold;
+	}
+}
+
+// GAME CONFIGURATION PANEL
+
+#configuration {
+	overflow: hidden;
+	bottom: 0;
+	left: 0;
+	width: 100vw;
+	height: 50vh;
+	background-color: #222;
+	text-align: center;
+	transform: translateY(100%);
+	transition: transform 0.25s;
+
+	&.active {
+		transform: translateY(0);
+	}
+}
+
+// GAME CONFIGURATION
+
+.configuration {
+	position: relative;
+
+	@media (min-width: 40em) {
+		margin-left: 4rem;
+		margin-right: 4rem;
+	}
+	@media (min-width: 60em) {
+		margin-left: 6rem;
+		margin-right: 6rem;
+	}
+}
+
+.configuration-btn {
+	position: absolute;
+	z-index: +1;
+}
+.configuration-btn--previous { top: $gutter-half; left: 0; }
+.configuration-btn--next { bottom: $gutter-half; right: 0; }
+
+.configuration-wrapper {
+	width: 700%;
+	display: flex;
+	transition: transform 0.25s;
+
+	.step-0 & { transform: translateX(0); }
+	.step-1 & { transform: translateX(-(100% * 1 / 7)); }
+	.step-2 & { transform: translateX(-(100% * 2 / 7)); }
+	.step-3 & { transform: translateX(-(100% * 3 / 7)); }
+	.step-4 & { transform: translateX(-(100% * 4 / 7)); }
+	.step-5 & { transform: translateX(-(100% * 5 / 7)); }
+	.step-6 & { transform: translateX(-(100% * 6 / 7)); }
+}
+
+.configuration-section {
+	flex-basis: (100% / 7);
+	margin-left: 1rem;
+	margin-right: 1rem;
+	padding: $gutter-half;
+	padding-top: 0; // H3 handles top space
+	background-color: #111;
+
+	display: flex;
+	flex-direction: column;
+
+	h3 {
+		margin-top: $gutter;
+		margin-bottom: $gutter;
+	}
+	
+	h4 {
+		text-align: left;
+	}
+}
+
+.configuration-section__header {
+}
+.configuration-section__body {
+	flex-grow: 1;
+	max-height: 27vh; // Magic value!
+	overflow-y: auto;
+
+	button:first-child {
+		margin-bottom: $gutter;
+	}
+}
+.configuration-section__footer {
+	padding-top: $gutter-half;
+	padding-right: $gutter-double; // Space for "next" button
+}
+
+.configuration-player {
+	margin-bottom: $gutter-quarter;
+
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+
+	> * {
+		margin-bottom: $gutter-quarter;
+		margin-right: $gutter-quarter;
+		
+		&:last-child,
+		&:first-child {
+			margin-right: 0;
+		}
+	}
+}
+
+.configuration-player__p-color {
+	width: $gutter-half * 3;
+	color: #111;
+	border: 0.2rem solid;
+}
+

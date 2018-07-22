@@ -1,0 +1,52 @@
+// GAME WRAPPER
+
+.game-wrapper {
+	width: 100vw;
+	height: 100vh;
+	position: relative;
+}
+
+.game-viewport {
+	height: 100vh;
+	background: radial-gradient(closest-side, #444, #111);
+}
+
+// CANVAS 3D
+
+#canvas3d {
+	display: block;
+	width: 100vw;
+	height: 100vh;
+	touch-action: none;
+	// transition: height 0.5s; // BEWARE: linked to await game.wait time (500ms)
+
+	&.half-top {
+		height: 50vh;
+	}
+
+	&.collapsed {
+		height: 0;
+	}
+}
+
+// CANVAS 2D
+
+#canvas2d-wrapper {
+	position: absolute;
+	top: $topbar-height;
+	left: 0;
+	width: 25vw;
+	height: 25vw;
+	// background-color: rgba(255,0,0,0.5);
+	transform: translateX(-100%);
+	transition: all 0.25s;
+
+	&.active {
+		transform: translateX(0);
+	}
+}
+
+#canvas2d {
+	display: block;
+}
+

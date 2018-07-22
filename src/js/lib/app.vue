@@ -7,22 +7,25 @@
       <canvas id="canvas3d" touch-action="none"></canvas>
     </div>
 
-    <!-- Game configuration panel -->
+    <!-- Introl -->
+    <intro />
+
+    <!-- Configuration -->
     <configuration />
 
-    <!-- Homepage screen panel -->
+    <!-- Homepage -->
     <homepage />
 
-    <!-- Option panel -->
+    <!-- Options -->
     <options />
 
     <!-- 2d canvas -->
     <minimap />
 
-    <!-- Top panel -->
+    <!-- Topbar -->
     <topbar />
 
-    <!-- Game menu panel -->
+    <!-- Game menu -->
     <game-menu />
 
     <!-- Fullscreen banner-->
@@ -35,6 +38,7 @@
 </template>
 
 <script>
+import Intro from './components/Intro.vue'
 import Homepage from './components/Homepage.vue'
 import Options from './components/Options.vue'
 import Configuration from './components/Configuration.vue'
@@ -45,6 +49,7 @@ import GameMenu from './components/GameMenu.vue'
 
 export default {
   components: {
+    Intro,
     Homepage,
     Options,
     Configuration,

@@ -18,6 +18,8 @@ import Renderer3d from './renderer3d'
 // Store is ready, we get a reference to it
 const CONFIG = store.getters['configuration/getGameConfig']
 
+let hasGeneratedMap = false
+
 const Game = (ctx2d, canvas3d, dom, main) => {
 
   ////////////////////////////////////////
@@ -382,11 +384,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     dom: dom,
 
     // Game map
-    map: Map(
-      CONFIG.map,
-      CONFIG.game,
-      CONFIG.players
-    ),
+    map: undefined,
 
     screen: undefined,
 
@@ -409,17 +407,42 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
       dom.setPanel(screen)
 
+      // Change mode
       if (screen === 'game') {
+        // Game has its own modes
+        
         // Reset the game UI
         game.ui.resetUI()
-        // In-game camera
-        game.renderer3d.setActiveCamera('camera')
 
       } else {
         // Change UI mode
         game.ui.changeMode(screen)
-        // Free camera
-        game.renderer3d.setActiveCamera('cameraFree')
+      }
+
+      // Create first map is needed
+      if (screen === 'homepage') {
+        if (!hasGeneratedMap) {
+          hasGeneratedMap = true
+
+          // CREATE MAP
+          game.map = Map(
+            CONFIG.map,
+            CONFIG.game,
+            CONFIG.players
+          )
+
+          // GAME RENDERERS
+          game.renderer2d = Renderer2d(game, ctx2d)
+          game.renderer3d = Renderer3d(game, canvas3d)
+          
+          // await game.wait() // Wait the CSS transition time
+          // game.resizeGame()
+
+          // FIRST MAP CREATION
+          game.generateTerrain()
+          game.generateBuildings()
+          game.generateUnits()
+        }
       }
 
       // Set camera auto-rotation
@@ -427,18 +450,30 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         game.renderer3d.setCameraFreeAutorotate(false)
 
       } else {
-        game.renderer3d.setCameraFreeAutorotate(true)
+        if (screen !== 'intro') {
+          game.renderer3d.setCameraFreeAutorotate(true)
+        }
       }
 
       // Resize game
       if (
+        screen === 'homepage' ||
         (screenLast === 'homepage' && screen === 'configuration') ||
-        (screen === 'homepage' && screenLast === 'configuration') ||
         (screenLast === 'game' && screen === 'configuration') ||
         (screen === 'game' && screenLast === 'configuration')
       ) {
-        await game.wait() // Wait the CSS transition time
+        // await game.wait() // Wait the CSS transition time
         game.resizeGame()
+      }
+
+      // Set active camera
+      if (screen === 'game') {
+        // In-game camera
+        game.renderer3d.setActiveCamera('camera')
+
+      } else if (screen !== 'intro') {
+        // Free camera
+        game.renderer3d.setActiveCamera('cameraFree')
       }
     },
 
@@ -1262,17 +1297,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   game.onKeyDown = game.ui.onKeyDown
   game.updateCursor = game.ui.updateCursor
 
-  // GAME RENDERERS
-  game.renderer2d = Renderer2d(game, ctx2d)
-  game.renderer3d = Renderer3d(game, canvas3d)
-
-  // FIRST MAP CREATION
-  game.generateTerrain()
-  game.generateBuildings()
-  game.generateUnits()
-  
   // FIRST SCREEN INIT
-  game.openScreen('homepage')
+  game.openScreen('intro')
 
   return game
 }

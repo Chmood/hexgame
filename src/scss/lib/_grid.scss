@@ -1,0 +1,29 @@
+// GRID
+
+.grid {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.grid-1-of-2 {
+
+	> * {
+		flex-basis: 100%;
+		margin-bottom: $gutter;
+
+		@media (min-width: 20em) {
+			flex-basis: calc(50% - 0.5rem);
+		}
+	}
+}
+
+.grid-1-of-3 {
+
+	> * {
+
+		@media (min-width: 40em) {
+			flex-basis: calc(33.33% - 0.5rem);
+		}
+	}
+}
