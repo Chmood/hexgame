@@ -3,8 +3,10 @@ import seedrandom from 'seedrandom'
 import arrayShuffle from '../vendor/array-shuffle'
 
 import store from './store'
+
 import Map from './map'
 import Players from './players'
+
 import GameBot from './game-bot'
 import GameUI from './game-ui'
 import Renderer2d from './renderer2d'
@@ -363,6 +365,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   const wait = (time = 500) => {
     return new Promise((resolve) => {
       window.setTimeout(() => {
+        // console.error('WAIT', time)
         resolve()
       }, time / CONFIG.game.animationsSpeed)
     })
@@ -385,6 +388,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       CONFIG.players
     ),
 
+    screen: undefined,
+
     // Players
     players: [],
     turn: 0, // elapsed game turns
@@ -396,13 +401,15 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     currentPlayer: undefined, // Player
 
     async openScreen(screen) {
-      console.warn(`Open screen: ${screen}`)
+      // screen can be: 'homepage', 'options', 'configuration', 'game'
+      
+      const screenLast = game.screen
+      game.screen = screen
+      console.warn(`Open screen: from '${screenLast}' to '${screen}'`)
 
       dom.setPanel(screen)
 
       if (screen === 'game') {
-        // Show the game topbar
-        dom.setPanel('topbar')
         // Reset the game UI
         game.ui.resetUI()
         // In-game camera
@@ -411,10 +418,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       } else {
         // Change UI mode
         game.ui.changeMode(screen)
+        // Free camera
         game.renderer3d.setActiveCamera('cameraFree')
       }
 
-      // Set camera
+      // Set camera auto-rotation
       if (screen === 'game' || screen === 'configuration') {
         game.renderer3d.setCameraFreeAutorotate(false)
 
@@ -423,8 +431,15 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       }
 
       // Resize game
-      await game.wait() // Wait the CSS transition time
-      game.resizeGame()
+      if (
+        (screenLast === 'homepage' && screen === 'configuration') ||
+        (screen === 'homepage' && screenLast === 'configuration') ||
+        (screenLast === 'game' && screen === 'configuration') ||
+        (screen === 'game' && screenLast === 'configuration')
+      ) {
+        await game.wait() // Wait the CSS transition time
+        game.resizeGame()
+      }
     },
 
     isGameReady() {

@@ -88,7 +88,7 @@ const DomUI = () => {
   // VUE JS COMPONENTS
 
   // TOP PANEL
-  dom.updateTopPanel = (player) => {
+  dom.updateTopbar = (player) => {
 
     store.commit('topbar/setPlayer', { player })
   }
@@ -179,16 +179,20 @@ const DomUI = () => {
     dom.canvas3d.classList.remove('half-top')
 
     if (panel === 'game') {
+      store.commit('topbar/setActive', { active: true })
 
     } else {
+      // Show the panel
       store.commit(`${panel}/setActive`, { active: true })
 
+      // Configuration panel uses 50% of the height
       if (panel === 'configuration') {
         dom.canvas3d.classList.add('half-top')
       }
     }
   }
 
+  // HOMEPAGE
   window.addEventListener('hompageAction', (event) => {
     if (event.detail.action === 'new-game') {
       game.openScreen('configuration')
@@ -203,7 +207,6 @@ const DomUI = () => {
       console.error('TODO: QUIT APP!')
     }
   })
-  
   // OPTION PANEL
   window.addEventListener('optionsAction', (event) => {
     if (event.detail.action === 'apply') {
@@ -254,13 +257,11 @@ const DomUI = () => {
     game.renderer3d.deleteBuildings()
     game.renderer3d.createBuildings()
   })
-
   window.addEventListener('configurationActionClearPlayers', (event) => {
     console.log('GAME CONFIGURATION EVENT: clearing players\' buildings and units' )
     game.renderer3d.deleteBuildings()
     game.renderer3d.deleteUnits()
   })
-
   window.addEventListener('configurationActionUpdatePlayers', (event) => {
     console.log('GAME CONFIGURATION EVENT: updating players')
     game.renderer3d.updatePlayersColor()

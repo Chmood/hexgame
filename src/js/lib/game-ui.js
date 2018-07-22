@@ -393,7 +393,7 @@ const GameUI = (game) => {
 
         // await dom.displayBigBanner(`Player ${game.currentPlayer.name}'s turn`)
     
-        game.dom.updateTopPanel(game.currentPlayer)
+        game.dom.updateTopbar(game.currentPlayer)
     
         // Focus on the first base
         const base = game.getBuildingsByPlayer(game.currentPlayer).filter(
@@ -433,7 +433,7 @@ const GameUI = (game) => {
           // 'Forbidden' mutation that will be canceled in game.ACTION_DO('EARN_MONEY')
           player.money += game.CONFIG.players[player.id].moneyPerBuilding
       
-          game.dom.updateTopPanel(player)
+          game.dom.updateTopbar(player)
           game.renderer3d.updateCameraPosition(building.hex)
   
           await game.wait()
@@ -544,7 +544,7 @@ const GameUI = (game) => {
         await buildUnitAnimation.waitAsync()
     
         // Less money
-        game.dom.updateTopPanel(player)
+        game.dom.updateTopbar(player)
     
         // Go back to select mode
         changeMode('select')
