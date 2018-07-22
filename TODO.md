@@ -12,7 +12,7 @@
 
 ## Homepage
 
-* disable user control on the free camera when in homepage
+* disable user control on the free camera when in homepage (zoom + beta angle)
 * hide 2d map
 
 ## Live game configuration

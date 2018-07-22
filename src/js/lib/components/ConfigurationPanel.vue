@@ -430,33 +430,33 @@ import { mapState, mapActions } from 'vuex'
 
 export default {
   computed: mapState({
-    isActive: state => state.gameConfiguration.isActive,
-    currentGameConfigurationStep: state => state.gameConfiguration.currentGameConfigurationStep,
+    isActive: state => state.configurationPanel.isActive,
+    currentGameConfigurationStep: state => state.configurationPanel.currentGameConfigurationStep,
 
-    config: state => state.gameConfiguration.config,
-    isReady: state => state.gameConfiguration.isReady,
-    colors: state => state.gameConfiguration.colors,
+    config: state => state.configurationPanel.config,
+    isReady: state => state.configurationPanel.isReady,
+    colors: state => state.configurationPanel.colors,
 
     countBuildings (state) {
       let count = 0
-      Object.entries(state.gameConfiguration.config.game.buildings).forEach(
+      Object.entries(state.configurationPanel.config.game.buildings).forEach(
         ([type, building]) => {
           count += building.number  
         }
       )
 
-      return count * state.gameConfiguration.config.players.length
+      return count * state.configurationPanel.config.players.length
     },
     countUnits (state) {
       let count = 0
       
-      Object.entries(state.gameConfiguration.config.game.units).forEach(
+      Object.entries(state.configurationPanel.config.game.units).forEach(
         ([type, unit]) => {
           count += unit.number  
         }
       )
 
-      return count * state.gameConfiguration.config.players.length
+      return count * state.configurationPanel.config.players.length
     }
   }),
 
@@ -466,52 +466,52 @@ export default {
       window.dispatchEvent(event)
     },
     doAction(action, newSeed = false) {
-      this.emitGameEvent('gameConfigurationAction', { detail: {
+      this.emitGameEvent('configurationAction', { detail: {
         'action': action,
         'newSeed': newSeed
       }})
     },
     changeStep(increment) {
-      this.$store.commit('gameConfiguration/changeStep', { increment })
+      this.$store.commit('configurationPanel/changeStep', { increment })
     },
 
     // PLAYERS
     createPlayer() {
-      this.$store.commit('gameConfiguration/createPlayer', { player: undefined })
-      this.emitGameEvent('gameConfigurationActionUpdatePlayers', {})
+      this.$store.commit('configurationPanel/createPlayer', { player: undefined })
+      this.emitGameEvent('configurationActionUpdatePlayers', {})
     },
     deletePlayer(player) {
       // We clear players' buildings and units BEFORE deleting a player
-      this.emitGameEvent('gameConfigurationActionClearPlayers', {})
-      this.$store.commit('gameConfiguration/deletePlayer', { player })
-      this.emitGameEvent('gameConfigurationActionUpdatePlayers', {})
+      this.emitGameEvent('configurationActionClearPlayers', {})
+      this.$store.commit('configurationPanel/deletePlayer', { player })
+      this.emitGameEvent('configurationActionUpdatePlayers', {})
     },
     updatePlayerColor(player) {// FOOOO
-      this.$store.commit('gameConfiguration/updatePlayerColor', { player })
-      this.emitGameEvent('gameConfigurationActionUpdatePlayersColor', {})
+      this.$store.commit('configurationPanel/updatePlayerColor', { player })
+      this.emitGameEvent('configurationActionUpdatePlayersColor', {})
     },
     updatePlayerName(e, player) {
-      this.$store.commit('gameConfiguration/updatePlayerName', { player, name: e.target.value })
+      this.$store.commit('configurationPanel/updatePlayerName', { player, name: e.target.value })
     },
     updatePlayerType(e, player, isHuman) {
-      this.$store.commit('gameConfiguration/updatePlayerType', { player, isHuman })
+      this.$store.commit('configurationPanel/updatePlayerType', { player, isHuman })
     },
     updatePlayerMoney(e, player) {
-      this.$store.commit('gameConfiguration/updatePlayerMoney', { player, money: parseInt(e.target.value) })
+      this.$store.commit('configurationPanel/updatePlayerMoney', { player, money: parseInt(e.target.value) })
     },
     updatePlayerMoneyPerBuilding(e, player) {
-      this.$store.commit('gameConfiguration/updatePlayerMoneyPerBuilding', { player, money: parseInt(e.target.value) })
+      this.$store.commit('configurationPanel/updatePlayerMoneyPerBuilding', { player, money: parseInt(e.target.value) })
     },
 
     // MAP TERRAIN
     updateMapSize(e, dimension) {
       if (dimension === 'width') {
-        this.$store.commit('gameConfiguration/updateMapSize', { 
+        this.$store.commit('configurationPanel/updateMapSize', { 
           width: parseInt(e.target.value), 
           height: this.config.map.mapSize.height
         })
       } else {
-        this.$store.commit('gameConfiguration/updateMapSize', { 
+        this.$store.commit('configurationPanel/updateMapSize', { 
           width: this.config.map.mapSize.width,
           height: parseInt(e.target.value)
         })
@@ -525,10 +525,10 @@ export default {
     },
     updateMapTopping(topped) {
       // TODO: make reactive
-      this.$store.commit('gameConfiguration/updateMapTopping', { topped })
+      this.$store.commit('configurationPanel/updateMapTopping', { topped })
     },
     updateMapNoiseFrequencyRatio(e, type) {
-      this.$store.commit('gameConfiguration/updateMapNoiseFrequencyRatio', { 
+      this.$store.commit('configurationPanel/updateMapNoiseFrequencyRatio', { 
         ratio: parseFloat(e.target.value),
         type
       })
@@ -536,7 +536,7 @@ export default {
       this.doAction('resynth-map')
     },
     updateMapNoiseHarmonics(e, harmonicId, type) {
-      this.$store.commit('gameConfiguration/updateMapNoiseHarmonics', { 
+      this.$store.commit('configurationPanel/updateMapNoiseHarmonics', { 
         level: parseFloat(e.target.value),
         harmonicId,
         type
@@ -547,7 +547,7 @@ export default {
     },
     // Post-processing
     updateMapPostprocessRedistributionPower(e, type) {
-      this.$store.commit('gameConfiguration/updateMapPostprocessRedistributionPower', { 
+      this.$store.commit('configurationPanel/updateMapPostprocessRedistributionPower', { 
         power: parseFloat(e.target.value),
         type
       })
@@ -555,7 +555,7 @@ export default {
       this.doAction('postprocess-map')
     },
     updateMapPostprocessOffset(e, type) {
-      this.$store.commit('gameConfiguration/updateMapPostprocessOffset', { 
+      this.$store.commit('configurationPanel/updateMapPostprocessOffset', { 
         offset: parseFloat(e.target.value),
         type
       })
@@ -563,7 +563,7 @@ export default {
       this.doAction('postprocess-map')
     },
     updateMapPostprocessNormalize(e, type) {
-      this.$store.commit('gameConfiguration/updateMapPostprocessNormalize', { 
+      this.$store.commit('configurationPanel/updateMapPostprocessNormalize', { 
         normalize: e.target.checked,
         type
       })
@@ -571,7 +571,7 @@ export default {
       this.doAction('postprocess-map')
     },
     updateMapPostprocessInvert(e, type) {
-      this.$store.commit('gameConfiguration/updateMapPostprocessInvert', { 
+      this.$store.commit('configurationPanel/updateMapPostprocessInvert', { 
         invert: e.target.checked,
         type
       })
@@ -579,14 +579,14 @@ export default {
       this.doAction('postprocess-map')
     },
     updateMapPostprocessIslandMode(e) {
-      this.$store.commit('gameConfiguration/updateMapPostprocessIslandMode', { 
+      this.$store.commit('configurationPanel/updateMapPostprocessIslandMode', { 
         islandMode: e.target.checked
       })
 
       this.doAction('postprocess-map')
     },
     updateMapPostprocessIslandRedistributionPower(e) {
-      this.$store.commit('gameConfiguration/updateMapPostprocessIslandRedistributionPower', { 
+      this.$store.commit('configurationPanel/updateMapPostprocessIslandRedistributionPower', { 
         power: parseFloat(e.target.value)
       })
 
@@ -595,7 +595,7 @@ export default {
 
     // BUILDINGS
     updateGameBuildingsNumber(e, building, owned) {
-      this.$store.commit('gameConfiguration/updateGameBuildingsNumber', { 
+      this.$store.commit('configurationPanel/updateGameBuildingsNumber', { 
         number: parseInt(e.target.value),
         building,
         owned
@@ -605,14 +605,14 @@ export default {
 
     // UNITS
     updateGameUnitsNumber(e, unit) {
-      this.$store.commit('gameConfiguration/updateGameUnitsNumber', { 
+      this.$store.commit('configurationPanel/updateGameUnitsNumber', { 
         number: parseInt(e.target.value),
         unit
       })
       this.doAction('units')
     },
     updateGameUnitsIsDisabled(e, unit) {
-      this.$store.commit('gameConfiguration/updateGameUnitsIsDisabled', { 
+      this.$store.commit('configurationPanel/updateGameUnitsIsDisabled', { 
         isDisabled: !e.target.checked,
         unit
       })

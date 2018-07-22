@@ -20,7 +20,7 @@ const DomUI = () => {
     render: h => h(VueApp)
   })
 
-  const config = store.getters['gameConfiguration/getGameConfig']
+  const config = store.getters['configurationPanel/getGameConfig']
   
   // GET ELEMENTS
   dom.getElements = () => {
@@ -168,56 +168,57 @@ const DomUI = () => {
     element.click()
   }
 
-  // HOMEPAGE PANEL
-  dom.setHomepagePanel = (active) => {
-    store.commit('homepagePanel/setActive', { active })
+  // SET PANEL
+  dom.setPanel = (panel) => {
+    // Hide panels
+    store.commit('homepagePanel/setActive', { active: false })
+    store.commit('optionsPanel/setActive', { active: false })
+    store.commit('configurationPanel/setActive', { active: false })
+    store.commit('topbar/setActive', { active: false })
+ 
+    dom.canvas3d.classList.remove('half-top')
+
+    if (panel === 'game') {
+
+    } else {
+      store.commit(`${panel}Panel/setActive`, { active: true })
+
+      if (panel === 'configuration') {
+        dom.canvas3d.classList.add('half-top')
+      }
+    }
   }
 
   window.addEventListener('hompageAction', (event) => {
     if (event.detail.action === 'new-game') {
-      game.openConfigurationScreen()
+      game.openScreen('configuration')
 
     } else if (event.detail.action === 'open-options') {
       // TODO: backup options (in case of canceling)
 
-      game.openOptionScreen()
+      game.openScreen('options')
 
     } else if (event.detail.action === 'quit') {
       // TODO
+      console.error('TODO: QUIT APP!')
     }
   })
   
   // OPTION PANEL
-  dom.setOptionPanel = (active) => {
-    store.commit('optionPanel/setActive', { active })
-  }
-
-  window.addEventListener('optionPanelAction', (event) => {
+  window.addEventListener('optionsAction', (event) => {
     if (event.detail.action === 'apply') {
-      game.openHomepageScreen()
+      game.openScreen('homepage')
 
     } else if (event.detail.action === 'cancel') {
       // TODO: restore options
 
-      game.openHomepageScreen()
+      game.openScreen('homepage')
     }
   })
 
   ////////////////////////////////////////
   // GAME CONFIGURATION
-  dom.setGameConfigurationPanel = (active) => {
-    store.commit('gameConfiguration/setActive', { active })
-
-    if (active) {
-      dom.canvas3d.classList.add('half-top')
-    } else {
-      dom.canvas3d.classList.remove('half-top')
-    }
-
-    // game.resizeGame()
-  }
-
-  window.addEventListener('gameConfigurationAction', (event) => {
+  window.addEventListener('configurationAction', (event) => {
     if (event.detail.action === 'terrain') {
       game.generateTerrain(event.detail.newSeed)
 
@@ -237,13 +238,13 @@ const DomUI = () => {
       game.startGame()
 
     } else if (event.detail.action === 'cancel') {
-      game.openHomepageScreen()
+      game.openScreen('homepage')
     }
   })
 
   // Players
 
-  window.addEventListener('gameConfigurationActionUpdatePlayersColor', (event) => {
+  window.addEventListener('configurationActionUpdatePlayersColor', (event) => {
     console.log('GAME CONFIGURATION EVENT: updating players color' )
     game.renderer3d.updatePlayersColor()
     game.renderer3d.deleteUnits()
@@ -254,13 +255,13 @@ const DomUI = () => {
     game.renderer3d.createBuildings()
   })
 
-  window.addEventListener('gameConfigurationActionClearPlayers', (event) => {
+  window.addEventListener('configurationActionClearPlayers', (event) => {
     console.log('GAME CONFIGURATION EVENT: clearing players\' buildings and units' )
     game.renderer3d.deleteBuildings()
     game.renderer3d.deleteUnits()
   })
 
-  window.addEventListener('gameConfigurationActionUpdatePlayers', (event) => {
+  window.addEventListener('configurationActionUpdatePlayers', (event) => {
     console.log('GAME CONFIGURATION EVENT: updating players')
     game.renderer3d.updatePlayersColor()
     game.generateBuildings()

@@ -73,7 +73,7 @@ p {
 	width: 100vw;
 	height: 100vh;
 	touch-action: none;
-	transition: all 0.5s; // BEWARE: linked to await game.wait time (500ms)
+	transition: height 0.5s; // BEWARE: linked to await game.wait time (500ms)
 
 	&.half-top {
 		height: 50vh;
@@ -89,6 +89,12 @@ p {
 	width: 25vw;
 	height: 25vw;
 	// background-color: rgba(255,0,0,0.5);
+	transform: translateX(-100%);
+	transition: all 0.25s;
+
+	&.active {
+		transform: translateX(0);
+	}
 }
 
 #canvas2d {
@@ -328,7 +334,7 @@ input[type="number"] {
 
 #homepage-panel,
 #game-panel,
-#option-panel,
+#options-panel,
 #top-panel,
 #game-menu {
 	position: fixed;
@@ -339,7 +345,7 @@ input[type="number"] {
 
 // HOMEPAGE PANEL
 #homepage-panel,
-#option-panel {
+#options-panel {
 	padding: $gutter;
 	top: 50%;
 	left: 50%;
@@ -378,7 +384,7 @@ input[type="number"] {
 	}
 }
 
-#option-panel {
+#options-panel {
 	text-align: center;
 
 	> h2 {

@@ -2,10 +2,14 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import homepagePanel from './modules/homepage-panel'
-import optionPanel from './modules/option-panel'
+import optionsPanel from './modules/options-panel'
+import configurationPanel from './modules/configuration-panel'
+
+import minimap from './modules/minimap'
 import topbar from './modules/topbar'
 import gameMenu from './modules/game-menu'
-import gameConfiguration from './modules/game-configuration'
+
+
 
 Vue.use(Vuex)
 
@@ -14,10 +18,12 @@ const debug = process.env.NODE_ENV !== 'production'
 export default new Vuex.Store({
   modules: {
     homepagePanel,
-    optionPanel,
+    configurationPanel,
+    optionsPanel,
+
+    minimap,
     topbar,
-    gameMenu,
-    gameConfiguration
+    gameMenu
   },
   strict: debug,
   plugins: []

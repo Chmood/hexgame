@@ -140,7 +140,7 @@ const GameUI = (game) => {
   // Fired when user click on something, or use action key('X' by default)
   // calls ACTION HEAL or ATTACK
   const doAction = async () => {
-    if (ui.mode === 'configure') return
+    if (ui.mode === 'configuration') return
 
     if (ui.mode === 'select') {
       selectCell()
@@ -345,7 +345,7 @@ const GameUI = (game) => {
     cursorPath: [], // [Hex]
     moveZone: [], // [Hex]
     attackZone: [], // [Hex]
-    mode: 'passive', // 'configure', 'passive', 'select', 'move', 'attack', 'game-menu-select', 'game-menu-move'
+    mode: 'passive', // 'homepage', 'options', 'configuration', 'passive', 'select', 'move', 'attack', 'game-menu-select', 'game-menu-move'
     selectedUnit: undefined, // Unit
     focusedUnit: undefined, // Unit
     unitsToMove: [], // [Unit]

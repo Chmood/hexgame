@@ -25,11 +25,11 @@ const mutations = {
     state.isActive = active
   },
 
-  updateOptionFullscreen (state, { fullscreen }) {
+  updateOptionsFullscreen (state, { fullscreen }) {
     state.options.fullscreen = fullscreen
   },
 
-  updateOptionBetterOcean (state, { betterOcean }) {
+  updateOptionsBetterOcean (state, { betterOcean }) {
     state.options.betterOcean = betterOcean
   }
 }

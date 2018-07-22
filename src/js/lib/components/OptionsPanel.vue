@@ -1,6 +1,6 @@
 <template>
 
-  <div id="option-panel"
+  <div id="options-panel"
     :class="{ active: isActive }"
   >
     <h2>Options</h2>
@@ -82,9 +82,9 @@ import { mapState, mapActions } from 'vuex'
 
 export default {
   computed: mapState({
-    isActive: state => state.optionPanel.isActive,
+    isActive: state => state.optionsPanel.isActive,
 
-    options: state => state.optionPanel.options
+    options: state => state.optionsPanel.options
   }),
 
   methods: {
@@ -93,14 +93,14 @@ export default {
       window.dispatchEvent(event)
     },
     doAction(action) {
-      this.emitGameEvent('optionPanelAction', { detail: { 'action': action }})
+      this.emitGameEvent('optionsAction', { detail: { 'action': action }})
     },
 
     updateOptionFullscreen(fullscreen) {
-      this.$store.commit('optionPanel/updateOptionFullscreen', { fullscreen })
+      this.$store.commit('optionsPanel/updateOptionsFullscreen', { fullscreen })
     },
     updateOptionBetterOcean(betterOcean) {
-      this.$store.commit('optionPanel/updateOptionBetterOcean', { betterOcean })
+      this.$store.commit('optionsPanel/updateOptionsBetterOcean', { betterOcean })
     }
   },
   

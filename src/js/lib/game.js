@@ -14,7 +14,7 @@ import Renderer3d from './renderer3d'
 // GAME
 
 // Store is ready, we get a reference to it
-const CONFIG = store.getters['gameConfiguration/getGameConfig']
+const CONFIG = store.getters['configurationPanel/getGameConfig']
 
 const Game = (ctx2d, canvas3d, dom, main) => {
 
@@ -395,71 +395,35 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     // Current player
     currentPlayer: undefined, // Player
 
-    async openHomepageScreen() {
-      console.warn('Open screen: HOMEPAGE')
+    async openScreen(screen) {
+      console.warn(`Open screen: ${screen}`)
 
-      dom.setHomepagePanel(true)
-      dom.setOptionPanel(false)
-      dom.setGameConfigurationPanel(false)
+      dom.setPanel(screen)
 
-      game.ui.changeMode('homepage')
+      if (screen === 'game') {
+        // Show the game topbar
+        dom.setPanel('topbar')
+        // Reset the game UI
+        game.ui.resetUI()
+        // In-game camera
+        game.renderer3d.setActiveCamera('camera')
 
-      game.renderer3d.setActiveCamera('cameraFree')
-      game.renderer3d.setCameraFreeAutorotate(true)
+      } else {
+        // Change UI mode
+        game.ui.changeMode(screen)
+        game.renderer3d.setActiveCamera('cameraFree')
+      }
 
-      await game.wait()
-      game.resizeGame()
-    },
+      // Set camera
+      if (screen === 'game' || screen === 'configuration') {
+        game.renderer3d.setCameraFreeAutorotate(false)
 
-    openOptionScreen() {
-      console.warn('Open screen: OPTIONS')
+      } else {
+        game.renderer3d.setCameraFreeAutorotate(true)
+      }
 
-      dom.setHomepagePanel(false)
-      dom.setOptionPanel(true)
-      dom.setGameConfigurationPanel(false)
-
-      game.ui.changeMode('options')
-
-      game.renderer3d.setActiveCamera('cameraFree')
-      game.renderer3d.setCameraFreeAutorotate(true)
-
-      game.resizeGame()
-    },
-
-    async openConfigurationScreen() {
-      console.warn('Open screen: GAME CONFIGURATION')
-
-      dom.setHomepagePanel(false)
-      dom.setOptionPanel(false)
-      dom.setGameConfigurationPanel(true)
-
-      game.ui.changeMode('configure')
-
-      game.renderer3d.setActiveCamera('cameraFree')
-      game.renderer3d.setCameraFreeAutorotate(false)
-
-      await game.wait()
-      game.resizeGame()
-    },
-
-    async openGameScreen() {
-      console.warn('Open screen: GAME')
-
-      dom.setHomepagePanel(false)
-      dom.setOptionPanel(false)
-      dom.setGameConfigurationPanel(false)
-
-      // Activate the topbar
-      dom.vm.$store.commit('topbar/setActive', { active: true })
-
-      game.ui.changeMode('configure')
-
-      game.renderer3d.setActiveCamera('camera')
-      game.renderer3d.setCameraFreeAutorotate(false)
-
-      game.ui.resetUI()
-
-      await game.wait()
+      // Resize game
+      await game.wait() // Wait the CSS transition time
       game.resizeGame()
     },
 
@@ -480,7 +444,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       }
 
       console.warn('GAME STARTED')
-      game.openGameScreen()
+      game.openScreen('game')
     
       // BOT
       game.bot = GameBot(game, RNG, CONFIG)
@@ -527,23 +491,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       game.isGameReady()
     },
 
-    postprocessMap() {
-      // Delete meshes
-      game.renderer3d.deleteTilesAndBuildings()
-      game.renderer3d.deleteUnits()
-      
-      // Re-init buildings and players
-      game.map.data.buildings = []
-      game.players = []
-
-      game.map.postprocessMap()
-
-      console.log('MAP TERRAIN', game.map.data.terrain)
-
-      game.renderer3d.createTiles()
-      game.updateRenderers() // 2D map updating
-    },
-
     resynthMap() {
       // Delete meshes
       game.renderer3d.deleteTilesAndBuildings()
@@ -554,6 +501,23 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       game.players = []
 
       game.map.resynthMap()
+
+      console.log('MAP TERRAIN', game.map.data.terrain)
+
+      game.renderer3d.createTiles()
+      game.updateRenderers() // 2D map updating
+    },
+
+    postprocessMap() {
+      // Delete meshes
+      game.renderer3d.deleteTilesAndBuildings()
+      game.renderer3d.deleteUnits()
+      
+      // Re-init buildings and players
+      game.map.data.buildings = []
+      game.players = []
+
+      game.map.postprocessMap()
 
       console.log('MAP TERRAIN', game.map.data.terrain)
 
@@ -1293,7 +1257,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   game.generateUnits()
   
   // FIRST SCREEN INIT
-  game.openHomepageScreen()
+  game.openScreen('homepage')
 
   return game
 }

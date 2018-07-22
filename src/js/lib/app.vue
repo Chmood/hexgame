@@ -5,21 +5,22 @@
     <div class="game-viewport">
       <!-- 3d canvas -->
       <canvas id="canvas3d" touch-action="none"></canvas>
-
-      <!-- Game configuration panel -->
-      <game-configuration />
     </div>
+
+    <!-- Game configuration panel -->
+    <configuration-panel />
+
+    <!-- Homepage screen panel -->
+    <homepage-panel />
+
+    <!-- Option panel -->
+    <options-panel />
 
     <!-- 2d canvas -->
-    <div id="canvas2d-wrapper">
-      <canvas id="canvas2d"></canvas>
-    </div>
+    <minimap />
 
     <!-- Top panel -->
     <topbar />
-
-    <!-- Option panel -->
-    <option-panel />
 
     <!-- Game menu panel -->
     <game-menu />
@@ -29,27 +30,28 @@
       <div id="big-banner-content"></div>
     </div>
 
-    <!-- Homepage screen panel -->
-    <homepage-panel />
-
   </div>
 
 </template>
 
 <script>
 import HomepagePanel from './components/HomepagePanel.vue'
-import OptionPanel from './components/OptionPanel.vue'
+import OptionsPanel from './components/OptionsPanel.vue'
+import ConfigurationPanel from './components/ConfigurationPanel.vue'
+
+import Minimap from './components/Minimap.vue'
 import Topbar from './components/Topbar.vue'
 import GameMenu from './components/GameMenu.vue'
-import GameConfiguration from './components/GameConfiguration.vue'
 
 export default {
   components: {
     HomepagePanel,
-    OptionPanel,
+    OptionsPanel,
+    ConfigurationPanel,
+
+    Minimap,
     Topbar,
-    GameMenu,
-    GameConfiguration
+    GameMenu
   },
 
   data() {
