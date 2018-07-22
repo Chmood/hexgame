@@ -20,77 +20,10 @@
 <link href="./css/app.css" rel="stylesheet"></head>
 
 <body>
-  <div class="game-wrapper">
 
-    <!-- 3d canvas -->
-    <canvas id="canvas3d" touch-action="none"></canvas>
-  
-    <!-- 2d canvas -->
-    <div id="canvas2d-wrapper">
-      <canvas id="canvas2d">
-        Your browser is old, or you don't have JavaScript enabled!
-      </canvas>
-    </div>
+  <!-- VUE JS ENTRY POINT-->
+  <div id="app"></div>
 
-    <!-- Top panel -->
-    <div id="top-panel">
-      <section class="itembar">
-        <div class="itembar-item">Player <span id="player-name"></span></div>
-        <div class="itembar-item">Money <span id="player-money"></span>$</div>
-      </section>
-      <section class="itembar">
-        <div class="itembar-item">Mode <span id="info-mode"></span></div>
-      </section>
-    </div>
-
-    <!-- UI panel -->
-    <div id="options-panel">
-      <p>
-        KEYS: arrows to move cursor, X to do action, C to cancel, E and R to zoom in and out, T and Y to rotate camera&nbsp;&nbsp;
-        <button id="options-btn-toggle-panel">+</button>
-      </p>
-      <p>
-        <!-- <button id="options-btn-update">Perturbate</button>&nbsp;&nbsp; -->
-        <button id="options-btn-new-terrain">New terrain</button>&nbsp;&nbsp;
-        <button id="options-btn-new-buildings">New buildings</button>&nbsp;&nbsp;
-        <button id="options-btn-new-units">New units</button>&nbsp;&nbsp;
-        <button id="options-btn-play" class="btn-strong btn-highlight">Play!</button>
-      </p>
-      <p>
-        <button id="options-btn-fullscreen">Fullscreen</button>
-        <label for="options-select-postprocess">Post-process</label>
-        <select id="options-select-postprocess">
-          <option value="none">None</option>
-          <option value="ssao">SSAO</option>
-          <option value="multi">Multi FX</option>
-        </select>
-        <label for="options-checkbox-better-ocean">Realistic ocean</label>
-        <input id="options-checkbox-better-ocean" type="checkbox">
-        <label for="options-camera-free">Free camera</label>
-        <input id="options-camera-free" type="checkbox">
-        <label for="options-camera-free-auto-rotate">Auto-rotate</label>
-        <input id="options-camera-free-auto-rotate" type="checkbox">
-      </p>
-    </div>
-
-    <!-- Game menu panel -->
-    <div id="game-menu">
-      <button class="game-menu-item" id="game-menu-Attack">Attack</button>
-      <button class="game-menu-item" id="game-menu-Heal">Heal</button>
-      <button class="game-menu-item" id="game-menu-Conquer">Conquer</button>
-      <button class="game-menu-item" id="game-menu-Wait">Wait</button>
-      <button class="game-menu-item" id="game-menu-BuildUnits">Build units</button>
-      <button class="game-menu-item" id="game-menu-EndTurn">End turn</button>
-      <button class="game-menu-item" id="game-menu-QuitGame">Quit game</button>
-    </div>
-
-    <!-- Fullscreen banner-->
-    <div id="big-banner" class="above text-left">
-      <div id="big-banner-content"></div>
-    </div>
-  
-  </div>
 <script type="text/javascript" src="main.bundle.js"></script></body>
 
 </html>
-
