@@ -237,12 +237,26 @@ const Camera = (CONFIG_RENDER_3D, canvas, game) => {
     }
   }
 
+  // GET CAMERA FREE AUTO ROTATE
+  renderer.getCameraFreeAutorotate = () => {
+    return cameraFreeAutoRotate
+  }
+
+  // SET CAMERA FREE AUTO ROTATE
   renderer.setCameraFreeAutorotate = (_cameraFreeAutoRotate) => {
     cameraFreeAutoRotate = _cameraFreeAutoRotate
   }
 
-  renderer.getCameraFreeAutorotate = () => {
-    return cameraFreeAutoRotate
+  // SET CAMERA FREE CONTROLS
+  renderer.setCameraFreeControls = (useControls) => {
+    if (useControls) {
+      // renderer.cameraFree.inputs.addMouse()
+      renderer.cameraFree.attachControl(canvas, true)
+
+    } else {
+      renderer.cameraFree.detachControl(canvas)
+    }
+    console.warn('FREE CAMERA CONTROL:', useControls)
   }
 
   ////////////////////////////////////////
@@ -299,7 +313,7 @@ const Camera = (CONFIG_RENDER_3D, canvas, game) => {
       scene
     )
     // Attach control from canvas to the camera (pan, tilt...)
-    camera.attachControl(canvas, true)
+    // camera.attachControl(canvas, true)
     // Constrain camera rotation & zooming
     camera.lowerBetaLimit = 0
     camera.upperBetaLimit = Math.PI / 2

@@ -11,6 +11,7 @@ import GameBot from './game-bot'
 import GameUI from './game-ui'
 import Renderer2d from './renderer2d'
 import Renderer3d from './renderer3d'
+import { PlaneRotationGizmo } from 'babylonjs';
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME
@@ -19,6 +20,7 @@ import Renderer3d from './renderer3d'
 const CONFIG = store.getters['configuration/getGameConfig']
 
 let hasGeneratedMap = false
+let hasGeneratedBuildingsAndUnits = false
 
 const Game = (ctx2d, canvas3d, dom, main) => {
 
@@ -435,23 +437,35 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           game.renderer2d = Renderer2d(game, ctx2d)
           game.renderer3d = Renderer3d(game, canvas3d)
           
-          // await game.wait() // Wait the CSS transition time
-          // game.resizeGame()
-
           // FIRST MAP CREATION
           game.generateTerrain()
+        }
+      }
+
+      if (screen === 'configuration') {
+        if (!hasGeneratedBuildingsAndUnits) {
+          hasGeneratedBuildingsAndUnits = true
+
+          // FIRST BULDINGS AND UNITS CREATION
           game.generateBuildings()
           game.generateUnits()
         }
       }
 
-      // Set camera auto-rotation
-      if (screen === 'game' || screen === 'configuration') {
-        game.renderer3d.setCameraFreeAutorotate(false)
+      // Set free camera auto-rotation and controls
+      if (screen !== 'intro') {
+        // Intro screen may lack a camera (on first run)
 
-      } else {
-        if (screen !== 'intro') {
+        if (screen === 'homepage') {
           game.renderer3d.setCameraFreeAutorotate(true)
+        } else {
+          game.renderer3d.setCameraFreeAutorotate(false)
+        }
+
+        if (screen === 'configuration') {
+          game.renderer3d.setCameraFreeControls(true)
+        } else {
+          game.renderer3d.setCameraFreeControls(false)
         }
       }
 
@@ -681,9 +695,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     // RESIZE GAME
     resizeGame() {
-      main.setSize()
-
-      game.updateRenderers(['resize'])
+      
+      if (hasGeneratedMap) {
+        main.setSize()
+        game.updateRenderers(['resize'])
+      }
     },
 
     // UPDATE RENDERERS
@@ -889,6 +905,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         const cell = game.map.getCellFromHex(action.unit.hex)
         const building = cell.building
+
+        const lastOwnerId = building.ownerId
     
         // MUTATE Building
         building.ownerId = game.currentPlayer.id
@@ -898,6 +916,26 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         }
 
         await game.ui.CONQUER(action.unit, cell)
+
+        // Check if a base is captured
+        if (building.type === 'base') {
+          const player = game.players[action.unit.playerId]
+          const ennemy = game.players[lastOwnerId]
+
+          console.warn(`${player.name} captured ${ennemy.name}'s base!`)
+
+          // Check if ennemy has any base left
+          const nBases = 0 // TODO
+
+          if (nBases === 0) {
+
+            await game.ACTION_DO({
+              type: 'LOOSE',
+              player: ennemy,
+              loseType: 'all-bases-captured'
+            })
+          }
+        }
   
       } else if (action.type === 'BUILD_UNIT') {
 
@@ -1076,6 +1114,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
             await game.ACTION_DO({
               type: 'LOOSE',
+              player: ennemy,
               looseType: 'all-units-dead'
             })
           }
@@ -1094,6 +1133,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         game.renderer3d.deleteUnits(player) // In case the loser still has units left
         player.units = []
 
+        // Don't work ???
         for (let building of game.map.data.buildings) {
           if (building.ownerId === player.id) {
             building.ownerId = undefined
@@ -1103,7 +1143,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         await game.ui.LOOSE(player, loseType)
 
         // Do we have a winner?
-        let nActivePlayers = 0
+        let nActivePlayers = 0,
             lastPlayer = undefined
         for (const player of game.players) {
           if (!player.hasLost) {

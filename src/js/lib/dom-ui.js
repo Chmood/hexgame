@@ -176,6 +176,7 @@ const DomUI = () => {
     store.commit('options/setActive', { active: false })
     store.commit('configuration/setActive', { active: false })
     store.commit('topbar/setActive', { active: false })
+    store.commit('minimap/setActive', { active: false })
  
     dom.canvas3d.classList.remove('collapsed')
     dom.canvas3d.classList.remove('half-top')
@@ -183,6 +184,8 @@ const DomUI = () => {
     if (panel === 'game') {
       // Also show the topbar
       store.commit('topbar/setActive', { active: true })
+      // And the minimap
+      store.commit('minimap/setActive', { active: true })
 
     } else {
       // Show the desired panel
@@ -195,6 +198,7 @@ const DomUI = () => {
       // Configuration panel uses 50% of the height
       } else if (panel === 'configuration') {
         dom.canvas3d.classList.add('half-top')
+        store.commit('minimap/setActive', { active: true })
       } 
     }
   }

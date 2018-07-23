@@ -2,29 +2,32 @@
 
 ## Known bugs
 
-* Fix the 2D map (issues with game not being ready for dom-ui (resizeGame, 2d map))
+* map generation with island mode is fucked up (elevation = NaN)!
+* Sometimes 3d canvas goes sort of transparent!!!
+* Fix mouse playing
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
-* Sometimes (!) keybord is broken, cursor moves on all keys (keys[] broken?)
-* Switching post-processing ('multi'/'ssao') cause lighting issues (too dark / too bright)
+* Sometimes (!) keybord is broken, cursor moves on all keys (keys[] cleanup failure)
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too, it shouldn't lean with its unit, but stay stricly above it)
+* Switching post-processing ('multi'/'ssao') cause lighting issues (too dark / too bright)
 * bot units sometimes move an incredibly long path to attack (validate move) [TO BE CONFIRMED]
 * Units can be built on occupied factories / port / airport??? [TO BE CONFIRMED]
 
-## Homepage
+## Homepage / intro
 
-* disable user control on the free camera when in homepage (zoom + beta angle)
-* hide 2d map
+* Resizing window during intro throws an error
 * loader progress bar for game creation
+* improve map state between homepage and configuration screens (double free camera locations?)
 
 ## Live game configuration
 
+* Restore 'game config ready' check
 * Size and topping terrain configuration
 * Player type doesn't work if changed
-* Export / import game configs (JSON parsing)
+* disable unit types (hidden in build menu)
+* Export / import game and map configs (JSON parsing)
 
 ## Improvements
 
-* Fix mouse playing
 * 'move or fire' unit mode
 * Not healing air units in buildings (only in airports), and healing naval units in ports
 * Healing for bot units too
@@ -38,10 +41,11 @@
 
 ## New features
 
+* LOOSE types: all units dead / all bases captured
 * New DOM element: unit/terrain/building info panel
 * Roads and bridges???
 * Fog of war & unit vision range???
-* 2D map: needs rework + different icons for units???
+* 2D map: needs rework + different icons for buildings and units?
 
 ## Later
 

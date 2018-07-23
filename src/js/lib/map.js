@@ -50,6 +50,8 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
 
       // Post-process the terrain
       map.postprocessMap()
+
+      mapLogRange('elevation')
     },
 
     resynthMap() {
@@ -481,9 +483,9 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
     ratio = Math.pow(ratio, CONFIG_MAP.mapPostprocess.elevation.islandRedistributionPower)
 
     // Add random peaks to border area of the map (otherwise only 'deepsea')
-    // if (ratio < 0.5) {
-    //   ratio += (RNG() / 5)
-    // }
+    if (ratio < 0.5) {
+      ratio += (RNG() / 5)
+    }
     value *= ratio
 
     return value
@@ -544,6 +546,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       }
     }
 
+    // Needed for island mode
     let hexCenter, distanceMax
     
     if (CONFIG_MAP.mapPostprocess[type].islandMode) {
@@ -573,29 +576,29 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
         let value = map.data.terrain[x][y][type]
         const range = CONFIG_MAP.mapValueRange[type]
         
-        // 1 - Island mode
+        // Island mode
         if (CONFIG_MAP.mapPostprocess[type].islandMode) {
           const offsetTile = HEXLIB.hexOffset(x, y)
 
           value = postprocessMakeIsland(type, value, offsetTile, hexCenter, distanceMax)
         }
 
-        // 2 - Normalizing values
+        // Normalizing values
         if (CONFIG_MAP.mapPostprocess[type].normalize) {
           value = postprocessNormalize(type, CONFIG_MAP.mapValueRange[type], value)
         }
     
-        // 3 - Redistribute value
+        // Redistribute value
         if (CONFIG_MAP.mapPostprocess[type].redistributionPower !== 1) {
           value = postprocessRedistribute(type, value, range)
         }
     
-        // 4 - Invert values
+        // Invert values
         if (CONFIG_MAP.mapPostprocess[type].invert) {
           value = postprocessInvert(type, value, range)
         }
     
-        // 5 - Offset
+        // Offset
         if (CONFIG_MAP.mapPostprocess[type].offset !== 0) {
           value = postprocessOffset(type, value, range)
         }

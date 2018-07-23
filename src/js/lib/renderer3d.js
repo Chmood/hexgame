@@ -43,6 +43,7 @@ const Renderer3d = (game, canvas) => {
     // Camera
     updateCameraPosition: camera.updateCameraPosition,
     getActiveCamera: camera.getActiveCamera,
+    setCameraFreeControls : camera.setCameraFreeControls,
     // setActiveCamera: camera.setActiveCamera,
     setActiveCamera(cameraName) {
       camera.setActiveCamera(cameraName)

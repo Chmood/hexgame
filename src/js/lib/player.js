@@ -11,11 +11,12 @@ const Player = (CONFIG_MAP, CONFIG_GAME, config) => {
     id: config.id,
     name: config.name,
     isHuman: config.isHuman,
-    hasLost: false,
-    hasPlayed: false,
     money: config.money,
     color: config.color,
     // colorDesaturated: ShadeBlend(0.5, player.color, '#888888'),
+
+    hasLost: false,
+    hasPlayed: false,
     units: [],
   
     // ADD UNIT

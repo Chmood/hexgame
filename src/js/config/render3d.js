@@ -29,7 +29,7 @@ const RENDER_3D = {
   // Camera
   camera: {
     distanceRatio: 1, // Size of the map / camera distance (radius)
-    distanceRatioCameraFree: 2, // Size of the map / camera distance (radius)
+    distanceRatioCameraFree: 1.5, // Size of the map / camera distance (radius)
     distanceRatioMin: 0.1,
     distanceRatioMax: 2,
     distanceRatioStep: 0.25,

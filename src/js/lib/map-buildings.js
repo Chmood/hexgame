@@ -115,7 +115,6 @@ const Buildings = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map, RNG) => {
       isValidPosition = isValidBiome && isFreeHex
 
       // Backup building into map
-      // TODO: useless?
       if (isValidPosition) {
         cell.building = building
       }
