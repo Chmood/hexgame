@@ -20,7 +20,7 @@ const DomUI = () => {
     render: h => h(VueApp)
   })
 
-  const config = store.getters['configuration/getGameConfig']
+  const CONFIG_GAME = store.getters['configuration/getGameConfig'].game
   
   // GET ELEMENTS
   dom.getElements = () => {
@@ -55,11 +55,11 @@ const DomUI = () => {
     const throttledOnKeyDown = throttle((event) => {
       keys[event.key] = true
       game.onKeyDown(keys)
-    }, config.game.throttleKeyboardTime)
+    }, CONFIG_GAME.throttleKeyboardTime)
 
     const throttledOnKeyUp = throttle((event) => {
       delete keys[event.key]
-    }, config.game.throttleKeyboardTime)
+    }, CONFIG_GAME.throttleKeyboardTime)
     
     document.addEventListener('keydown', throttledOnKeyDown)
     document.addEventListener('keyup', throttledOnKeyUp)
@@ -139,8 +139,14 @@ const DomUI = () => {
     }
 
     const items = []
-    for (const unitType in config.game.units) {
-      const unit = config.game.units[unitType]
+    for (const unitType in CONFIG_GAME.units) {
+
+      // Check if this unit type is allowed in the game
+      if (CONFIG_GAME.units[unitType].isDisabled) {
+        continue
+      }
+
+      const unit = CONFIG_GAME.units[unitType]
 
       if (unit.family === unitFamily) {
 

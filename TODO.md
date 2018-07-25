@@ -22,12 +22,12 @@
 
 * Restore 'game config ready' check
 * Size and topping terrain configuration
-* Player type doesn't work if changed
-* disable unit types (hidden in build menu)
+* Player type doesn't work if changed (real players are already created)
 * Export / import game and map configs (JSON parsing)
 
 ## Improvements
 
+* conquer a building in 2 turns or more
 * 'move or fire' unit mode
 * Not healing air units in buildings (only in airports), and healing naval units in ports
 * Healing for bot units too

@@ -772,7 +772,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       })
     },
     gameMenuQuitGame() {
-      // TODO
+      console.warn('TODO: quit game and go back to homepage')
     },
 
     // MAIN ACTIONS
@@ -945,16 +945,25 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         if (!building) {
           console.error(`BUID UNIT - no building provided!`)
-          return // early exit
+          return
 
         } else if (building.hasBuilt) {
           console.warn(`${building.type} has already built this turn!`)
-          return // early exit
+          return
 
         } else {
           if (getUnitByHex(building.hex)) {
           console.warn(`${building.type} is occupied!`)
-          return // early exit
+          return
+          }
+
+          if (!CONFIG.game.units[unitType]) {
+            console.warn(`Unknown unit type: ${unitType}!`)
+            return
+
+          } else if (CONFIG.game.units[unitType].isDisabled) {
+            console.warn(`'${unitType}' unit type is disabled!`)
+            return
           }
         }
 
