@@ -40,10 +40,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
     // GENERATE MAP
     generateMap() {
       // Size map
-      sizeMap()
-
-      // Map cells instanciation
-      populateMap()
+      initMap()
 
       // Procedural terrain generation
       map.resynthMap()
@@ -289,20 +286,21 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
   // Create an empty 2D array with given width and height
   const array2d = (width, height) => Array(...Array(width)).map(() => Array(height))
 
-  // SIZE MAP
-  const sizeMap = () => {
-    console.error('MAP SIZE', CONFIG_MAP.mapSize.width, CONFIG_MAP.mapSize.height)
+  // CLEAR MAP
+  // Clears the data.terrain 2D array
+  const initMap = (size = CONFIG_MAP.mapSize) => {
+    console.error('SIZE', size)
+    // 2D array
     map.data.terrain = array2d(CONFIG_MAP.mapSize.width, CONFIG_MAP.mapSize.height)
-  }
-
-  // MAP POPULATE
-  // Fill the 2d array with empty objects
-  const populateMap = () => {
+    
+    // Map cells instanciation
     for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
       for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         map.data.terrain[x][y] = {}
       }
     }
+    
+    console.error('Map.initMap() - MAP SIZE', CONFIG_MAP.mapSize.width, CONFIG_MAP.mapSize.height)
   }
 
   // NORMALIZE NOISE
@@ -799,7 +797,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
   // INIT
 
   // Initial map cells instanciation
-  sizeMap()
+  initMap()
 
   return map
 }
