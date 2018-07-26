@@ -9,12 +9,18 @@
       <button class="configuration-ready__item  btn--small"
         v-for="step in ['players', 'terrain', 'buildings', 'units']"
         :key="step"
-        :class="{ 'configuration-ready__item--good': isReady[step] }"
+        :class="{ 
+          'configuration-ready__item--good': isReady[step],
+          'configuration-ready__item--active': isReadyItemActive(step)
+        }"
         @click="goToStep(step)"
       >{{ step }}</button>
 
       <button class="configuration-ready__item  btn--small"
-        :class="{ 'configuration-ready__item--good': isGameReady }"
+        :class="{
+          'configuration-ready__item--good': isGameReady,
+          'configuration-ready__item--active': isReadyItemActive('play')
+        }"
         @click="goToStep('play')"
       >PLAY!</button>
     </div>
@@ -41,14 +47,6 @@
             <h3>Players</h3>
           </header>
           <main class="configuration-section__body">
-
-            <!-- <div class="colors">
-              <span
-                v-for="(colorVariations, colorName) in colors"
-                :key="colorName"
-                :style="{ 'background-color': colorVariations['500'] }"
-              >{{ colorName }}</span>
-            </div> -->
 
             <div class="configuration-player"
               v-for="(player, index) in config.players"
@@ -111,9 +109,22 @@
             <h3>Terrain - map</h3>
           </header>
           <main class="configuration-section__body">
-            <button class="btn--small"
-              @click="doAction('terrain', true)"
-            >New terrain</button>
+
+            <div class="configuration-update grid grid-1-of-2">
+              <div class="input-block">
+                <label for="terrain-seed" class="label">Seed</label>
+                <input id="terrain-seed" class="input--full" type="text"
+                  :value="config.map.seed"
+                  @input="updateMapSeed($event)"
+                >
+              </div>
+              <div class="input-block">
+                <div class="label">Randomize terrain</div>
+                <button class="btn--small"
+                  @click="doAction('terrain', true)"
+                >New terrain</button>
+              </div>
+            </div>
 
             <section class="grid grid-1-of-2">
               <article>
@@ -201,10 +212,6 @@
             <h3>Terrain - {{ type }}</h3>
           </header>
           <main class="configuration-section__body">
-            <button class="btn--small"
-              @click="doAction('terrain', true)"
-            >New terrain</button>
-
             <section class="grid grid-1-of-2">
               <article>
                 <h4>Synthesis</h4>
@@ -331,9 +338,22 @@
             <h3>Buildings</h3>
           </header>
           <main class="configuration-section__body">
-            <button class="btn--small"
-              @click="doAction('buildings', true)"
-            >New buildings</button>
+
+            <div class="configuration-update grid grid-1-of-2">
+              <div class="input-block">
+                <label for="buildings-seed" class="label">Buildings seed</label>
+                <input id="buildings-seed" class="input--full" type="text"
+                  :value="config.map.seed"
+                  @input="updateMapSeed($event)"
+                >
+              </div>
+              <div class="input-block">
+                <div class="label">Randomize buildings</div>
+                <button class="btn--small"
+                  @click="doAction('buildings', true)"
+                >New buildings</button>
+              </div>
+            </div>
 
             <section class="grid grid-1-of-2 grid-1-of-3">
               <div class="input-block"
@@ -367,9 +387,22 @@
             <h3>Units</h3>
           </header>
           <main class="configuration-section__body">
-            <button class="btn--small"
-              @click="doAction('units', true)"
-            >New units</button>
+
+            <div class="configuration-update grid grid-1-of-2">
+              <div class="input-block">
+                <label for="units-seed" class="label">Units seed</label>
+                <input id="units-seed" class="input--full" type="text"
+                  :value="config.map.seed"
+                  @input="updateMapSeed($event)"
+                >
+              </div>
+              <div class="input-block">
+                <div class="label">Randomize units</div>
+                <button class="btn--small"
+                  @click="doAction('units', true)"
+                >New units</button>
+              </div>
+            </div>
 
             <section class="grid grid-1-of-2 grid-1-of-3">
               <div class="input-block"
@@ -508,6 +541,35 @@ export default {
 
       this.$store.commit('configuration/goToStep', { index })
     },
+    isReadyItemActive (step) {
+      if (step === 'players') {
+        if (this.currentConfigurationStep === 0) {
+          return true
+        }
+      } else if (step === 'terrain') {
+        if (
+          this.currentConfigurationStep === 1 ||
+          this.currentConfigurationStep === 2 ||
+          this.currentConfigurationStep === 3
+        ) {
+          return true
+        }
+      } else if (step === 'buildings') {
+        if (this.currentConfigurationStep === 4) {
+          return true
+        }
+      } else if (step === 'units') {
+        if (this.currentConfigurationStep === 5) {
+          return true
+        }
+      } else if (step === 'play') {
+        if (this.currentConfigurationStep === 6) {
+          return true
+        }
+      }
+
+      return false
+    },
 
     // PLAYERS
     createPlayer() {
@@ -538,6 +600,9 @@ export default {
     },
 
     // MAP TERRAIN
+    updateMapSeed(e) {
+      this.$store.commit('configuration/updateMapSeed', { seed: e.target.value })
+    },
     updateMapSize(e, dimension) {
       if (dimension === 'width') {
         this.$store.commit('configuration/updateMapSize', { 

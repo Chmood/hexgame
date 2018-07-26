@@ -133,6 +133,36 @@
 	}
 }
 
+// GAME READY
+
+.configuration-ready {
+	display: none;
+
+	@media (min-width: 40em) {
+		display: block;
+	}
+}
+
+.configuration-ready__item {
+	margin: 0 ($gutter-quarter / 2);
+	color: red;
+	background-color: transparent;
+	border-color: transparent;
+	border-bottom-color: transparent;
+	transition: all 0.25s;
+
+	&.configuration-ready__item--active {
+		background-color: #111;
+		border-color: #111;
+	}
+
+	&.configuration-ready__item--good {
+		color: green;
+	}
+	// &.configuration-ready__item--bad {
+	// }
+}
+
 .configuration-btn {
 	position: absolute;
 	z-index: +1;
@@ -215,22 +245,4 @@
 	border: 0.2rem solid;
 }
 
-.configuration-ready {
-	margin-bottom: $gutter-half;
-	display: none;
 
-	@media (min-width: 40em) {
-		display: block;
-	}
-}
-
-.configuration-ready__item {
-	margin: 0 ($gutter-quarter / 2);
-	color: red;
-
-	&.configuration-ready__item--good {
-		color: green;
-	}
-	// &.configuration-ready__item--bad {
-	// }
-}

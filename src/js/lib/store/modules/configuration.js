@@ -186,6 +186,9 @@ const mutations = {
     player.moneyPerBuilding = money
   },
 
+  updateMapSeed (state, { seed }) {
+    state.config.map.seed = seed
+  },
   updateMapSize (state, { width, height }) {
     state.config.map.mapSize = { width, height }
   },

@@ -114,6 +114,16 @@ label,
 	line-height: 1;
 }
 
+input[type="text"],
+input[type="number"] {
+
+	&.input--full {
+		width: 100%;
+		max-width: 100%;
+		flex-basis: 100%;
+	}
+}
+
 input[type="text"] {
 	max-width: $gutter * 5;
 }
