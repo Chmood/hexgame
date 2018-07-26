@@ -53,7 +53,14 @@
 	}
 }
 
-#intro {}
+#intro,
+#homepage {
+	width: 75vw;
+
+	@media (min-width: 20em) { width: 50vw; }
+	@media (min-width: 40em) { width: 35vw; }
+	@media (min-width: 60em) { width: 25vw; }
+}
 
 #options {
 	text-align: center;
@@ -95,7 +102,8 @@
 // GAME CONFIGURATION PANEL
 
 #configuration {
-	overflow: hidden;
+	overflow-y: hidden;
+	overflow-y: visible;
 	bottom: 0;
 	left: 0;
 	width: 100vw;
@@ -207,3 +215,22 @@
 	border: 0.2rem solid;
 }
 
+.configuration-ready {
+	margin-bottom: $gutter-half;
+	display: none;
+
+	@media (min-width: 40em) {
+		display: block;
+	}
+}
+
+.configuration-ready__item {
+	margin: 0 ($gutter-quarter / 2);
+	color: red;
+
+	&.configuration-ready__item--good {
+		color: green;
+	}
+	// &.configuration-ready__item--bad {
+	// }
+}

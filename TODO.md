@@ -20,7 +20,6 @@
 
 ## Live game configuration
 
-* Restore 'game config ready' check
 * Size and topping terrain configuration
 * Player type doesn't work if changed (real players are already created)
 * Export / import game and map configs (JSON parsing)
@@ -38,6 +37,7 @@
 * Unit orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work
+* Dual loggers : console + game screen
 
 ## New features
 

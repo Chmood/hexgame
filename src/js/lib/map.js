@@ -73,9 +73,13 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       // Buildings generation can fail!
       const generateBuildingsSuccess = createdMapBuildings()
 
+      if (!generateBuildingsSuccess) {
+        return false
+      }
+      
       generateGraphs(CONFIG_GAME.units)
-
-      return generateBuildingsSuccess
+      
+      return true
     },
 
     clearBuildings() {

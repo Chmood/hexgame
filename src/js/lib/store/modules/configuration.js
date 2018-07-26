@@ -78,6 +78,10 @@ const setPlayerRandomColor = (player) => {
   player.colors = randomColor
 }
 
+const updateIsReadyFromPlayer = (state) => {
+  state.isReady.players = (state.config.players.length > 1) ? true : false
+}
+
 // INIT COMPUTED VARIABLES
 
 // Players
@@ -127,6 +131,13 @@ const mutations = {
     }
   },
 
+  goToStep (state, { index }) {
+
+    if (index !== state.currentConfigurationStep) {
+      state.currentConfigurationStep = index
+    }
+  },
+
   setReady (state, { step, isReady }) {
     state.isReady[step] = isReady
   },
@@ -145,6 +156,7 @@ const mutations = {
     })
 
     setPlayersId(state)
+    updateIsReadyFromPlayer(state)
   },
   deletePlayer (state, { player }) {
     const id = state.config.players.indexOf(player)
@@ -155,6 +167,7 @@ const mutations = {
       freeColor(player.colors)
 
       setPlayersId(state)
+      updateIsReadyFromPlayer(state)
     }
   },
   updatePlayerColor (state, { player }) {

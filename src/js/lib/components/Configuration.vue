@@ -5,6 +5,20 @@
   >
     <h2>Configure the game!</h2>
 
+    <div class="configuration-ready">
+      <button class="configuration-ready__item  btn--small"
+        v-for="step in ['players', 'terrain', 'buildings', 'units']"
+        :key="step"
+        :class="{ 'configuration-ready__item--good': isReady[step] }"
+        @click="goToStep(step)"
+      >{{ step }}</button>
+
+      <button class="configuration-ready__item  btn--small"
+        :class="{ 'configuration-ready__item--good': isGameReady }"
+        @click="goToStep('play')"
+      >PLAY!</button>
+    </div>
+
       <!-- KEYS: arrows to move cursor, X to do action, C to cancel, E and R to zoom in and out, T and Y to rotate camera&nbsp;&nbsp; -->
     <div class="configuration"
       :class="[`step-${currentConfigurationStep}`]"
@@ -396,23 +410,20 @@
           </header>
           <main class="configuration-section__body">
             <p>
-              {{ config.players.length }} players
-            </p>
-            <p>
               {{ config.map.mapSize.width }}x{{ config.map.mapSize.height }} map
               ({{ config.map.mapTopped ? 'flat-topped' : 'pointy-topped' }}
               {{ config.map.mapPostprocess.elevation.islandMode ? ', island type' : ', normal type' }})
             </p>
-            <p>
-              {{ countBuildings }} buildings
-            </p>
-            <p>
-              {{ countUnits }} units
-            </p>
+            <p>{{ config.players.length }} players</p>
+            <p>{{ countBuildings }} buildings</p>
+            <p>{{ countUnits }} units</p>
+
             <button
               @click="doAction('cancel')"
             >Cancel</button>
+
             <button class="btn--strong btn--highlight"
+              :disabled="!isGameReady"
               @click="doAction('start')"
             >Play!</button>
           </main>
@@ -457,6 +468,13 @@ export default {
       )
 
       return count * state.configuration.config.players.length
+    },
+
+    isGameReady (state) {
+      return state.configuration.isReady.players &&
+              state.configuration.isReady.terrain  &&
+              state.configuration.isReady.buildings &&
+              state.configuration.isReady.units
     }
   }),
 
@@ -473,6 +491,22 @@ export default {
     },
     changeStep(increment) {
       this.$store.commit('configuration/changeStep', { increment })
+    },
+    goToStep(step) {
+      let index = 0
+      if (step === 'players') {
+        index = 0
+      } else if (step === 'terrain') {
+        index = 1
+      } else if (step === 'buildings') {
+        index = 4
+      } else if (step === 'units') {
+        index = 5
+      } else if (step === 'play') {
+        index = 6
+      }
+
+      this.$store.commit('configuration/goToStep', { index })
     },
 
     // PLAYERS

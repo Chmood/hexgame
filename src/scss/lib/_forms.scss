@@ -118,7 +118,7 @@ input[type="text"] {
 	max-width: $gutter * 5;
 }
 input[type="number"] {
-	max-width: $gutter * 3;
+	max-width: $gutter * 3.5;
 	text-align: right;
 
 	&.number--small {

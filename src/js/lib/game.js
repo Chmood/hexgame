@@ -447,8 +447,11 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           hasGeneratedBuildingsAndUnits = true
 
           // FIRST BULDINGS AND UNITS CREATION
-          game.generateBuildings()
-          game.generateUnits()
+          if (game.generateBuildings()) {
+            if (game.generateUnits()) {
+              console.log('FIRST MAP: buildings and units are ok :)')
+            }
+          }
         }
       }
 
@@ -542,7 +545,19 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       
       // Re-init buildings and players
       game.map.data.buildings = []
-      game.players = []
+      // game.players = []
+      for (const player of game.players) {
+        player.units = []        
+      }
+
+      store.commit('configuration/setReady', { 
+        step: 'buildings',
+        isReady: false
+      })
+      store.commit('configuration/setReady', { 
+        step: 'units',
+        isReady: false
+      })
       
       game.map.generateMap()
       
@@ -551,8 +566,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       game.renderer3d.randomizeTileDispSets()
       game.renderer3d.createTilesAndBuildings()
       game.updateRenderers() // 2D map updating
-
-      game.isGameReady()
     },
 
     resynthMap() {
@@ -615,12 +628,20 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         game.renderer3d.createTilesAndBuildings()
         game.updateRenderers() // 2D map updating
 
-        game.isGameReady()
+        store.commit('configuration/setReady', { 
+          step: 'buildings',
+          isReady: true
+        })
 
         return true
 
       } else {
         console.error('Buildings generation has failed!')
+
+        store.commit('configuration/setReady', { 
+          step: 'buildings',
+          isReady: false
+        })
 
         return false
       }
@@ -628,13 +649,13 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
     generateUnits() {
       // Try to place all players' units
-      let generatePlayerSuccess = false,
+      let generateUnitsSuccess = false,
           nTry = 1, // for logging purpose only
           nTryLeft = 100
 
       game.renderer3d.deleteUnits()
 
-      while (!generatePlayerSuccess && nTryLeft >= 0) {
+      while (!generateUnitsSuccess && nTryLeft >= 0) {
         nTryLeft--
         nTry++
 
@@ -649,19 +670,31 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         )
 
         if (game.players && game.players.length > 0) {
-          generatePlayerSuccess = true
+          generateUnitsSuccess = true
         }
       }
 
-      if (generatePlayerSuccess) {
+      if (generateUnitsSuccess) {
         console.warn(`Units placed in ${nTry} tries`)
         console.log('PLAYERS', game.players)
         game.renderer3d.createUnits()
 
-        game.isGameReady()
+        store.commit('configuration/setReady', { 
+          step: 'units',
+          isReady: true
+        })
+
+        return true
 
       } else {
         console.error('Units placement has failed!')
+
+        store.commit('configuration/setReady', { 
+          step: 'units',
+          isReady: false
+        })
+
+        return false
       }
     },
 
