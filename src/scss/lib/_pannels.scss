@@ -2,8 +2,9 @@
 #homepage,
 #configuration,
 #options,
-#top-panel,
-#game-menu {
+#topbar,
+#game-menu,
+#infos {
 	position: fixed;
 	padding: $gutter-half;
 	background-color: rgba(0,0,0,0.75);
@@ -72,7 +73,7 @@
 
 // TOP PANEL
 
-#top-panel {
+#topbar {
 	top: 0;
 	left: 0;
 	width: 100vw;
@@ -97,6 +98,36 @@
 	> span {
 		font-weight: bold;
 	}
+}
+
+// INFOS PANEL
+
+#infos {
+	// bottom: 0;
+	top: $topbar-height;
+	right: 0;
+	min-width: 25vw;
+	transform: translateX(100%);
+	transition: all .25s;
+
+	.active-infos & {
+		transform: translateX(0);
+	}
+}
+
+.infos-item {
+	display: flex;
+	margin-bottom: $gutter-quarter;
+}
+
+.infos-item__label {
+	flex-grow: 1;
+	padding-right: $gutter-half;
+	color: $color-primary;
+}
+
+.infos-item__value {
+	text-align: right;
 }
 
 // GAME CONFIGURATION PANEL

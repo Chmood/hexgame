@@ -1,6 +1,6 @@
 <template>
 
-  <div id="top-panel"
+  <div id="topbar"
     :class="{ active: isActive }"
   >
     <section class="itembar">

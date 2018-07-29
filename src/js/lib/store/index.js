@@ -9,6 +9,7 @@ import configuration from './modules/configuration'
 import minimap from './modules/minimap'
 import topbar from './modules/topbar'
 import gameMenu from './modules/game-menu'
+import infos from './modules/infos'
 
 Vue.use(Vuex)
 
@@ -23,7 +24,8 @@ export default new Vuex.Store({
 
     minimap,
     topbar,
-    gameMenu
+    gameMenu,
+    infos
   },
   strict: debug,
   plugins: []
