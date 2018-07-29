@@ -215,6 +215,7 @@ const DomUI = () => {
       game.openScreen('homepage')
     }
   })
+
   // HOMEPAGE
   window.addEventListener('hompageAction', (event) => {
     if (event.detail.action === 'new-game') {
@@ -229,6 +230,7 @@ const DomUI = () => {
       game.openScreen('intro')
     }
   })
+
   // OPTION PANEL
   window.addEventListener('optionsAction', (event) => {
     if (event.detail.action === 'apply') {

@@ -3,7 +3,7 @@
   <div id="configuration"
     :class="{ active: isActive }"
   >
-    <h2>Configure the game!</h2>
+    <h2>Game configuration</h2>
 
     <div class="configuration-ready">
       <button class="configuration-ready__item  btn--small"
@@ -114,8 +114,8 @@
               <div class="input-block">
                 <label for="terrain-seed" class="label">Seed</label>
                 <input id="terrain-seed" class="input--full" type="text"
-                  :value="config.map.seed"
-                  @input="updateMapSeed($event)"
+                  :value="config.map.terrainSeed"
+                  @input="updateMapTerrainSeed($event)"
                 >
               </div>
               <div class="input-block">
@@ -343,8 +343,8 @@
               <div class="input-block">
                 <label for="buildings-seed" class="label">Buildings seed</label>
                 <input id="buildings-seed" class="input--full" type="text"
-                  :value="config.map.seed"
-                  @input="updateMapSeed($event)"
+                  :value="config.map.buildingsSeed"
+                  @input="updateMapBuildingsSeed($event)"
                 >
               </div>
               <div class="input-block">
@@ -517,6 +517,7 @@ export default {
       window.dispatchEvent(event)
     },
     doAction(action, newSeed = false) {
+      // this.$store.commit('configuration/randomizeMapSeed', { seed: e.target.value })
       this.emitGameEvent('configurationAction', { detail: {
         'action': action,
         'newSeed': newSeed
@@ -582,7 +583,7 @@ export default {
       this.$store.commit('configuration/deletePlayer', { player })
       this.emitGameEvent('configurationActionUpdatePlayers', {})
     },
-    updatePlayerColor(player) {// FOOOO
+    updatePlayerColor(player) {
       this.$store.commit('configuration/updatePlayerColor', { player })
       this.emitGameEvent('configurationActionUpdatePlayersColor', {})
     },
@@ -600,8 +601,9 @@ export default {
     },
 
     // MAP TERRAIN
-    updateMapSeed(e) {
-      this.$store.commit('configuration/updateMapSeed', { seed: e.target.value })
+    updateMapTerrainSeed(e) {
+      this.$store.commit('configuration/updateMapTerrainSeed', { seed: e.target.value })
+      this.doAction('terrain')
     },
     updateMapSize(e, dimension) {
       if (dimension === 'width') {
@@ -693,6 +695,10 @@ export default {
     },
 
     // BUILDINGS
+    updateMapBuildingsSeed(e) {
+      this.$store.commit('configuration/updateMapBuildingsSeed', { seed: e.target.value })
+      this.doAction('buildings')
+    },
     updateGameBuildingsNumber(e, building, owned) {
       this.$store.commit('configuration/updateGameBuildingsNumber', { 
         number: parseInt(e.target.value),
@@ -720,11 +726,7 @@ export default {
   },
   
   data() {
-    return {
-    }
-  },
-
-  watch: {
+    return {}
   }
 }
 </script>

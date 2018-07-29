@@ -4,7 +4,7 @@ import Player from './player'
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIG_PLAYERS
 
-const Players = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map, RNG) => {
+const Players = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map) => {
   const players = []
 
   const startingZoneRatio = CONFIG_GAME.playerStartingZoneRatio,
@@ -24,8 +24,9 @@ const Players = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS, map, RNG) => {
       }
 
       let col, row
-      const randomCol = RNG(),
-        randomRow = RNG(),
+      const randomCol = Math.random(),
+        randomRow = Math.random(),
+
         colStart = Math.floor(CONFIG_MAP.mapSize.width * randomCol / startingZoneRatio),
         rowStart = Math.floor(CONFIG_MAP.mapSize.height * randomRow / startingZoneRatio),
         colEnd = Math.floor(CONFIG_MAP.mapSize.width * (1 - randomCol / startingZoneRatio)),

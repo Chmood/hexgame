@@ -27,9 +27,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
   ////////////////////////////////////////
   // PRIVATE
 
-  // RNG seeds
-  let gameSeed = CONFIG.game.seed
-  const RNG = seedrandom(gameSeed)
+  // GAME RNG
+  const RNG = seedrandom()
 
   // COMMON TOOLS
   // Functions that are also needed from game-bot.js
@@ -514,7 +513,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       game.openScreen('game')
     
       // BOT
-      game.bot = GameBot(game, RNG, CONFIG)
+      game.bot = GameBot(game, CONFIG)
 
       // Show banner!
       await game.ACTION_DO({
@@ -534,9 +533,12 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     generateTerrain(randomMapSeed = false) {
       // Seed
       if (randomMapSeed) {
-        game.map.randomizeSeed()
+        const randomSeed = game.map.randomizeTerrainSeed()
+
+        store.commit('configuration/updateMapTerrainSeed', { seed: randomSeed })
+
       } else {
-        game.map.setSeed(CONFIG.map.seed)
+        game.map.setTerrainSeed(CONFIG.map.terrainSeed)
       }
       
       // Delete meshes
@@ -563,7 +565,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       
       console.log('MAP TERRAIN', game.map.data.terrain)
       
-      game.renderer3d.randomizeTileDispSets()
+      game.renderer3d.randomizeTileDispSets() // Should only execute if mapSize changes
       game.renderer3d.createTilesAndBuildings()
       game.updateRenderers() // 2D map updating
     },
@@ -603,6 +605,16 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     },
 
     generateBuildings(randomMapSeed = false) {
+      // Seed
+      if (randomMapSeed) {
+        const randomSeed = game.map.randomizeBuildingsSeed()
+
+        store.commit('configuration/updateMapBuildingsSeed', { seed: randomSeed })
+
+      } else {
+        game.map.setBuildingsSeed(CONFIG.map.buildingsSeed)
+      }
+
       let generateBuildingsSuccess = false,
           nTry = 1, // for logging purpose only
           nTryLeft = 100
@@ -665,8 +677,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           CONFIG.map, 
           CONFIG.game, 
           CONFIG.players, 
-          game.map, 
-          RNG
+          game.map
         )
 
         if (game.players && game.players.length > 0) {

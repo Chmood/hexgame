@@ -3,7 +3,8 @@ import HEXLIB from '../vendor/hexlib'
 
 const CONFIG_MAP = {
 
-  seed: 'staticmapseed', // undefined for a random seed
+  terrainSeed: 0.5,
+  buildingsSeed: 0.25,
   // mapSize: 						{ width: 29, height: 25 }, // Logical map size, in cells
   mapSize: { width: 27, height: 27 }, // Logical map size, in cells
   // mapTopped: Math.random() > 0.5 ? HEXLIB.FLAT : HEXLIB.POINTY, // HEXLIB.FLAT or HEXLIB.POINTY

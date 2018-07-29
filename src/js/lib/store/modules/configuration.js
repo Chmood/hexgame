@@ -186,8 +186,11 @@ const mutations = {
     player.moneyPerBuilding = money
   },
 
-  updateMapSeed (state, { seed }) {
-    state.config.map.seed = seed
+  updateMapTerrainSeed (state, { seed }) {
+    state.config.map.terrainSeed = seed
+  },
+  updateMapBuildingsSeed (state, { seed }) {
+    state.config.map.buildingsSeed = seed
   },
   updateMapSize (state, { width, height }) {
     state.config.map.mapSize = { width, height }
@@ -283,8 +286,7 @@ const mutations = {
   },
   updateGameUnitsIsDisabled (state, { isDisabled, unit }) {
     unit.isDisabled = isDisabled
-  },
-  
+  }
 }
 
 export default {

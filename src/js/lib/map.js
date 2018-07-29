@@ -90,18 +90,45 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       }
     },
 
-    // RANDOMIZE SEED
-    // Random seed the noise generator
-    randomizeSeed() {
-      map.setSeed(RNG())
+    // RANDOMIZE TERRAIN SEED
+    randomizeTerrainSeed() {
+      const randomSeed = RNG_TERRAIN()
+      map.setTerrainSeed(randomSeed)
+
+      return randomSeed
+    },
+
+    // RANDOMIZE BUILDINGS SEED
+    randomizeBuildingsSeed() {
+      const randomSeed = RNG_BUILDINGS()
+      map.setBuildingsSeed(randomSeed)
+
+      return randomSeed
+    },
+
+    // SET TERRAIN SEED
+    setTerrainSeed(seed) {
+      console.log(`Map terrain seed set to "${seed}"`)
+      mapTerrainSeed = seed
+
+      map.resetRNG()
     },
 
     // SET SEED
-    setSeed(seed) {
-      console.log(`Map seed set to "${seed}"`)
-      mapSeed = seed
-      RNG = seedrandom(mapSeed)
-      noise.seed(mapSeed)
+    setBuildingsSeed(seed) {
+      console.log(`Map buildings seed set to "${seed}"`)
+      mapBuildingsSeed = seed
+
+      map.resetRNG()
+    },
+
+    // RESET RNG
+    resetRNG() {
+      RNG_TERRAIN = seedrandom(mapTerrainSeed)
+      RNG_BUILDINGS = seedrandom(mapBuildingsSeed)
+      // Seed the noise functions. Only 65536 different seeds are supported. Use a float between 0 and 1 or an integer from 1 to 65536
+      // See: https://github.com/josephg/noisejs
+      noise.seed(mapTerrainSeed)
     },
 
     // GET CELL FROM HEX
@@ -284,7 +311,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
   ////////////////////////////////////////
   // PRIVATE
   // RNG & seed
-  let mapSeed, RNG
+  let mapTerrainSeed, mapBuildingsSeed, RNG_TERRAIN, RNG_BUILDINGS
 
   // ARRAY 2D
   // Create an empty 2D array with given width and height
@@ -453,7 +480,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
 
         if (CONFIG_MAP.mapNoise[type].stupidRandom) {
           // Stupid random value
-          value = RNG()
+          value = RNG_TERRAIN()
         } else {
           // Noise based value
           value = createNoise(type, x, y)
@@ -485,9 +512,9 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
     ratio = Math.pow(ratio, CONFIG_MAP.mapPostprocess.elevation.islandRedistributionPower)
 
     // Add random peaks to border area of the map (otherwise only 'deepsea')
-    if (ratio < 0.5) {
-      ratio += (RNG() / 5)
-    }
+    // if (ratio < 0.5) {
+    //   ratio += (RNG_TERRAIN() / 5)
+    // }
     value *= ratio
 
     return value
@@ -610,7 +637,6 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
     }
   }
 
-
   // CREATE MAP BUILDINGS
   const createdMapBuildings = () => {
     map.data.buildings = MapBuildings(
@@ -618,7 +644,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       CONFIG_GAME, 
       CONFIG_PLAYERS, 
       map, 
-      RNG
+      RNG_BUILDINGS
     )
 
     return map.data.buildings

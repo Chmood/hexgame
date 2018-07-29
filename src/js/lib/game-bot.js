@@ -4,7 +4,7 @@ import arrayShuffle from '../vendor/array-shuffle'
 ////////////////////////////////////////////////////////////////////////////////
 // GAME BOT
 
-const GameBot = (game, RNG, config) => {
+const GameBot = (game, config) => {
 
   ////////////////////////////////////////
   // PUBLIC
@@ -110,7 +110,7 @@ const GameBot = (game, RNG, config) => {
             // Choose the target
             const ennemy = chooseEnnemy(unit, targets)
             // Choose a random victim
-            // const ennemy = targets[Math.floor(RNG() * targets.length)]
+            // const ennemy = targets[Math.floor(Math.random() * targets.length)]
 
             if (mustStayInPlace) {
               // ATTACK N PLACE
@@ -442,7 +442,7 @@ const GameBot = (game, RNG, config) => {
 
     if (game.ui.moveZone.length === 1) { return false }
 
-    const target = game.ui.moveZone[Math.floor(RNG() * game.ui.moveZone.length)] 
+    const target = game.ui.moveZone[Math.floor(Math.random() * game.ui.moveZone.length)] 
     const path = game.map.findPath(
       unit.type,
       unit.hex, 
@@ -519,7 +519,7 @@ const GameBot = (game, RNG, config) => {
 
           while (!unitType && nMaxTry > 0) {
             nMaxTry--
-            const type = unitTypes[Math.floor(RNG() * unitTypes.length)],
+            const type = unitTypes[Math.floor(Math.random() * unitTypes.length)],
                   cost = config.game.units[type].cost
 
             if (cost <= player.money && cost >= minCost) {
