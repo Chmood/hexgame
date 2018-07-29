@@ -2,7 +2,6 @@
 
 ## Known bugs
 
-* map generation with island mode is fucked up (elevation = NaN)!
 * Sometimes 3d canvas goes sort of transparent!!!
 * Fix mouse playing
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
@@ -22,10 +21,10 @@
 
 * Size and topping terrain configuration
 * Player type doesn't work if changed (real players are already created)
-* Export / import game and map configs (JSON parsing)
 
 ## Improvements
 
+* Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * conquer a building in 2 turns or more
 * 'move or fire' unit mode
 * Not healing air units in buildings (only in airports), and healing naval units in ports
@@ -33,7 +32,6 @@
 * Bots target hysteresis looks inverted (or plain broken)
 * Focus buildings with potential action too (factories, ports and airports)
 * Flying units must be able to pass over ground unit (less strict A* blacklist)
-* Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Unit orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
 * Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work

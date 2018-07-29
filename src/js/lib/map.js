@@ -521,9 +521,8 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
   }
 
   // POSTPROCESS NORMALIZE
-  const postprocessNormalize = (type, targetRange, value) => {
-    const range = mapGetRange(type),
-          ratio = (value - range.min) / (range.max - range.min)
+  const postprocessNormalize = (type, sourceRange, targetRange, value) => {
+    const ratio = (value - sourceRange.min) / (sourceRange.max - sourceRange.min)
     
     return ratio * (targetRange - 0.00001)
   }
@@ -567,7 +566,8 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
   }
 
   // POSTPROCESS MAP DATA
-  const postprocessMapData = (type, range) => {
+  const postprocessMapData = (type, totalRange) => {
+
     // Reset terrain to original
     for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
       for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
@@ -575,7 +575,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       }
     }
 
-    // Needed for island mode
+    // Gloal variables needed for island mode
     let hexCenter, distanceMax
     
     if (CONFIG_MAP.mapPostprocess[type].islandMode) {
@@ -599,6 +599,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
         CONFIG_MAP.mapPostprocess.elevation.islandMargin // Make sure map border are ocean
     }
     
+    // 1st pass
     for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
       for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
         
@@ -612,24 +613,37 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
           value = postprocessMakeIsland(type, value, offsetTile, hexCenter, distanceMax)
         }
 
-        // Normalizing values
-        if (CONFIG_MAP.mapPostprocess[type].normalize) {
-          value = postprocessNormalize(type, CONFIG_MAP.mapValueRange[type], value)
-        }
-    
         // Redistribute value
         if (CONFIG_MAP.mapPostprocess[type].redistributionPower !== 1) {
           value = postprocessRedistribute(type, value, range)
         }
     
+        map.data.terrain[x][y][type] = value
+      }
+    }
+
+    // 2nd pass
+    // Compute the current value range for the data set
+    const dataRange = mapGetRange(type)
+
+    for (let x = 0; x < CONFIG_MAP.mapSize.width; x++) {
+      for (let y = 0; y < CONFIG_MAP.mapSize.height; y++) {
+        
+        let value = map.data.terrain[x][y][type]
+        
+        // Normalizing values
+        if (CONFIG_MAP.mapPostprocess[type].normalize) {
+          value = postprocessNormalize(type, dataRange, totalRange, value)
+        }
+    
         // Invert values
         if (CONFIG_MAP.mapPostprocess[type].invert) {
-          value = postprocessInvert(type, value, range)
+          value = postprocessInvert(type, value, totalRange)
         }
     
         // Offset
         if (CONFIG_MAP.mapPostprocess[type].offset !== 0) {
-          value = postprocessOffset(type, value, range)
+          value = postprocessOffset(type, value, totalRange)
         }
 
         map.data.terrain[x][y][type] = value

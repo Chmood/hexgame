@@ -273,18 +273,6 @@
                 <h4>Post-process</h4>
 
                 <div class="input-block">
-                  <label :for="`options-postprocess-${type}-normalize`">Normalize</label>
-                  <div class="input-with-unit">
-                    <div class="checky">
-                      <input :id="`options-postprocess-${type}-normalize`" type="checkbox"
-                        :checked="config.map.mapPostprocess[type].normalize"
-                        @input="updateMapPostprocessNormalize($event, type)"
-                      >
-                      <label :for="`options-postprocess-${type}-normalize`">Normalize</label>
-                    </div>
-                  </div>
-                </div>
-                <div class="input-block">
                   <label :for="`options-postprocess-${type}-redistribution-power`">Redistribution power</label>
                   <div class="slidey">
                     <input :id="`options-postprocess-${type}-redistribution-power`"
@@ -295,6 +283,18 @@
                     <span class="slidey-value">
                       {{ config.map.mapPostprocess[type].redistributionPower }}
                     </span> 
+                  </div>
+                </div>
+                <div class="input-block">
+                  <label :for="`options-postprocess-${type}-normalize`">Normalize</label>
+                  <div class="input-with-unit">
+                    <div class="checky">
+                      <input :id="`options-postprocess-${type}-normalize`" type="checkbox"
+                        :checked="config.map.mapPostprocess[type].normalize"
+                        @input="updateMapPostprocessNormalize($event, type)"
+                      >
+                      <label :for="`options-postprocess-${type}-normalize`">Normalize</label>
+                    </div>
                   </div>
                 </div>
                 <div class="input-block">
