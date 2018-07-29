@@ -22,7 +22,9 @@ const state = {
     units: true
   },
 
-  colors: MaterialColors
+  colors: MaterialColors,
+
+  importContent: ''
 }
 
 // STATE HELPERS
@@ -286,6 +288,13 @@ const mutations = {
   },
   updateGameUnitsIsDisabled (state, { isDisabled, unit }) {
     unit.isDisabled = isDisabled
+  },
+
+  updateGameConfigurationImportContent ( state, { content }) {
+    state.importContent = content
+  },
+  importGameConfiguration ( state ) {
+   state.config = JSON.parse(state.importContent)
   }
 }
 

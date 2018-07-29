@@ -136,6 +136,14 @@ input[type="number"] {
 	}
 }
 
+textarea {
+	display: block;
+	width: 100%;
+	font-size: 1.2rem;
+	margin-bottom: $gutter;
+}
+
+
 .input-unit {
 	padding: $gutter-heighth;
 	padding-left: 0;

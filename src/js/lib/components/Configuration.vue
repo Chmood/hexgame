@@ -451,7 +451,11 @@
             <p>{{ countBuildings }} buildings</p>
             <p>{{ countUnits }} units</p>
 
-            <button
+            <button class="btn--small"
+              @click="toggleImportExportZone()"
+            >Import / export</button>
+
+            <button class="btn--small"
               @click="doAction('cancel')"
             >Cancel</button>
 
@@ -459,6 +463,43 @@
               :disabled="!isGameReady"
               @click="doAction('start')"
             >Play!</button>
+
+
+            <div
+              v-show="isImportExportZoneVisible"
+            >
+              <h4 style="margin-top: 3rem;">Import and export game configuration</h4>
+
+              <div class="grid grid-1-of-2">
+                <div class="">
+                  <!-- <label for="configuration-export" class="label">Export</label> -->
+                  <textarea id="configuration-export" rows="10"
+                    :value="JSON.stringify(config, null, 2)"
+                    disabled="true"
+                  ></textarea>
+                  <p class="small">Copy this into a new text file to save the current game configuration.</p>
+                </div>
+                <div class="">
+                  <!-- <label for="configuration-import" class="label">Import</label> -->
+                  <textarea id="configuration-import" rows="10" placeholder="Paste JSON here"
+                    :value="importContent"
+                    @input="updateGameConfigurationImportContent($event)"
+                  ></textarea>
+                  <button class="btn--small btn--highlight"
+                    @click="importGameConfiguration()"
+                    :disabled="!importContent"
+                  >Import</button>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- <button
+              @click="doAction('cancel')"
+            >Cancel</button> -->
+            <div class="input-block">
+            </div>
+
           </main>
           <footer class="configuration-section__footer">
           </footer>
@@ -480,6 +521,7 @@ export default {
     config: state => state.configuration.config,
     isReady: state => state.configuration.isReady,
     colors: state => state.configuration.colors,
+    importContent: state => state.configuration.importContent,
 
     countBuildings (state) {
       let count = 0
@@ -722,11 +764,29 @@ export default {
         unit
       })
       this.doAction('units')
+    },
+
+    // IMPORT / EXPORT
+    toggleImportExportZone() {
+      this.isImportExportZoneVisible = !this.isImportExportZoneVisible
+    },
+    updateGameConfigurationImportContent(e) {
+      this.$store.commit('configuration/updateGameConfigurationImportContent', { content: e.target.value })
+    },
+    importGameConfiguration() {
+      this.$store.commit('configuration/importGameConfiguration', {})
+
+      this.emitGameEvent('configurationActionUpdatePlayers', {})
+      this.doAction('terrain')
+      this.doAction('buildings')
+      this.doAction('units')
     }
   },
   
   data() {
-    return {}
+    return {
+      isImportExportZoneVisible: false
+    }
   }
 }
 </script>
