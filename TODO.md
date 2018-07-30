@@ -2,22 +2,26 @@
 
 ## Known bugs
 
-* Sometimes 3d canvas goes sort of transparent!!!
-* Fix mouse playing
 * [CRITICAL] Removing a (loosing) player seems to break the bot routine!
-* Sometimes (!) keybord is broken, cursor moves on all keys (keys[] cleanup failure)
+* [CRITICAL] Sometimes 3d canvas goes sort of transparent!!!
+* [CRITICAL] Sometimes (!) keybord is broken, cursor moves on all keys (keys[] cleanup failure)
+* Fix mouse playing
 * Tanks are floating above the ground, and their rotation doesn't follow the underneath tile (and the health bar has issues too, it shouldn't lean with its unit, but stay stricly above it)
 * Switching post-processing ('multi'/'ssao') cause lighting issues (too dark / too bright)
-* bot units sometimes move an incredibly long path to attack (validate move) [TO BE CONFIRMED]
+* Bots target hysteresis looks inverted (or plain broken)
+* Unit orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
+* Bots playing seems to dezoom the camera???
+* Bot units sometimes move an incredibly long path to attack (validate move) [TO BE CONFIRMED]
 * Units can be built on occupied factories / port / airport??? [TO BE CONFIRMED]
 
 ## Homepage / intro
 
 * Resizing window during intro throws an error
-* loader progress bar for game creation
-* improve map state between homepage and configuration screens (double free camera locations?)
+* Improve map state between homepage and configuration screens (double free camera locations?)
+* Error messages when terrain / buildings / units fails
+* Loader progress bar for game creation
 
-## Live game configuration
+## Game configuration
 
 * Size and topping terrain configuration
 * Player type doesn't work if changed (real players are already created)
@@ -25,22 +29,18 @@
 ## Improvements
 
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
-* conquer a building in 2 turns or more
-* 'move or fire' unit mode
+* Conquer a building in 2 turns or more
+* 'Move or fire' unit mode
 * Not healing air units in buildings (only in airports), and healing naval units in ports
 * Healing for bot units too
-* Bots target hysteresis looks inverted (or plain broken)
 * Focus buildings with potential action too (factories, ports and airports)
 * Flying units must be able to pass over ground unit (less strict A* blacklist)
-* Unit orientation (rotation on local Y axis) sometimes is sub-optimal (ex: 4/6th turn instead or 2/6th turn)
-* Bots playing seems to dezoom the camera???
 * Get the Asset Manager thing up to work
 * Dual loggers : console + game screen
 
 ## New features
 
 * LOOSE types: all units dead / all bases captured
-* New DOM element: unit/terrain/building info panel
 * Roads and bridges???
 * Fog of war & unit vision range???
 * 2D map: needs rework + different icons for buildings and units?

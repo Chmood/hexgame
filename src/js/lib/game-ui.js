@@ -562,7 +562,10 @@ const GameUI = (game) => {
     CONQUER(unit, cell) {
       return new Promise(async (resolve) => {
 
-        // TODO: conquer animation!
+        const conquerAnimation1 = game.renderer3d.conquerBuilding(unit)
+        await conquerAnimation1.waitAsync()
+        const conquerAnimation2 = game.renderer3d.conquerBuilding(unit)
+        await conquerAnimation2.waitAsync()
         game.renderer3d.changeBuildingColor(cell, game.currentPlayer.id)
 
         resolve()

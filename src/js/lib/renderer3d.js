@@ -84,6 +84,7 @@ const Renderer3d = (game, canvas) => {
     attackUnit: units.attackUnit,
     destroyUnit: units.destroyUnit,
     buildUnit: units.buildUnit,
+    conquerBuilding: units.conquerBuilding,
     updateHealthbar: units.updateHealthbar,
     changeUnitMaterial: units.changeUnitMaterial,
 

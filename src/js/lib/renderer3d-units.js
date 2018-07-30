@@ -271,6 +271,38 @@ const Units = (CONFIG_MAP, CONFIG_RENDER_3D, game, camera) => {
     )
   }
 
+  // CONQUER BULDING
+  renderer.conquerBuilding = (unit) => {
+    // Conquer animation
+    const animationPlayerPosition = new BABYLON.Animation(
+      'unit.mesh',
+      'position', 
+      10, 
+      BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    )
+    animationPlayerPosition.setKeys([
+      { frame: 0, value: unit.mesh.position },
+      { frame: 5, value: new BABYLON.Vector3( // end value
+        unit.mesh.position.x, // Axis inversion!
+        unit.mesh.position.y + 2, // TODO: Magic value!
+        unit.mesh.position.z // Axis inversion!
+      )},
+      { frame: 10, value: unit.mesh.position }
+    ])
+    setEasing(animationPlayerPosition)
+
+    unit.mesh.animations = [animationPlayerPosition]
+
+    return scene.beginAnimation(
+      unit.mesh, // Target
+      0, // Start frame
+      10, // End frame
+      false, // Loop (according to ANIMATIONLOOPMODE)
+      2 * game.CONFIG.game.animationsSpeed // Speed ratio
+    )
+  }
+
   // CHANGE UNIT MATERIAL
   renderer.changeUnitMaterial = (unit, color) => {
     const materialIndex = color === 'colorDesaturated' ? 1 : 0
