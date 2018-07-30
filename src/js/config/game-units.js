@@ -374,6 +374,7 @@ const CONFIG_UNITS = {
     canAttackTypes: [...UnitType['artillery'], ...UnitType['tank'], ...UnitType['naval']],
     canAttack: true,
     canConquer: false,
+    canMoveOrFire: true,
 
     maxHealth: 12,
     strength: 12,
@@ -675,6 +676,7 @@ const CONFIG_UNITS = {
     canAttack: true,
     canAttackTypes: [...UnitType['artillery'], ...UnitType['tank'], 'cruiser', 'bomber', 'helicopter'],
     canConquer: false,
+    canAttackThenMove: true,
 
     maxHealth: 12,
     strength: 7,

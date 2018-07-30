@@ -28,9 +28,10 @@
 
 ## Improvements
 
+* 'Move or fire' & 'move then attack then move' unit modes
+* Terrain / building modifier for unit in infos panel
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Conquer a building in 2 turns or more
-* 'Move or fire' unit mode
 * Not healing air units in buildings (only in airports), and healing naval units in ports
 * Healing for bot units too
 * Focus buildings with potential action too (factories, ports and airports)

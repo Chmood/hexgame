@@ -31,6 +31,7 @@ const Unit = (CONFIG_GAME, config) => {
       name: `${config.type}-${config.id}`,
       hasPlayed: false,
       hasMoved: false,
+      rangeMoved: 0,
       health: CONFIG_GAME.units[config.type].maxHealth
     }
   )

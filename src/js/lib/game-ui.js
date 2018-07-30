@@ -732,7 +732,8 @@ const GameUI = (game) => {
   // calls ACTION MOVE
   const selectDestination = async function() {
     const path = ui.cursorPath // Use the cursor path as movement path
-    
+    const unit = ui.selectedUnit
+
     // Avoid the user to move cursor or do other actions during movement
     changeMode('passive')
     // Reset the move mode UI
@@ -742,10 +743,11 @@ const GameUI = (game) => {
     game.updateRenderers(['highlights'])
 
     if (path.length > 0) {
+      unit.rangeMoved = path.length
       // Make the unit travel the path
       await game.ACTION_DO({
         type: 'MOVE',
-        unit: ui.selectedUnit,
+        unit: unit,
         path: path
       })
     }
@@ -753,15 +755,11 @@ const GameUI = (game) => {
     // Next menu
     changeMode('game-menu-move')
     const actions = ['Wait']
-    if (canUnitAttack(ui.selectedUnit)) {
-      actions.unshift('Attack')
-    }
-    if (canUnitHeal(ui.selectedUnit)) {
-      actions.unshift('Heal')
-    }
-    if (canUnitConquer(ui.selectedUnit)) {
-      actions.unshift('Conquer')
-    }
+
+    if (canUnitAttack(unit)) { actions.unshift('Attack') }
+    if (canUnitHeal(unit)) { actions.unshift('Heal') }
+    if (canUnitConquer(unit)) { actions.unshift('Conquer') }
+
     game.dom.openGameMenu(actions)
   }
 
@@ -770,7 +768,10 @@ const GameUI = (game) => {
   // CAN UNIT ATTACK
   // ui.attackZone will be used later to choose target
   const canUnitAttack = (unit) => {
-    if (!unit.canAttack) return false
+    if (
+      !unit.canAttack ||
+      (unit.canMoveOrFire && unit.rangeMoved > 0)
+    ) return false
 
     ui.attackZone = game.getHexesFromItems(
       game.getEnnemiesInAttackRange(unit)
