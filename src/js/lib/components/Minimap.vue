@@ -1,6 +1,6 @@
 <template>
   
-  <div id="canvas2d-wrapper"
+  <div id="minimap"
     :class="{ active: isActive }"
   >
     <canvas id="canvas2d"></canvas>

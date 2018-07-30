@@ -26,7 +26,7 @@ const DomUI = () => {
   dom.getElements = () => {
     // 2D and 3D canvases
     dom.canvas2d = document.getElementById('canvas2d')
-    dom.canvas2dWrapper = document.getElementById('canvas2d-wrapper')
+    dom.canvas2dWrapper = document.getElementById('minimap')
     dom.canvas3d = document.getElementById('canvas3d')
   
     // Big banner
@@ -188,10 +188,12 @@ const DomUI = () => {
     dom.canvas3d.classList.remove('half-top')
 
     if (panel === 'game') {
-      // Also show the topbar
+      // Show the topbar
       store.commit('topbar/setActive', { active: true })
-      // And the minimap
+      // Show the minimap
       store.commit('minimap/setActive', { active: true })
+      // Show the infos panel
+      store.commit('infos/setActive', { active: true })
 
     } else {
       // Show the desired panel
@@ -204,7 +206,11 @@ const DomUI = () => {
       // Configuration panel uses 50% of the height
       } else if (panel === 'configuration') {
         dom.canvas3d.classList.add('half-top')
+
+        // Show the minimap
         store.commit('minimap/setActive', { active: true })
+        // Show the infos panel
+        store.commit('infos/setActive', { active: true })
       } 
     }
   }

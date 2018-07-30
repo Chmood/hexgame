@@ -2,6 +2,7 @@
 
   <div id="infos"
     :class="{ active: isActive }"
+    v-show="cell || building || unit"
   >
     <h2>Infos</h2>
 
