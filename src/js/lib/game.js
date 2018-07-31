@@ -241,6 +241,93 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     (friend) => game.validateHeal(unit, friend)
   )
 
+  // MODIFIERS (ennemy and terrain)
+
+  const getEnnemyModifiers = (unit, ennemyUnit) => {
+    let stats = {}
+
+    if (
+      unit.modifiers && 
+      unit.modifiers[ennemyUnit.type]
+    ) {
+      for (const stat of ['strength', 'defense']) {
+        if (unit.modifiers[ennemyUnit.type][stat]) {
+          stats[stat] = unit.modifiers[ennemyUnit.type][stat]
+
+          // console.log(`unit ${unit.name} versus unit ${ennemyUnit.name}`, )
+          // console.log(`${stat}: ${unit.modifiers[ennemyUnit.type][stat]}`)
+        }
+      }
+    }
+
+    return stats
+  }
+
+  const getTerrainModifiers = (unit) => {
+    const cell = game.map.getCellFromHex(unit.hex)
+
+    let stats = {}
+
+    for (const stat of ['strength', 'defense']) {
+      if (cell.building) {
+        const ownerBonus = cell.building.ownerId === unit.playerId ? 1 : 0
+        if (
+          unit.modifiers && 
+          unit.modifiers['buildings']
+        ) {
+
+          if (unit.modifiers['buildings'][stat]) {
+            stats[stat] = unit.modifiers['buildings'][stat] + ownerBonus
+
+            // console.log(`unit ${unit.name} terrain: buildings`, )
+            // console.log(`${stat}: ${unit.modifiers['buildings'][stat]} + ${ownerBonus}`)
+          }
+        }
+
+      } else {
+        // Other biomes than buildings
+        const biome = cell.biome
+
+        if (
+          unit.modifiers && 
+          unit.modifiers[biome]
+        ) {
+          if (unit.modifiers[biome][stat]) {
+            stats[stat] = unit.modifiers[biome][stat]
+
+            // console.log(`unit ${unit.name} terrain: ${biome}`, )
+            // console.log(`${stat}: ${unit.modifiers[biome][stat]}`)
+          }
+        }
+      }
+    }
+
+    return stats
+  }
+
+  const getModifiers = (unit, ennemyUnit) => {
+    const stats = {}
+
+    const terrainMods = getTerrainModifiers(unit),
+          ennemyMods = getEnnemyModifiers(unit, ennemyUnit)
+
+    for (const stat of ['strength', 'defense']) {
+      
+      if (terrainMods[stat] || ennemyMods[stat]) {
+        let statValue = 0
+
+        if (terrainMods[stat]) {
+          statValue += terrainMods[stat]
+        }
+        if (ennemyMods[stat]) {
+          statValue += ennemyMods[stat]
+        }
+        stats[stat] = statValue
+      }
+
+    }
+  }
+
   // VALIDATE MOVE
   const validateMove = (unit, hex) => {
     const movement = unit.movement - unit.rangeMoved
@@ -728,6 +815,10 @@ const Game = (ctx2d, canvas3d, dom, main) => {
     validateAttack,
     validateHeal,
     validateConquer,
+
+    getEnnemyModifiers,
+    getTerrainModifiers,
+    getModifiers,
 
     // Used by GameBot and UI
     getUnitByHex,
@@ -1235,93 +1326,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         console.warn(`Player ${player.name} has won the game (${winType})!!!`)
         game.ui.WIN(player, winType)
       }
-    }
-  }
-
-  // MODIFIERS (ennemy and terrain)
-
-  const getEnnemyModifiers = (unit, ennemyUnit) => {
-    let stats = {}
-
-    if (
-      unit.modifiers && 
-      unit.modifiers[ennemyUnit.type]
-    ) {
-      for (const stat of ['strength', 'defense']) {
-        if (unit.modifiers[ennemyUnit.type][stat]) {
-          stats[stat] = unit.modifiers[ennemyUnit.type][stat]
-
-          // console.log(`unit ${unit.name} versus unit ${ennemyUnit.name}`, )
-          // console.log(`${stat}: ${unit.modifiers[ennemyUnit.type][stat]}`)
-        }
-      }
-    }
-
-    return stats
-  }
-
-  const getTerrainModifiers = (unit) => {
-    const cell = game.map.getCellFromHex(unit.hex)
-
-    let stats = {}
-
-    for (const stat of ['strength', 'defense']) {
-      if (cell.building) {
-        const ownerBonus = cell.building.ownerId === unit.playerId ? 1 : 0
-        if (
-          unit.modifiers && 
-          unit.modifiers['buildings']
-        ) {
-
-          if (unit.modifiers['buildings'][stat]) {
-            stats[stat] = unit.modifiers['buildings'][stat] + ownerBonus
-
-            // console.log(`unit ${unit.name} terrain: buildings`, )
-            // console.log(`${stat}: ${unit.modifiers['buildings'][stat]} + ${ownerBonus}`)
-          }
-        }
-
-      } else {
-        // Other biomes than buildings
-        const biome = cell.biome
-
-        if (
-          unit.modifiers && 
-          unit.modifiers[biome]
-        ) {
-          if (unit.modifiers[biome][stat]) {
-            stats[stat] = unit.modifiers[biome][stat]
-
-            // console.log(`unit ${unit.name} terrain: ${biome}`, )
-            // console.log(`${stat}: ${unit.modifiers[biome][stat]}`)
-          }
-        }
-      }
-    }
-
-    return stats
-  }
-
-  const getModifiers = (unit, ennemyUnit) => {
-    const stats = {}
-
-    const terrainMods = getTerrainModifiers(unit),
-          ennemyMods = getEnnemyModifiers(unit, ennemyUnit)
-
-    for (const stat of ['strength', 'defense']) {
-      
-      if (terrainMods[stat] || ennemyMods[stat]) {
-        let statValue = 0
-
-        if (terrainMods[stat]) {
-          statValue += terrainMods[stat]
-        }
-        if (ennemyMods[stat]) {
-          statValue += ennemyMods[stat]
-        }
-        stats[stat] = statValue
-      }
-
     }
   }
 

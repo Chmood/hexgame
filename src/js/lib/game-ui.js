@@ -87,39 +87,7 @@ const GameUI = (game) => {
         }
 
         game.updateRenderers(['highlights'])
-
-        // INFOS PANEL
-        const cursorCell = game.map.getCellFromHex(hex)
-        const cursorBuilding = cursorCell.building ? {
-          type: cursorCell.building.type,
-          owner: cursorCell.building.ownerId !== undefined ? CONFIG.players[cursorCell.building.ownerId].name : null,
-          ownerColor: cursorCell.building.ownerId !== undefined ? CONFIG.players[cursorCell.building.ownerId].color : '#666'
-        } : null
-        const cursorUnit = game.getUnitByHex(hex) ? {
-          type: game.getUnitByHex(hex).type,
-          family: game.getUnitByHex(hex).family,
-          health: game.getUnitByHex(hex).health,
-          maxHealth: game.getUnitByHex(hex).maxHealth,
-          strength: game.getUnitByHex(hex).strength,
-          defense: game.getUnitByHex(hex).defense,
-          movement: game.getUnitByHex(hex).movement,
-          attackRangeMin: game.getUnitByHex(hex).attackRangeMin,
-          attackRangeMax: game.getUnitByHex(hex).attackRangeMax,
-          canConquer: game.getUnitByHex(hex).canConquer,
-          canAttack: game.getUnitByHex(hex).canAttack,
-          canHeal: game.getUnitByHex(hex).canHeal,
-        } : null
-
-        store.commit('infos/setData', {
-          cell: {
-            biome: cursorCell.biome,
-            biomeColor: CONFIG.map.terrain[cursorCell.biome].color,
-            elevation: Math.round(cursorCell.elevation * 10) / 10,
-            moisture: Math.round(cursorCell.moisture * 10) / 10
-          },
-          building: cursorBuilding,
-          unit: cursorUnit
-        })
+        updateInfosPanel(hex)
       }
     }
   }
@@ -810,6 +778,75 @@ const GameUI = (game) => {
   const canUnitConquer = (unit) => {
 
     return game.validateConquer(unit)
+  }
+
+  // UPDATE INFOS PANEL
+  const updateInfosPanel = (hex) => {
+
+    const formatStat = (stat, terrainModifier) => {
+      if (terrainModifier && terrainModifier !== 0) {
+        return `${stat} (${terrainModifier > 0 ? '+' : ''}${terrainModifier})`
+
+      } else {
+        return `${stat}`
+      }
+    }
+
+    // Is there a cell for this hex?
+    const cursorCell = game.map.getCellFromHex(hex)
+    let cell = null,
+        building = null,
+        unit = null
+
+    if (cursorCell) {
+
+      cell = {
+        biome: cursorCell.biome,
+        biomeColor: CONFIG.map.terrain[cursorCell.biome].color,
+        elevation: Math.round(cursorCell.elevation * 10) / 10,
+        moisture: Math.round(cursorCell.moisture * 10) / 10
+      }
+
+      if (cursorCell.building) {
+        building = {
+          type: cursorCell.building.type,
+          owner: cursorCell.building.ownerId !== undefined ? CONFIG.players[cursorCell.building.ownerId].name : null,
+          ownerColor: cursorCell.building.ownerId !== undefined ? CONFIG.players[cursorCell.building.ownerId].color : '#666'
+        }
+      }
+
+      const cursorUnit = game.getUnitByHex(hex)
+
+      if (cursorUnit) {
+
+        // Get the unit modifiers (terrain and buildings)
+        const terrainModifiers = game.getTerrainModifiers(cursorUnit)
+        console.error('terrain modifiers', terrainModifiers)
+        // {defense: 1}
+
+        unit = {
+          type: cursorUnit.type,
+          family: cursorUnit.family,
+          health: cursorUnit.health,
+          maxHealth: cursorUnit.maxHealth,
+          strength: formatStat(cursorUnit.strength, terrainModifiers.strength),
+          defense: formatStat(cursorUnit.defense, terrainModifiers.defense),
+          movement: cursorUnit.movement,
+          attackRangeMin: cursorUnit.attackRangeMin,
+          attackRangeMax: cursorUnit.attackRangeMax,
+          canConquer: cursorUnit.canConquer,
+          canAttack: cursorUnit.canAttack,
+          canHeal: cursorUnit.canHeal,
+        }
+      }
+
+
+    } else {
+      console.warn(`updateInfosPanel() - no cell for hex:`, hex)
+    }
+
+
+    store.commit('infos/setData', { cell, building, unit })
   }
 
   return ui
