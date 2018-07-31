@@ -28,8 +28,8 @@
 
 ## Improvements
 
-* 'Move or fire' & 'move then attack then move' unit modes
-* Terrain / building modifier for unit in infos panel
+* Infos panel: terrain / building modifier for unit
+* Infos panel: attack mode (2 units side by side)
 * Improve Random Number Generator (https://github.com/davidbau/seedrandom)
 * Conquer a building in 2 turns or more
 * Not healing air units in buildings (only in airports), and healing naval units in ports
@@ -37,10 +37,11 @@
 * Focus buildings with potential action too (factories, ports and airports)
 * Flying units must be able to pass over ground unit (less strict A* blacklist)
 * Get the Asset Manager thing up to work
-* Dual loggers : console + game screen
+* Dual loggers: console + game screen
 
 ## New features
 
+* Units can board on transports, which can carry them, and drop them around
 * LOOSE types: all units dead / all bases captured
 * Roads and bridges???
 * Fog of war & unit vision range???

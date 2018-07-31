@@ -316,7 +316,7 @@ const GameUI = (game) => {
   }
 
   // SELECT UNIT
-  const selectUnit = (unit) => {
+  const selectUnit = (unit, secondMove = false, extraMovement = 0) => {
     if (unit.hasPlayed) {
       console.log(`Unit ${unit.name} has already played!`)
       return
@@ -327,21 +327,34 @@ const GameUI = (game) => {
     changeMode('move')
     ui.selectedUnit = unit
     // Backup cursor in case of cancel
-    ui.cursorBackup = game.ui.cursor
+    ui.cursor = unit.hex
+    ui.cursorBackup = ui.cursor
     
     // Highlight the whole movement zone
-    const zones = game.getZones(unit)
+    let zones
+    if (secondMove) {
+      zones = game.getZones(unit, extraMovement)
+    } else {
+      zones = game.getZones(unit)
+    }
+
     ui.moveZone = zones.move
+
     if (ui.moveZone.length === 0) {
       console.log('Nowhere to go, the unit is blocked!')
     }
 
-    // Attack and heal zones
-    if (!unit.canHeal) {
-      ui.attackZone = zones.attack
+    if (!secondMove) {
+      // Attack and heal zones
+      if (!unit.canHeal) {
+        ui.attackZone = zones.attack
+      } else {
+        ui.attackZone = zones.heal
+      }
     } else {
-      ui.attackZone = zones.heal
+      ui.attackZone = []
     }
+
     game.updateRenderers(['highlights'])
   }
 

@@ -52,7 +52,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   // GET ZONES
   // Grab all the tiles with a cost lower than the player movement value
-  const getZones = (unit) => {
+  const getZones = (unit, unitMovement = unit.movement) => {
     // TODO: 
     // * make findPath return an array of cells in that range???
     
@@ -71,7 +71,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       undefined, // no goal
       undefined, // no early exit
       getUnitsHexes(), // blacklist all units
-      unit.movement // cost higher limit
+      unitMovement // cost higher limit
     )  
     game.updateRenderers() // Draw numbers on 2D map
 
@@ -243,20 +243,21 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
   // VALIDATE MOVE
   const validateMove = (unit, hex) => {
+    const movement = unit.movement - unit.rangeMoved
+
     const validationPath = game.map.findPath(
       unit.type,
       unit.hex, 
       hex,
       true, // early exit
       game.getUnitsHexes(),
-      unit.movement
+      movement
     )
-
+    
     if (!validationPath) {
       return false
     }
     
-    console.warn('unit.hasMoved', unit.hasMoved)
     if (
       unit.health > 0 &&
       !unit.hasMoved &&
@@ -277,7 +278,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
       // Can the player unit attack?
       playerUnit.canAttack &&
-      !playerUnit.hasattacked &&
+      !playerUnit.hasAttacked &&
       playerUnit.canAttackTypes.indexOf(ennemyUnit.type) !== -1 &&
 
       // Is the ennemy in the attack range?
@@ -855,6 +856,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
             markUnitAsHavingPlayed(unit, false)
             unit.hasMoved = false
             unit.hasAttacked = false
+            unit.rangeMoved = 0
           }
 
           // Reset player buildings
@@ -937,13 +939,18 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         player.money = realPlayerMoney + nBuildings * CONFIG.players[player.id].moneyPerBuilding
 
       } else if (action.type === 'MOVE') {
+        const unit = action.unit,
+              path = action.path
 
-        const pathEnd = action.path[action.path.length - 1]
+        const pathEnd = action.path[path.length - 1]
         // MUTATE unit
-        action.unit.moveToHex(pathEnd, CONFIG.map.mapTopped, CONFIG.map.mapParity)
-        action.unit.hasMoved = true
+        unit.moveToHex(pathEnd, CONFIG.map.mapTopped, CONFIG.map.mapParity)
 
-        await game.ui.MOVE(action.unit, action.path)
+        if (!(unit.canAttackThenMove && unit.rangeMoved < unit.movement)) {
+          unit.hasMoved = true
+        }
+
+        await game.ui.MOVE(unit, path)
 
       } else if (action.type === 'CONQUER') {
 
@@ -1037,6 +1044,7 @@ const Game = (ctx2d, canvas3d, dom, main) => {
 
         // Attack
         if (validateAttack(playerUnit, ennemyUnit)) {
+          playerUnit.hasAttacked = true
 
           await game.ACTION_DO({
             type: 'ATTACK',
@@ -1058,12 +1066,21 @@ const Game = (ctx2d, canvas3d, dom, main) => {
           // console.error(`ATTACKS - invalid attack from ${playerUnit.name} to ${ennemyUnit.name}`)
         }
 
-        // TODO: 'attack-n-run' units can move again here
+        // 'Attack-then-move' units can move again here
+        if (
+          playerUnit.canAttackThenMove && 
+          playerUnit.rangeMoved < playerUnit.movement
+        ) {
+          const extraMovement = playerUnit.movement - playerUnit.rangeMoved
+          console.error('EXTRA MOVE', extraMovement)
+          // Re-select the unit
+          game.ui.selectUnit(playerUnit, true, extraMovement)
 
-        if (game.players[playerUnit.playerId].isHuman) {
+        } else if (game.players[playerUnit.playerId].isHuman) {
           // console.log('HUMAN END UNIT TURN')
           endUnitTurn()
         }
+
 
       } else if (action.type === 'ATTACK') {
 
@@ -1074,8 +1091,6 @@ const Game = (ctx2d, canvas3d, dom, main) => {
         const ennemy = game.players[ennemyUnit.playerId]
 
         await game.ui.ATTACK(player, playerUnit, ennemy, ennemyUnit)
-
-        playerUnit.hasAttacked = true
 
         // Compute ennemy's damage
         const damage = getDamage(playerUnit, ennemyUnit)
@@ -1222,6 +1237,8 @@ const Game = (ctx2d, canvas3d, dom, main) => {
       }
     }
   }
+
+  // MODIFIERS (ennemy and terrain)
 
   const getEnnemyModifiers = (unit, ennemyUnit) => {
     let stats = {}
