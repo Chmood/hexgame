@@ -194,6 +194,19 @@ $topbar-height: 3.9rem; // TODO better, magic value
 	}
 }
 
+.infos-dual {
+	display: flex;
+
+	> * {
+		flex-basis: 20vw;
+	}
+	> *:first-child {
+		margin-right: 2vw;
+	}
+}
+
+// Infos item
+
 .infos-item {
 	display: flex;
 	margin-bottom: $gutter-quarter;
@@ -207,6 +220,9 @@ $topbar-height: 3.9rem; // TODO better, magic value
 
 .infos-item__value {
 	text-align: right;
+}
+
+.value-item {
 }
 
 ////////////////////////////////////////

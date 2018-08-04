@@ -1,6 +1,5 @@
 import HEXLIB from '../vendor/hexlib'
 import seedrandom from 'seedrandom'
-import arrayShuffle from '../vendor/array-shuffle'
 
 import store from './store'
 
@@ -11,7 +10,6 @@ import GameBot from './game-bot'
 import GameUI from './game-ui'
 import Renderer2d from './renderer2d'
 import Renderer3d from './renderer3d'
-import { PlaneRotationGizmo } from 'babylonjs';
 
 ////////////////////////////////////////////////////////////////////////////////
 // GAME

@@ -4,6 +4,8 @@
 
 ### Critical (no v1.0.0 with this)
 
+* Cancel move / finished move / attack fix
+* Keyboard control in all screens / menus
 * Size and topping terrain configuration
 * Player type doesn't work if changed (real players are already created)
 * Removing a (loosing) player seems to break the bot routine!

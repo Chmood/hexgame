@@ -87,7 +87,13 @@ const GameUI = (game) => {
         }
 
         game.updateRenderers(['highlights'])
-        updateInfosPanel(hex)
+
+        if (ui.mode === 'attack') {
+          updateInfosPanel(hex, ui.selectedUnit.hex)
+
+        } else {
+          updateInfosPanel(hex)
+        }
       }
     }
   }
@@ -156,6 +162,10 @@ const GameUI = (game) => {
 
     } else if (ui.mode === 'attack') {
       if (validateTarget(ui.cursor)) {
+
+        // Hide the combat panel
+        store.commit('infos/setActive', { active: false })
+
         // Get the target
         const targetHex = ui.attackZone[ui.selectedTargetId],
               targetUnit = game.getUnitByHex(targetHex)
@@ -780,24 +790,38 @@ const GameUI = (game) => {
     return game.validateConquer(unit)
   }
 
-  // UPDATE INFOS PANEL
-  const updateInfosPanel = (hex) => {
+  ////////////////////////////////////////
+  // INFOS PANEL
 
-    const formatStat = (stat, terrainModifier) => {
-      if (terrainModifier && terrainModifier !== 0) {
-        return `${stat} (${terrainModifier > 0 ? '+' : ''}${terrainModifier})`
+  const formatStat = (stat, terrainModifier, ennemyModifier) => {
+    let statSum = stat
+    let statString = `${stat}`
 
-      } else {
-        return `${stat}`
-      }
+    if (terrainModifier && terrainModifier !== 0) {
+      statString += `${terrainModifier > 0 ? '+' : ''}${terrainModifier}`
+      statSum += terrainModifier
     }
 
-    // Is there a cell for this hex?
-    const cursorCell = game.map.getCellFromHex(hex)
+    if (ennemyModifier && ennemyModifier !== 0) {
+      statString += `${ennemyModifier > 0 ? '+' : ''}${ennemyModifier}`
+      statSum += ennemyModifier
+    }
+
+    return {
+      stat: statSum,
+      details: statSum !== stat ? statString : null
+    }
+  }
+
+  //
+  const getHexInfos = (hex, ennemyHex) => {
     let cell = null,
         building = null,
         unit = null
 
+    // Is there a cell for this hex?
+    const cursorCell = game.map.getCellFromHex(hex)
+    
     if (cursorCell) {
 
       cell = {
@@ -821,16 +845,41 @@ const GameUI = (game) => {
 
         // Get the unit modifiers (terrain and buildings)
         const terrainModifiers = game.getTerrainModifiers(cursorUnit)
-        console.error('terrain modifiers', terrainModifiers)
-        // {defense: 1}
+
+        let ennemyModifiers = {
+          strength: null,
+          defense: null
+        }
+
+        if (ennemyHex) {
+          const ennemyUnit = game.getUnitByHex(ennemyHex)
+          ennemyModifiers = game.getEnnemyModifiers(cursorUnit, ennemyUnit)
+        }
+
+        const statStrength = formatStat(
+          cursorUnit.strength, 
+          terrainModifiers.strength,
+          ennemyModifiers.strength
+        )
+        const statDefense = formatStat(
+          cursorUnit.defense, 
+          terrainModifiers.defense,
+          ennemyModifiers.defense
+        )
 
         unit = {
+          owner: CONFIG.players[cursorUnit.playerId].name,
+          ownerColor: CONFIG.players[cursorUnit.playerId].color,
           type: cursorUnit.type,
           family: cursorUnit.family,
           health: cursorUnit.health,
           maxHealth: cursorUnit.maxHealth,
-          strength: formatStat(cursorUnit.strength, terrainModifiers.strength),
-          defense: formatStat(cursorUnit.defense, terrainModifiers.defense),
+
+          strength:         statStrength.stat,
+          strengthDetails:  statStrength.details,
+          defense:          statDefense.stat,
+          defenseDetails:   statDefense.details,
+
           movement: cursorUnit.movement,
           attackRangeMin: cursorUnit.attackRangeMin,
           attackRangeMax: cursorUnit.attackRangeMax,
@@ -840,13 +889,23 @@ const GameUI = (game) => {
         }
       }
 
-
     } else {
       console.warn(`updateInfosPanel() - no cell for hex:`, hex)
     }
 
+    return {cell, building, unit}
+  }
 
-    store.commit('infos/setData', { cell, building, unit })
+  // UPDATE INFOS PANEL
+  const updateInfosPanel = (hex, hexAttacker) => {
+    
+    if (hexAttacker) {
+      store.commit('infos/setData', getHexInfos(hex, hexAttacker))
+      store.commit('infos/setDataAttacker', getHexInfos(hexAttacker, hex))
+
+    } else {
+      store.commit('infos/setData', getHexInfos(hex))
+    }
   }
 
   return ui

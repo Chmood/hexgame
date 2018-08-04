@@ -6,16 +6,20 @@ const state = {
     cell: null,
     building: null,
     unit: null
+  },
+
+  dataAttacker: {
+    cell: null,
+    building: null,
+    unit: null
   }
 }
 
 // getters
-const getters = {
-}
+const getters = {}
 
 // actions
-const actions = {
-}
+const actions = {}
 
 // mutations
 const mutations = {
@@ -27,6 +31,12 @@ const mutations = {
     state.data.cell = cell
     state.data.building = building
     state.data.unit = unit
+  },
+
+  setDataAttacker (state, { cell, building, unit }) {
+    state.dataAttacker.cell = cell
+    state.dataAttacker.building = building
+    state.dataAttacker.unit = unit
   }
 }
 

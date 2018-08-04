@@ -320,7 +320,6 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
   // CLEAR MAP
   // Clears the data.terrain 2D array
   const initMap = (size = CONFIG_MAP.mapSize) => {
-    console.error('SIZE', size)
     // 2D array
     map.data.terrain = array2d(CONFIG_MAP.mapSize.width, CONFIG_MAP.mapSize.height)
     
@@ -331,7 +330,7 @@ export default Map = (CONFIG_MAP, CONFIG_GAME, CONFIG_PLAYERS) => { // WTF is th
       }
     }
     
-    console.error('Map.initMap() - MAP SIZE', CONFIG_MAP.mapSize.width, CONFIG_MAP.mapSize.height)
+    console.warn('Map.initMap() - MAP SIZE', CONFIG_MAP.mapSize.width, CONFIG_MAP.mapSize.height)
   }
 
   // NORMALIZE NOISE
