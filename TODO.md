@@ -4,13 +4,14 @@
 
 ### Critical (no v1.0.0 with this)
 
+* Combat panel only show for the first fight
 * Cancel move / finished move / attack fix
-* Keyboard control in all screens / menus
+* Removing a (loosing) player seems to break the bot routine!
 * Size and topping terrain configuration
 * Player type doesn't work if changed (real players are already created)
-* Removing a (loosing) player seems to break the bot routine!
-* Sometimes 3d canvas goes sort of transparent!!!
+* Keyboard control in all screens / menus
 * Sometimes (!) keybord is broken, cursor moves on all keys (keys[] cleanup failure)
+* Sometimes 3d canvas goes sort of transparent!!!
 * Fix mouse playing
 
 ### Less critical (for v1.0.1)
@@ -30,10 +31,6 @@
 
 * Improve camera position and zoom between homepage and configuration screens
 * Loader progress bar for game creation
-
-### Infos panel
-
-* Attack mode (2 units side by side)
 
 ### Heal
 
